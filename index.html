@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Shipment Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --bg:       #f0f2f5;
+  --card:     #ffffff;
+  --card-alt: #f7f8fa;
+  --border:   #e2e5eb;
+  --focus:    #2563eb;
+
+  --t1: #111827;  --t2: #374151;  --t3: #6b7280;  --t4: #9ca3af;
+
+  --blue:    #2563eb;  --blue-bg:  #eff4ff;  --blue-dk: #1d4ed8;
+  --green:   #059669;  --green-bg: #ecfdf5;
+  --red:     #dc2626;  --red-bg:   #fef2f2;
+  --amber:   #d97706;  --amber-bg: #fffbeb;
+  --orange:  #ea580c;  --orange-bg:#fff7ed;
+
+  --r: 8px; --rl: 12px; --rx: 16px;
+  --sh: 0 1px 4px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --sh-md: 0 4px 14px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.04);
+
+  --sw: 256px;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter','Noto Sans TC',sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:var(--sans);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;font-size:14px}
+body{min-height:100svh}
+button{font-family:var(--sans);cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:var(--sans)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ─── MATERIAL SYMBOLS ─── */
+.ms{font-family:'Material Symbols Rounded';font-weight:300;font-style:normal;font-size:20px;
+    line-height:1;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;
+    font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24}
+.ms.fi{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.ms.s16{font-size:16px}.ms.s18{font-size:18px}
+
+/* ─── LAYOUT ─── */
+.shell{display:flex;min-height:100svh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sw);flex-shrink:0;background:var(--card);border-right:1px solid var(--border);
+         display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 18px 18px;border-bottom:1px solid var(--border)}
+.sb-ico{width:34px;height:34px;border-radius:9px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-ico .ms{font-size:18px;color:#fff}
+.sb-ttl{font-size:.88rem;font-weight:700;color:var(--t1);line-height:1.3}
+.sb-sub{font-size:.65rem;color:var(--t3);letter-spacing:.03em}
+.sb-sec{padding:16px 18px 6px;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)}
+.sb-nav{padding:2px 10px}
+.sb-row{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r);
+        font-size:.84rem;font-weight:500;color:var(--t2);cursor:pointer;transition:all .12s}
+.sb-row .ms{font-size:18px;color:var(--t3)}
+.sb-row:hover{background:var(--bg);color:var(--t1)}
+.sb-row.act{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.sb-row.act .ms{color:var(--blue);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.sb-sp{flex:1}
+.sb-user{margin:12px;padding:11px 13px;background:var(--card-alt);border-radius:var(--rl);border:1px solid var(--border)}
+.sb-uname{font-size:.82rem;font-weight:600;color:var(--t1)}
+.sb-urole{font-size:.67rem;color:var(--t3);margin-top:2px;font-family:var(--mono)}
+
+/* MAIN */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* TOPBAR (mobile) */
+.topbar{height:56px;background:var(--card);border-bottom:1px solid var(--border);
+        display:flex;align-items:center;padding:0 16px;gap:10px;position:sticky;top:0;z-index:100}
+.tb-ico{width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--blue)}
+.tb-ttl{flex:1;font-size:.95rem;font-weight:700;color:var(--t1)}
+.tb-badge{font-size:.63rem;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;font-family:var(--mono)}
+.b-rd{background:var(--blue-bg);color:var(--blue)}
+.b-proc{background:var(--green-bg);color:var(--green)}
+
+/* CONTENT */
+.content{flex:1;padding:0 0 80px;overflow-y:auto}
+.page{display:none}.page.act{display:block}
+
+/* ─── PAGE HEADER ─── */
+.pg-hd{display:flex;align-items:baseline;justify-content:space-between;padding:18px 14px 10px}
+.pg-hd-l{display:flex;align-items:baseline;gap:8px}
+.pg-h1{font-size:1.15rem;font-weight:800;color:var(--t1);letter-spacing:-.01em}
+.pg-meta{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--t4);cursor:pointer;transition:color .12s}
+.pg-meta:hover{color:var(--blue)}
+
+/* ─── CARD ─── */
+.card{background:var(--card);margin:0 14px 14px;border-radius:var(--rx);box-shadow:var(--sh);overflow:hidden}
+.cb{padding:16px}
+
+/* ─── FIELD ─── */
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field:last-child,.field.no-mb{margin-bottom:0}
+.field label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
+.field input,.field select,.field textarea{
+  padding:9px 12px;background:var(--card-alt);border:1.5px solid var(--border);
+  border-radius:var(--r);font-size:.88rem;color:var(--t1);outline:none;transition:all .13s}
+.field input::placeholder,.field textarea::placeholder{color:var(--t4);font-style:italic}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--focus);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.field input.mono{font-family:var(--mono);font-size:.84rem}
+.field select{appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;
+  background-color:var(--card-alt);cursor:pointer}
+.field textarea{resize:vertical;line-height:1.55;min-height:56px}
+
+/* ─── STATUS CHIPS (v4: clear selected state) ─── */
+/*
+  Unselected: white bg, coloured border, coloured text, low opacity
+  Selected:   solid fill bg, white text, shadow ring — unmistakably active
+*/
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:6px 14px;border-radius:6px;font-size:.73rem;font-weight:700;
+  letter-spacing:.04em;cursor:pointer;transition:all .15s;
+  border:2px solid transparent;background:var(--card-alt);color:var(--t3);
+  font-family:var(--sans);user-select:none;line-height:1;
+}
+/* Idle: show colour as border only */
+.chip-pass{border-color:var(--green);color:var(--green);background:#fff}
+.chip-fail{border-color:var(--red);  color:var(--red);  background:#fff}
+.chip-wait{border-color:var(--amber);color:var(--amber);background:#fff}
+.chip-unkn{border-color:var(--orange);color:var(--orange);background:#fff}
+
+/* Selected: solid fill + white text + ring */
+.chip-pass.sel{background:var(--green); color:#fff; box-shadow:0 0 0 3px rgba(5,150,105,.25)}
+.chip-fail.sel{background:var(--red);   color:#fff; box-shadow:0 0 0 3px rgba(220,38,38,.22)}
+.chip-wait.sel{background:var(--amber); color:#fff; box-shadow:0 0 0 3px rgba(217,119,6,.22)}
+.chip-unkn.sel{background:var(--orange);color:#fff; box-shadow:0 0 0 3px rgba(234,88,12,.22)}
+
+.chip:hover:not(.sel){opacity:.75;transform:translateY(-1px)}
+
+/* ─── PARTS SECTION ─── */
+.sec-row{display:flex;align-items:center;justify-content:space-between;padding:6px 14px 10px}
+.sec-h2{font-size:1.1rem;font-weight:800;color:var(--t1);letter-spacing:-.01em}
+.sec-count{display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:600;color:var(--blue)}
+.sec-count .ms{font-size:16px}
+
+.pw{padding:0 14px}
+
+/* Part card */
+.pc{background:var(--card);border-radius:var(--rx);box-shadow:var(--sh);margin-bottom:10px;overflow:hidden;
+    animation:cIn .2s cubic-bezier(.34,1.4,.64,1)}
+@keyframes cIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.pc-hd{display:flex;align-items:center;padding:11px 14px;cursor:pointer;user-select:none;
+       border-bottom:1px solid var(--border);background:#fff}
+.pc-num{width:22px;height:22px;border-radius:6px;background:var(--blue);color:#fff;
+        font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pc-lbl{flex:1;font-size:.88rem;font-weight:600;color:var(--t1);margin:0 10px;
+        font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-acts{display:flex;align-items:center;gap:2px}
+.bico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+      color:var(--t3);transition:all .12s}
+.bico:hover{background:var(--bg)}
+.bico.del:hover{background:var(--red-bg);color:var(--red)}
+.bico .ms{font-size:17px}
+.caret{font-size:17px;color:var(--t3);transition:transform .2s}
+.pc-hd.op .caret{transform:rotate(180deg)}
+
+.pc-bd{padding:16px}
+.pc-bd.hi{display:none}
+
+/* ─── ADD PART / SUBMIT ─── */
+.btn-add{width:100%;padding:11px;border-radius:var(--rl);
+         border:1.5px dashed #bfdbfe;background:#eff6ff;color:var(--blue);
+         font-size:.84rem;font-weight:600;display:flex;align-items:center;
+         justify-content:center;gap:6px;margin-bottom:14px;transition:all .13s}
+.btn-add:hover{background:#dbeafe;border-color:var(--blue)}
+.btn-add .ms{font-size:19px}
+
+/* Bottom bar (mobile) */
+.btmbar{position:fixed;bottom:0;left:0;right:0;z-index:200;
+        background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+        border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;
+        padding:10px 14px max(14px,env(safe-area-inset-bottom))}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;
+      border-radius:var(--r);color:var(--t3);font-size:.64rem;font-weight:600;
+      letter-spacing:.04em;text-transform:uppercase;transition:all .12s}
+.bnav .ms{font-size:21px}
+.bnav.act{color:var(--blue)}
+.bnav.act .ms{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+
+/* PC Submit */
+.szn{padding:4px 14px 0}
+.btn-sub{width:100%;padding:14px 20px;border-radius:50px;background:var(--blue);color:#fff;
+         font-size:.9rem;font-weight:700;letter-spacing:.04em;
+         display:flex;align-items:center;justify-content:center;gap:8px;
+         box-shadow:0 4px 14px rgba(37,99,235,.3);transition:all .14s}
+.btn-sub:hover{background:var(--blue-dk);transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,.38)}
+.btn-sub:active{transform:translateY(0)}
+.btn-sub:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-sub .ms{font-size:19px}
+.sub-note{text-align:center;margin-top:8px;font-size:.63rem;color:var(--t4);
+          letter-spacing:.05em;text-transform:uppercase}
+
+/* ─── QUERY ─── */
+.sbar{display:flex;gap:8px;padding:0 14px 12px}
+.sfld{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);
+      border:1.5px solid var(--border);border-radius:var(--rl);padding:9px 12px;
+      box-shadow:var(--sh);transition:border-color .13s}
+.sfld:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.sfld .ms{font-size:17px;color:var(--t3);flex-shrink:0}
+.sfld input{flex:1;border:none;background:transparent;font-size:.88rem;color:var(--t1);outline:none}
+.sfld input::placeholder{color:var(--t4)}
+.btn-s{padding:9px 16px;background:var(--blue);color:#fff;border-radius:var(--rl);
+       font-size:.82rem;font-weight:600;box-shadow:var(--sh);transition:background .13s}
+.btn-s:hover{background:var(--blue-dk)}
+
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 12px}
+.sbox{background:var(--card);border-radius:var(--rx);padding:13px 10px;box-shadow:var(--sh);text-align:center}
+.snum{font-size:1.5rem;font-weight:800;line-height:1;font-family:var(--mono)}
+.slbl{font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-top:3px}
+.c-b{color:var(--blue)}.c-a{color:var(--amber)}.c-g{color:var(--green)}
+
+.rl{padding:0 14px}
+.rc{background:var(--card);border-radius:var(--rx);box-shadow:var(--sh);margin-bottom:10px;
+    cursor:pointer;transition:box-shadow .15s,transform .15s;overflow:hidden}
+.rc:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
+.rc-top{display:flex;align-items:flex-start;gap:10px;padding:13px 14px 8px}
+.rdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dp{background:var(--amber)}.dv{background:var(--green)}
+.ri{flex:1;min-width:0}
+.rc-cust{font-size:.92rem;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-id{font-size:.7rem;font-family:var(--mono);color:var(--t3);margin-top:1px}
+.rc-meta{font-size:.72rem;color:var(--t3);margin-top:2px}
+.rb{font-size:.64rem;font-weight:700;padding:3px 9px;border-radius:5px;white-space:nowrap}
+.rb-p{background:var(--amber-bg);color:var(--amber)}.rb-v{background:var(--green-bg);color:var(--green)}
+.rtags{display:flex;flex-wrap:wrap;gap:4px;padding:0 14px 10px}
+.rtag{background:var(--card-alt);color:var(--t2);border:1px solid var(--border);
+      padding:2px 7px;border-radius:4px;font-size:.68rem;font-family:var(--mono);font-weight:500}
+.btn-vfy{display:flex;align-items:center;gap:5px;margin:0 14px 12px;padding:7px 14px;
+         background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,.3);
+         border-radius:var(--r);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .12s}
+.btn-vfy:hover{background:#d1fae5}
+.btn-vfy.done{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-vfy .ms{font-size:15px}
+
+/* ─── MODAL ─── */
+.mbd{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.45);
+     backdrop-filter:blur(4px);align-items:flex-end;justify-content:center}
+.mbd.op{display:flex}
+.msh{background:var(--card);border-radius:var(--rx) var(--rx) 0 0;
+     width:100%;padding:18px 18px 36px;max-height:88vh;overflow-y:auto;
+     animation:shUp .24s cubic-bezier(.34,1.2,.64,1)}
+@keyframes shUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mdrag{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px}
+.mtit{font-size:1rem;font-weight:700;margin-bottom:14px}
+.mrow{display:flex;justify-content:space-between;align-items:center;
+      padding:9px 0;border-bottom:1px solid var(--border)}
+.mrow:last-child{border-bottom:none}
+.mlbl{font-size:.7rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.mval{font-size:.85rem;font-weight:600;font-family:var(--mono);color:var(--t1)}
+.mptit{font-size:.67rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:14px 0 8px}
+.mprow{background:var(--card-alt);border-radius:var(--rl);padding:11px 13px;margin-bottom:7px;border:1px solid var(--border)}
+.mpnm{font-weight:700;font-family:var(--mono);font-size:.88rem}
+.mpmeta{font-size:.73rem;color:var(--t3);margin-top:4px;line-height:1.7}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(8px);
+       background:var(--t1);color:#fff;padding:10px 18px;border-radius:var(--rl);
+       font-size:.83rem;font-weight:500;display:flex;align-items:center;gap:8px;
+       box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;pointer-events:none;
+       white-space:nowrap;z-index:9999;transition:all .22s}
+.toast.sh{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}
+.toast .ms{font-size:16px}
+
+/* ─── SPINNER ─── */
+.spin{display:inline-block;width:15px;height:15px;
+      border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
+      border-radius:50%;animation:rot .65s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ─── EMPTY ─── */
+.empty{text-align:center;padding:48px 24px}
+.empty .ms{font-size:44px;color:var(--t4)}
+.empty p{margin-top:10px;font-size:.85rem;color:var(--t3)}
+
+/* ─── PC OVERRIDES ─── */
+@media(min-width:960px){
+  .sidebar{display:flex!important}
+  .topbar{display:none!important}
+  .btmbar{display:none!important}
+  .content{padding:24px 36px 40px}
+  .pg-hd{padding:0 0 10px}
+  .card{margin:0 0 16px}
+  .cb{padding:20px 24px}
+  .pw{padding:0}
+  .sec-row{padding:6px 0 10px}
+  .sbar{padding:0 0 12px}
+  .stats3{padding:0 0 12px;gap:12px}
+  .rl{padding:0}
+  .szn{padding:4px 0 0;max-width:320px}
+  .ql{display:grid;grid-template-columns:1fr 280px;gap:22px}
+  .qa{display:block!important}
+}
+.qa{display:none}
+.qab{background:var(--card);border-radius:var(--rx);box-shadow:var(--sh);padding:18px;position:sticky;top:24px}
+.qabtit{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+.qabrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.qabrow:last-child{border-bottom:none}
+.qabl{font-size:.82rem;color:var(--t2)}
+.qabv{font-size:1.15rem;font-weight:800;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══ SIDEBAR (PC) ═══ -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-ico"><span class="ms fi s18">inventory_2</span></div>
+    <div><div class="sb-ttl">Shipment Reg.</div><div class="sb-sub">Parts Management</div></div>
+  </div>
+  <div class="sb-sec">Main</div>
+  <div class="sb-nav">
+    <div class="sb-row act" id="sn-form" onclick="goPage('form')"><span class="ms s18">edit_note</span> New Registration</div>
+    <div class="sb-row"     id="sn-query" onclick="goPage('query')"><span class="ms s18">search</span> Query Records</div>
+  </div>
+  <div class="sb-sp"></div>
+  <div class="sb-user">
+    <div class="sb-uname" id="sb-name">—</div>
+    <div class="sb-urole" id="sb-role">Initializing…</div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- TOPBAR (mobile) -->
+  <header class="topbar">
+    <div class="tb-ico"><span class="ms fi">inventory_2</span></div>
+    <div class="tb-ttl">Shipment Registration</div>
+    <span class="tb-badge b-rd" id="topBadge">—</span>
+    <div style="color:var(--t3);display:flex;align-items:center"><span class="ms">more_vert</span></div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══ FORM PAGE ══ -->
+    <div class="page act" id="pg-form">
+
+      <!-- Page Header -->
+      <div class="pg-hd">
+        <div class="pg-hd-l">
+          <span class="pg-h1">Basic Info</span>
+          <span class="pg-meta">METADATA</span>
+        </div>
+      </div>
+
+      <!-- Basic Info Card: 日期 / 來源 / 客戶 only -->
+      <div class="card">
+        <div class="cb">
+
+          <div class="f2" style="margin-bottom:12px">
+            <div class="field no-mb">
+              <label>DATE（日期）</label>
+              <input type="date" id="fDate" class="mono"/>
+            </div>
+            <div class="field no-mb">
+              <label>SOURCE（來源）</label>
+              <input type="text" id="fSource" placeholder="庫存 / 機台"/>
+            </div>
+          </div>
+
+          <div class="field no-mb">
+            <label>CUSTOMER（客戶）</label>
+            <input type="text" id="fCustomer" placeholder="XFAB 3月"/>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Parts List -->
+      <div class="sec-row">
+        <span class="sec-h2">Parts List</span>
+        <span class="sec-count"><span class="ms fi s16">widgets</span> <span id="pcNum">0</span> Items</span>
+      </div>
+
+      <div class="pw" id="partsList"></div>
+
+      <div class="pw">
+        <button class="btn-add" onclick="addPart()">
+          <span class="ms fi">add_circle</span> ADD PART
+        </button>
+      </div>
+
+      <!-- Submit -->
+      <div class="szn">
+        <button class="btn-sub" id="btnSub" onclick="submitForm()">
+          <span class="ms fi">check_circle</span> SUBMIT RECORD
+        </button>
+        <p class="sub-note">資料將儲存至 Google Sheets</p>
+      </div>
+
+    </div><!-- /pg-form -->
+
+    <!-- ══ QUERY PAGE ══ -->
+    <div class="page" id="pg-query">
+      <div class="pg-hd" style="padding-top:18px"><div class="pg-hd-l"><span class="pg-h1">Query Records</span></div></div>
+
+      <div class="ql">
+        <div>
+          <div class="sbar">
+            <div class="sfld">
+              <span class="ms">search</span>
+              <input type="text" id="srch" placeholder="搜尋客戶、品名…" onkeydown="if(event.key==='Enter')doSearch()"/>
+            </div>
+            <button class="btn-s" onclick="doSearch()">搜尋</button>
+          </div>
+          <div class="stats3">
+            <div class="sbox"><div class="snum c-b" id="stT">—</div><div class="slbl">Total</div></div>
+            <div class="sbox"><div class="snum c-a" id="stP">—</div><div class="slbl">Pending</div></div>
+            <div class="sbox"><div class="snum c-g" id="stV">—</div><div class="slbl">Verified</div></div>
+          </div>
+          <div class="rl" id="recList"><div class="empty"><span class="ms">hourglass_empty</span><p>載入中…</p></div></div>
+        </div>
+        <div class="qa">
+          <div class="qab">
+            <div class="qabtit">統計概覽</div>
+            <div class="qabrow"><span class="qabl">總筆數</span><span class="qabv c-b" id="stT2">—</span></div>
+            <div class="qabrow"><span class="qabl">待驗收</span><span class="qabv c-a" id="stP2">—</span></div>
+            <div class="qabrow"><span class="qabl">已驗收</span><span class="qabv c-g" id="stV2">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /pg-query -->
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="btmbar">
+    <button class="bnav act" id="bn-form"  onclick="goPage('form')"><span class="ms">edit_note</span>新增</button>
+    <button class="bnav"     id="bn-query" onclick="goPage('query')"><span class="ms">search</span>查詢</button>
+  </nav>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="ms" id="tIco">check_circle</span><span id="tMsg"></span></div>
+
+<!-- MODAL -->
+<div class="mbd" id="modal" onclick="closeModal(event)">
+  <div class="msh"><div class="mdrag"></div><div id="mBody"></div></div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+//  CONFIG  ← 填入您的設定
+// ──────────────────────────────────────────
+const CFG = {
+  LIFF_ID: "YOUR_LIFF_ID",
+  GAS_URL:  "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec",
+};
+
+// ──────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────
+let profile  = null;
+let userRole = "rd";
+let pcnt     = 0;
+let recs     = [];
+
+// Parts-level status: key = partId, value = 'pass'|'fail'|'wait'|'unkn'
+const partStatus = {};
+
+// ──────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
+  document.getElementById("fDate").value = today();
+  try {
+    await liff.init({ liffId: CFG.LIFF_ID });
+    if (liff.isLoggedIn()) {
+      profile = await liff.getProfile();
+      await fetchRole(profile.userId);
+      // 取得 groupId（從 URL query param，Flex Card 按鈕帶入）
+      const urlParams = new URLSearchParams(window.location.search);
+      const groupId   = urlParams.get("groupId") || "";
+      // 通知群組：正在填寫
+      notifyOpen(groupId);
+    } else { liff.login(); }
+  } catch(e) {
+    console.warn("LIFF dev:", e.message);
+    profile = { displayName:"Dev User", userId:"dev" };
+    setRole("rd");
+  }
+  addPart();
+  loadRecs();
+});
+
+async function fetchRole(uid) {
+  try { const r = await gas({ action:"getRole", userId:uid }); setRole(r.role||"rd"); }
+  catch(e) { setRole("rd"); }
+}
+function setRole(role) {
+  userRole = role;
+  const name  = profile?.displayName || "—";
+  const label = role==="procurement" ? "PROCUREMENT" : "R&D";
+  document.getElementById("topBadge").textContent  = label + " · " + name;
+  document.getElementById("topBadge").className    = "tb-badge " + (role==="procurement"?"b-proc":"b-rd");
+  document.getElementById("sb-name").textContent   = name;
+  document.getElementById("sb-role").textContent   = label;
+}
+
+// ──────────────────────────────────────────
+//  PAGE NAV
+// ──────────────────────────────────────────
+function goPage(pg) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("act"));
+  document.getElementById("pg-"+pg).classList.add("act");
+  ["form","query"].forEach(id => {
+    document.getElementById("bn-"+id)?.classList.toggle("act", id===pg);
+    document.getElementById("sn-"+id)?.classList.toggle("act", id===pg);
+  });
+  if (pg==="query") loadRecs();
+}
+
+// ──────────────────────────────────────────
+//  PARTS
+// ──────────────────────────────────────────
+const COND_MAP = { pass:"PASS", fail:"FAIL", wait:"待驗", unkn:"UNKNOW" };
+
+function addPart(data={}) {
+  pcnt++;
+  const id = "p"+pcnt;
+  partStatus[id] = data.status || "unkn";
+
+  const div = document.createElement("div");
+  div.className = "pc"; div.id = id;
+  div.innerHTML = `
+    <div class="pc-hd op" id="hd_${id}" onclick="togPart('${id}')">
+      <div class="pc-num">${pcnt}</div>
+      <div class="pc-lbl" id="lbl_${id}">${esc(data.itemName)||"ITEM NAME"}</div>
+      <div class="pc-acts">
+        <button class="bico del" onclick="delPart(event,'${id}')">
+          <span class="ms" style="color:var(--red);font-size:18px">delete</span>
+        </button>
+        <span class="ms caret">expand_more</span>
+      </div>
+    </div>
+    <div class="pc-bd" id="bd_${id}">
+
+      <!-- 品名 -->
+      <div class="field">
+        <label>品名 (Item Name)</label>
+        <input type="text" class="mono" data-f="itemName" value="${h(data.itemName)}"
+          placeholder="PCB X INTERFACE A1 (used)"
+          oninput="updLbl('${id}',this.value)"/>
+      </div>
+
+      <!-- PN + SN -->
+      <div class="f2" style="margin-bottom:12px">
+        <div class="field no-mb">
+          <label>PN</label>
+          <input type="text" class="mono" data-f="pn" value="${h(data.pn)}" placeholder="PN-XXXX"/>
+        </div>
+        <div class="field no-mb">
+          <label>SN</label>
+          <input type="text" class="mono" data-f="sn" value="${h(data.sn)}" placeholder="SN-XXXXXXXX"/>
+        </div>
+      </div>
+
+      <!-- Model + 數量 -->
+      <div class="f2" style="margin-bottom:12px">
+        <div class="field no-mb">
+          <label>Model</label>
+          <input type="text" class="mono" data-f="model" value="${h(data.model)}" placeholder="Model No"/>
+        </div>
+        <div class="field no-mb">
+          <label>數量 (Qty)</label>
+          <input type="number" data-f="qty" value="${data.qty||1}" min="1"/>
+        </div>
+      </div>
+
+      <!-- 狀態 chips — per part -->
+      <div class="field" style="margin-bottom:12px">
+        <label>狀態 (Status)</label>
+        <div class="chips" id="chips_${id}">
+          <button class="chip chip-pass${partStatus[id]==='pass'?' sel':''}" onclick="selChip('${id}','pass',this)">PASS</button>
+          <button class="chip chip-fail${partStatus[id]==='fail'?' sel':''}" onclick="selChip('${id}','fail',this)">FAIL</button>
+          <button class="chip chip-wait${partStatus[id]==='wait'?' sel':''}" onclick="selChip('${id}','wait',this)">待驗</button>
+          <button class="chip chip-unkn${partStatus[id]==='unkn'?' sel':''}" onclick="selChip('${id}','unkn',this)">UNKNOW</button>
+        </div>
+      </div>
+
+      <!-- 存放位置 + 備註 -->
+      <div class="f2">
+        <div class="field no-mb">
+          <label>存放位置 (Bin)</label>
+          <input type="text" class="mono" data-f="bin" value="${h(data.bin)}" placeholder="B2-04-A"/>
+        </div>
+        <div class="field no-mb">
+          <label>備註 (Remarks)</label>
+          <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="PE03710拆下"/>
+        </div>
+      </div>
+
+    </div>
+  `;
+  document.getElementById("partsList").appendChild(div);
+  updCount();
+}
+
+function h(s){ return s ? String(s).replace(/"/g,'&quot;') : ''; }
+function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updLbl(id,v){ document.getElementById("lbl_"+id).textContent = v||"ITEM NAME"; }
+function togPart(id){
+  document.getElementById("hd_"+id).classList.toggle("op");
+  document.getElementById("bd_"+id).classList.toggle("hi");
+}
+function delPart(e,id){
+  e.stopPropagation();
+  const el=document.getElementById(id);
+  el.style.transition="all .18s"; el.style.opacity="0"; el.style.transform="scale(0.97)";
+  setTimeout(()=>{ el.remove(); delete partStatus[id]; updCount(); },190);
+}
+function updCount(){
+  document.getElementById("pcNum").textContent = document.querySelectorAll(".pc").length;
+}
+
+function selChip(partId, val, el){
+  partStatus[partId] = val;
+  const row = document.getElementById("chips_"+partId);
+  row.querySelectorAll(".chip").forEach(c => c.classList.remove("sel"));
+  el.classList.add("sel");
+}
+
+// ──────────────────────────────────────────
+//  COLLECT
+// ──────────────────────────────────────────
+function collect(){
+  const g = id => document.getElementById(id)?.value?.trim()||"";
+  const basic = {
+    date:        g("fDate"),
+    source:      g("fSource"),
+    customer:    g("fCustomer"),
+    submittedBy: profile?.displayName||"Unknown",
+    userId:      profile?.userId||"dev",
+    lineUserId:  profile?.userId||"",
+  };
+  const parts = [];
+  document.querySelectorAll(".pc").forEach(c => {
+    const f = k => (c.querySelector(`[data-f="${k}"]`)?.value||"").trim();
+    const pid = c.id;
+    parts.push({
+      itemName: f("itemName"), pn: f("pn"), sn: f("sn"),
+      model: f("model"), qty: f("qty")||"1",
+      status: COND_MAP[partStatus[pid]||"unkn"],
+      bin: f("bin"), remark: f("remark"),
+    });
+  });
+  return { basic, parts };
+}
+
+// ──────────────────────────────────────────
+//  NOTIFY OPEN (LIFF 啟動 → 通知群組)
+// ──────────────────────────────────────────
+async function notifyOpen(groupId) {
+  if (!groupId) return;   // 非從群組 Flex Card 進入則跳過
+  try {
+    await gas({
+      action:      "notifyOpen",
+      groupId:     groupId,
+      displayName: profile?.displayName || "Unknown",
+      userId:      profile?.userId      || "",
+    });
+  } catch(e) { console.warn("notifyOpen:", e); }
+}
+
+// ──────────────────────────────────────────
+//  SUBMIT
+// ──────────────────────────────────────────
+async function submitForm(){
+  const { basic, parts } = collect();
+  if (!basic.customer)                    return showToast("請填寫 Customer","err");
+  if (!parts.length)                      return showToast("請新增至少一項零件","err");
+  if (parts.every(p=>!p.itemName))        return showToast("請填寫 Item Name","err");
+
+  const btn = document.getElementById("btnSub");
+  btn.disabled=true;
+  btn.innerHTML=`<span class="spin"></span> SUBMITTING…`;
+
+  try {
+    const res = await gas({ action:"submit", basic, parts });
+    if (res.success) {
+      showToast("登錄成功！Record ID: "+res.recordId,"ok");
+      setTimeout(resetForm, 1400);
+    } else showToast(res.message||"送出失敗","err");
+  } catch(e){ showToast("網路錯誤："+e.message,"err"); }
+
+  btn.disabled=false;
+  btn.innerHTML=`<span class="ms fi">check_circle</span> SUBMIT RECORD`;
+}
+
+function resetForm(){
+  ["fSource","fCustomer"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("fDate").value=today();
+  document.getElementById("partsList").innerHTML="";
+  Object.keys(partStatus).forEach(k=>delete partStatus[k]);
+  pcnt=0; addPart();
+}
+
+// ──────────────────────────────────────────
+//  QUERY
+// ──────────────────────────────────────────
+async function loadRecs(kw=""){
+  const list=document.getElementById("recList");
+  list.innerHTML=`<div class="empty"><span class="ms">hourglass_empty</span><p>載入中…</p></div>`;
+  try {
+    const r=await gas({action:"query",keyword:kw});
+    recs=r.records||[];
+    renderRecs(recs); setStats(recs);
+  } catch(e){
+    list.innerHTML=`<div class="empty"><span class="ms">error_outline</span><p>載入失敗</p></div>`;
+  }
+}
+function doSearch(){ loadRecs(document.getElementById("srch").value.trim()); }
+function setStats(r){
+  const t=r.length, p=r.filter(x=>x.status==="待驗收").length, v=r.filter(x=>x.status==="已驗收").length;
+  ["stT","stP","stV"].forEach((id,i)=>{ const el=document.getElementById(id); if(el)el.textContent=[t,p,v][i]; });
+  ["stT2","stP2","stV2"].forEach((id,i)=>{ const el=document.getElementById(id); if(el)el.textContent=[t,p,v][i]; });
+}
+function renderRecs(rs){
+  const list=document.getElementById("recList");
+  if(!rs.length){ list.innerHTML=`<div class="empty"><span class="ms">inventory_2</span><p>查無資料</p></div>`; return; }
+  list.innerHTML=rs.map(r=>`
+    <div class="rc" onclick="showDetail('${r.recordId}')">
+      <div class="rc-top">
+        <div class="rdot ${r.status==="已驗收"?"dv":"dp"}"></div>
+        <div class="ri">
+          <div class="rc-cust">${esc(r.customer)||"（未填客戶）"}</div>
+          <div class="rc-id">${esc(r.recordId)} · ${esc(r.date)}</div>
+          <div class="rc-meta">By ${esc(r.submittedBy)} · ${r.partCount} parts</div>
+        </div>
+        <span class="rb ${r.status==="已驗收"?"rb-v":"rb-p"}">${esc(r.status)}</span>
+      </div>
+      <div class="rtags">
+        ${(r.partNames||[]).slice(0,4).map(n=>`<span class="rtag">${esc(n)}</span>`).join("")}
+        ${(r.partNames||[]).length>4?`<span class="rtag">+${r.partNames.length-4}</span>`:""}
+      </div>
+      ${userRole==="procurement"&&r.status!=="已驗收"?`
+        <button class="btn-vfy" onclick="doVerify(event,'${r.recordId}',this)">
+          <span class="ms fi s16">verified</span> 採購驗收
+        </button>`:""}
+    </div>
+  `).join("");
+}
+
+function showDetail(rid){
+  const r=recs.find(x=>x.recordId===rid); if(!r) return;
+  document.getElementById("mBody").innerHTML=`
+    <div class="mtit">📦 ${esc(r.customer)||"記錄詳情"}</div>
+    ${mr("Record ID",r.recordId)}${mr("Date",r.date)}${mr("Customer",r.customer)}
+    ${mr("Source",r.source||"—")}${mr("Status",r.status)}${mr("Submitted By",r.submittedBy)}
+    ${r.verifiedBy?mr("Verified By",r.verifiedBy):""}
+    <div class="mptit">Parts ( ${(r.parts||[]).length} )</div>
+    ${(r.parts||[]).map(p=>`
+      <div class="mprow">
+        <div class="mpnm">${esc(p.itemName)||"—"}</div>
+        <div class="mpmeta">
+          PN: ${esc(p.pn)||"—"} · SN: ${esc(p.sn)||"—"}
+          ${p.model?` · Model: ${esc(p.model)}`:""}
+          · 狀態: ${esc(p.status)||"—"}
+          ${p.bin?`<br>Bin: ${esc(p.bin)}`:""}
+          ${p.qty&&p.qty!="1"?` · Qty: ${esc(p.qty)}`:""}
+          ${p.remark?`<br>備註: ${esc(p.remark)}`:""}
+        </div>
+      </div>
+    `).join("")}
+  `;
+  document.getElementById("modal").classList.add("op");
+}
+function mr(l,v){ return `<div class="mrow"><span class="mlbl">${l}</span><span class="mval">${esc(v)}</span></div>`; }
+function closeModal(e){ if(e.target===document.getElementById("modal")) document.getElementById("modal").classList.remove("op"); }
+
+async function doVerify(e,rid,btn){
+  e.stopPropagation(); btn.disabled=true;
+  btn.innerHTML=`<span class="spin" style="border-color:rgba(5,150,105,.3);border-top-color:var(--green)"></span> 驗收中…`;
+  try {
+    const res=await gas({action:"verify",recordId:rid,verifiedBy:profile?.displayName||"—",userId:profile?.userId});
+    if(res.success){ btn.className="btn-vfy done"; btn.innerHTML=`<span class="ms fi s16">verified</span> 已驗收`; showToast("驗收完成！","ok"); setTimeout(loadRecs,900); }
+    else { showToast(res.message||"驗收失敗","err"); btn.disabled=false; btn.innerHTML=`<span class="ms fi s16">verified</span> 採購驗收`; }
+  } catch(e){ showToast("網路錯誤","err"); btn.disabled=false; btn.innerHTML=`<span class="ms fi s16">verified</span> 採購驗收`; }
+}
+
+// ──────────────────────────────────────────
+//  API / UTILS
+// ──────────────────────────────────────────
+async function gas(p){
+  const r=await fetch(CFG.GAS_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+function showToast(msg,type=""){
+  const t=document.getElementById("toast"),i=document.getElementById("tIco"),m=document.getElementById("tMsg");
+  t.className="toast "+type; i.textContent=type==="ok"?"check_circle":type==="err"?"error":"info";
+  m.textContent=msg; t.classList.add("sh"); setTimeout(()=>t.classList.remove("sh"),2800);
+}
+function today(){ return new Date().toISOString().slice(0,10); }
+</script>
+</body>
+</html>
