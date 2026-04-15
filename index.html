@@ -101,23 +101,37 @@ input,select,textarea{font-family:var(--sans)}
 
 /* ─── FIELD ─── */
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
-.f2 > *{min-width:0}
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.f2>*{min-width:0}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .field:last-child,.field.no-mb{margin-bottom:0}
 .field label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
 .field input,.field select,.field textarea{
-  padding:9px 12px;background:var(--card-alt);border:1.5px solid var(--border);
+  padding:10px 12px;background:var(--card-alt);border:1.5px solid var(--border);
   border-radius:var(--r);font-size:16px;color:var(--t1);outline:none;transition:all .13s;
   width:100%;-webkit-text-size-adjust:100%}
 .field input::placeholder,.field textarea::placeholder{color:var(--t4);font-style:italic}
 .field input:focus,.field select:focus,.field textarea:focus{
   border-color:var(--focus);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.field input.mono{font-family:var(--mono);font-size:.84rem}
+.field input.mono{font-family:var(--mono);font-size:15px}
 .field select{appearance:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;
   background-color:var(--card-alt);cursor:pointer}
 .field textarea{resize:vertical;line-height:1.55;min-height:56px}
+
+/* ─── QTY STEPPER ─── */
+.qty-wrap{display:flex;align-items:center;width:100%;min-width:0}
+.qty-btn{width:36px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+         font-size:1.3rem;font-weight:500;color:var(--blue);background:none;border:none;
+         cursor:pointer;transition:color .12s;-webkit-tap-highlight-color:transparent;padding:0}
+.qty-btn:active{color:var(--blue-dk)}
+.qty-inp-wrap{flex:1;min-width:0;padding:0 4px}
+.qty-inp{width:100%;padding:10px 8px;background:var(--card-alt);border:1.5px solid var(--border);
+         border-radius:var(--r);font-size:16px;font-weight:600;color:var(--t1);
+         text-align:center;outline:none;-moz-appearance:textfield;
+         transition:border-color .13s}
+.qty-inp:focus{border-color:var(--focus);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.qty-inp::-webkit-outer-spin-button,.qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 /* ─── STATUS CHIPS (v4: clear selected state) ─── */
 /*
@@ -271,22 +285,37 @@ input,select,textarea{font-family:var(--sans)}
 .mpnm{font-weight:700;font-family:var(--mono);font-size:.88rem}
 .mpmeta{font-size:.73rem;color:var(--t3);margin-top:4px;line-height:1.7}
 
-/* ─── TOAST ─── */
+/* ─── SUCCESS BANNER (頂部) ─── */
+.success-banner{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:linear-gradient(135deg,#059669,#047857);
+  color:#fff;padding:0 16px;
+  display:flex;align-items:center;gap:12px;
+  transform:translateY(-100%);transition:transform .35s cubic-bezier(.34,1.3,.64,1);
+  box-shadow:0 4px 20px rgba(5,150,105,.4);
+  min-height:72px}
+.success-banner.sh{transform:translateY(0)}
+.sb-icon{width:42px;height:42px;background:rgba(255,255,255,.2);border-radius:50%;
+         display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon .ms{font-size:22px;color:#fff}
+.sb-body{flex:1;min-width:0}
+.sb-title{font-size:.95rem;font-weight:700;letter-spacing:.01em}
+.sb-sub{font-size:.75rem;opacity:.85;margin-top:2px;font-family:var(--mono)}
+.sb-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+          border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;
+          transition:background .12s}
+.sb-close:hover{background:rgba(255,255,255,.3)}
+.sb-close .ms{font-size:18px;color:#fff}
+
+/* ─── TOAST (error/info only) ─── */
 .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(8px);
        background:var(--t1);color:#fff;padding:10px 18px;border-radius:var(--rl);
        font-size:.83rem;font-weight:500;display:flex;align-items:center;gap:8px;
        box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;pointer-events:none;
-       white-space:nowrap;z-index:9999;transition:all .22s}
+       white-space:nowrap;z-index:9998;transition:all .22s;max-width:calc(100vw - 32px)}
 .toast.sh{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:var(--green)}.toast.err{background:var(--red)}
+.toast.err{background:var(--red)}
 .toast .ms{font-size:16px}
-
-/* ─── QTY STEPPER ─── */
-.qty-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:var(--r);background:var(--card-alt);overflow:hidden;height:40px;min-width:0;width:100%}
-.qty-btn{width:40px;min-width:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:transparent}
-.qty-btn:hover,.qty-btn:active{background:var(--blue-bg)}
-.qty-inp{flex:1;min-width:0;border:none;background:transparent;text-align:center;font-size:16px;font-weight:600;color:var(--t1);outline:none;padding:0;-moz-appearance:textfield}
-.qty-inp::-webkit-outer-spin-button,.qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 /* ─── SPINNER ─── */
 .spin{display:inline-block;width:15px;height:15px;
@@ -467,8 +496,18 @@ input,select,textarea{font-family:var(--sans)}
 </div><!-- /main -->
 </div><!-- /shell -->
 
+<!-- SUCCESS BANNER -->
+<div class="success-banner" id="successBanner">
+  <div class="sb-icon"><span class="ms fi">check_circle</span></div>
+  <div class="sb-body">
+    <div class="sb-title" id="sbTitle">登錄成功！</div>
+    <div class="sb-sub"  id="sbSub"></div>
+  </div>
+  <div class="sb-close" onclick="hideBanner()"><span class="ms">close</span></div>
+</div>
+
 <!-- TOAST -->
-<div class="toast" id="toast"><span class="ms" id="tIco">check_circle</span><span id="tMsg"></span></div>
+<div class="toast" id="toast"><span class="ms" id="tIco">error</span><span id="tMsg"></span></div>
 
 <!-- MODAL -->
 <div class="mbd" id="modal" onclick="closeModal(event)">
@@ -593,7 +632,7 @@ function addPart(data={}) {
       </div>
 
       <!-- Model + 數量 -->
-      <div class="f2" style="margin-bottom:12px">
+      <div class="f2" style="margin-bottom:14px">
         <div class="field no-mb">
           <label>Model</label>
           <input type="text" class="mono" data-f="model" value="${h(data.model)}" placeholder="Model No"/>
@@ -602,14 +641,16 @@ function addPart(data={}) {
           <label>數量 (Qty)</label>
           <div class="qty-wrap">
             <button class="qty-btn" type="button" onclick="adjQty('${id}',-1)">−</button>
-            <input type="number" class="qty-inp" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}" inputmode="numeric"/>
+            <div class="qty-inp-wrap">
+              <input type="number" class="qty-inp" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}" inputmode="numeric"/>
+            </div>
             <button class="qty-btn" type="button" onclick="adjQty('${id}',1)">＋</button>
           </div>
         </div>
       </div>
 
       <!-- 狀態 chips — per part -->
-      <div class="field" style="margin-bottom:12px">
+      <div class="field" style="margin-bottom:14px">
         <label>狀態 (Status)</label>
         <div class="chips" id="chips_${id}">
           <button class="chip chip-pass${partStatus[id]==='pass'?' sel':''}" onclick="selChip('${id}','pass',this)">PASS</button>
@@ -664,8 +705,8 @@ function selChip(partId, val, el){
 
 function adjQty(id, delta){
   const inp = document.getElementById("qty_"+id);
-  if (!inp) return;
-  inp.value = Math.max(1, (parseInt(inp.value)||1) + delta);
+  if(!inp) return;
+  inp.value = Math.max(1,(parseInt(inp.value)||1)+delta);
 }
 
 // ──────────────────────────────────────────
@@ -679,6 +720,7 @@ function collect(){
     customer:    g("fCustomer"),
     submittedBy: profile?.displayName||"Unknown",
     lineUserId:  profile?.userId||"",
+    groupId:     new URLSearchParams(window.location.search).get("groupId")||"",
   };
   const parts = [];
   document.querySelectorAll(".pc").forEach(c => {
@@ -695,10 +737,26 @@ function collect(){
 }
 
 // ──────────────────────────────────────────
-//  NOTIFY OPEN (LIFF 啟動 → 通知群組)
+//  SUCCESS BANNER
+// ──────────────────────────────────────────
+let bannerTimer = null;
+function showBanner(recordId){
+  const banner = document.getElementById("successBanner");
+  document.getElementById("sbTitle").textContent = "✅ 登錄成功！資料已儲存";
+  document.getElementById("sbSub").textContent   = "單號：" + recordId;
+  banner.classList.add("sh");
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(hideBanner, 5000);
+}
+function hideBanner(){
+  document.getElementById("successBanner").classList.remove("sh");
+}
+
+// ──────────────────────────────────────────
+//  NOTIFY OPEN
 // ──────────────────────────────────────────
 async function notifyOpen(groupId) {
-  if (!groupId) return;   // 非從群組 Flex Card 進入則跳過
+  if (!groupId) return;
   try {
     await gas({
       action:      "notifyOpen",
@@ -714,24 +772,28 @@ async function notifyOpen(groupId) {
 // ──────────────────────────────────────────
 async function submitForm(){
   const { basic, parts } = collect();
-  if (!basic.customer)                    return showToast("請填寫 Customer","err");
-  if (!parts.length)                      return showToast("請新增至少一項零件","err");
-  if (parts.every(p=>!p.itemName))        return showToast("請填寫 Item Name","err");
+  if (!basic.customer)             return showToast("請填寫 Customer","err");
+  if (!parts.length)               return showToast("請新增至少一項零件","err");
+  if (parts.every(p=>!p.itemName)) return showToast("請填寫 Item Name","err");
 
   const btn = document.getElementById("btnSub");
-  btn.disabled=true;
-  btn.innerHTML=`<span class="spin"></span> SUBMITTING…`;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spin"></span> SUBMITTING…`;
 
   try {
     const res = await gas({ action:"submit", basic, parts });
     if (res.success) {
-      showToast("登錄成功！Record ID: "+res.recordId,"ok");
-      setTimeout(resetForm, 1400);
-    } else showToast(res.message||"送出失敗","err");
-  } catch(e){ showToast("網路錯誤："+e.message,"err"); }
+      showBanner(res.recordId);   // 頂部成功 banner
+      setTimeout(resetForm, 1600);
+    } else {
+      showToast(res.message||"送出失敗","err");
+    }
+  } catch(e){
+    showToast("網路錯誤："+e.message,"err");
+  }
 
-  btn.disabled=false;
-  btn.innerHTML=`<span class="ms fi">check_circle</span> SUBMIT RECORD`;
+  btn.disabled = false;
+  btn.innerHTML = `<span class="ms fi">check_circle</span> SUBMIT RECORD`;
 }
 
 function resetForm(){
@@ -836,7 +898,8 @@ async function gas(p) {
 }
 function showToast(msg,type=""){
   const t=document.getElementById("toast"),i=document.getElementById("tIco"),m=document.getElementById("tMsg");
-  t.className="toast "+type; i.textContent=type==="ok"?"check_circle":type==="err"?"error":"info";
+  t.className="toast "+(type==="err"?"err":"");
+  i.textContent=type==="err"?"error":"info";
   m.textContent=msg; t.classList.add("sh"); setTimeout(()=>t.classList.remove("sh"),2800);
 }
 function today(){ return new Date().toISOString().slice(0,10); }
