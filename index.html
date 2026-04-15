@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>Shipment Registration</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -100,13 +100,15 @@ input,select,textarea{font-family:var(--sans)}
 .cb{padding:16px}
 
 /* ─── FIELD ─── */
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.f2 > *{min-width:0}
 .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .field:last-child,.field.no-mb{margin-bottom:0}
 .field label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
 .field input,.field select,.field textarea{
   padding:9px 12px;background:var(--card-alt);border:1.5px solid var(--border);
-  border-radius:var(--r);font-size:16px;color:var(--t1);outline:none;transition:all .13s}
+  border-radius:var(--r);font-size:16px;color:var(--t1);outline:none;transition:all .13s;
+  width:100%;-webkit-text-size-adjust:100%}
 .field input::placeholder,.field textarea::placeholder{color:var(--t4);font-style:italic}
 .field input:focus,.field select:focus,.field textarea:focus{
   border-color:var(--focus);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
@@ -280,11 +282,13 @@ input,select,textarea{font-family:var(--sans)}
 .toast .ms{font-size:16px}
 
 /* ─── QTY STEPPER ─── */
-.qty-wrap{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:var(--r);background:var(--card-alt);overflow:hidden}
-.qty-btn{width:36px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;flex-shrink:0;transition:background .12s}
-.qty-btn:hover{background:var(--blue-bg)}
-.qty-btn:active{background:#dbeafe}
-.qty-inp{flex:1;border:none;background:transparent;text-align:center;font-size:16px;font-weight:600;color:var(--t1);outline:none;padding:0;min-width:0}
+.qty-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:var(--r);background:var(--card-alt);overflow:hidden;height:40px;min-width:0;width:100%}
+.qty-btn{width:40px;min-width:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:transparent}
+.qty-btn:hover,.qty-btn:active{background:var(--blue-bg)}
+.qty-inp{flex:1;min-width:0;border:none;background:transparent;text-align:center;font-size:16px;font-weight:600;color:var(--t1);outline:none;padding:0;-moz-appearance:textfield}
+.qty-inp::-webkit-outer-spin-button,.qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+/* ─── SPINNER ─── */
 .spin{display:inline-block;width:15px;height:15px;
       border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
       border-radius:50%;animation:rot .65s linear infinite}
@@ -598,7 +602,7 @@ function addPart(data={}) {
           <label>數量 (Qty)</label>
           <div class="qty-wrap">
             <button class="qty-btn" type="button" onclick="adjQty('${id}',-1)">−</button>
-            <input type="number" class="qty-inp" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}"/>
+            <input type="number" class="qty-inp" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}" inputmode="numeric"/>
             <button class="qty-btn" type="button" onclick="adjQty('${id}',1)">＋</button>
           </div>
         </div>
@@ -661,11 +665,12 @@ function selChip(partId, val, el){
 function adjQty(id, delta){
   const inp = document.getElementById("qty_"+id);
   if (!inp) return;
-  const v = Math.max(1, (parseInt(inp.value)||1) + delta);
-  inp.value = v;
+  inp.value = Math.max(1, (parseInt(inp.value)||1) + delta);
 }
 
-
+// ──────────────────────────────────────────
+//  COLLECT
+// ──────────────────────────────────────────
 function collect(){
   const g = id => document.getElementById(id)?.value?.trim()||"";
   const basic = {
