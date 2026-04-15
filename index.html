@@ -128,8 +128,7 @@ input,select,textarea{font-family:var(--sans)}
 .qty-inp-wrap{flex:1;min-width:0;padding:0 4px}
 .qty-inp{width:100%;padding:10px 8px;background:var(--card-alt);border:1.5px solid var(--border);
          border-radius:var(--r);font-size:16px;font-weight:600;color:var(--t1);
-         text-align:center;outline:none;-moz-appearance:textfield;
-         transition:border-color .13s}
+         text-align:center;outline:none;-moz-appearance:textfield;transition:border-color .13s}
 .qty-inp:focus{border-color:var(--focus);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .qty-inp::-webkit-outer-spin-button,.qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
@@ -212,11 +211,11 @@ input,select,textarea{font-family:var(--sans)}
 
 /* PC Submit */
 .szn{padding:4px 14px 0}
-.btn-sub{width:100%;padding:14px 20px;border-radius:50px;background:var(--blue);color:#fff;
+.btn-sub{width:100%;padding:14px 20px;border-radius:50px;background:var(--green);color:#fff;
          font-size:.9rem;font-weight:700;letter-spacing:.04em;
          display:flex;align-items:center;justify-content:center;gap:8px;
-         box-shadow:0 4px 14px rgba(37,99,235,.3);transition:all .14s}
-.btn-sub:hover{background:var(--blue-dk);transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,.38)}
+         box-shadow:0 4px 14px rgba(5,150,105,.3);transition:all .14s}
+.btn-sub:hover{background:#047857;transform:translateY(-1px);box-shadow:0 6px 18px rgba(5,150,105,.38)}
 .btn-sub:active{transform:translateY(0)}
 .btn-sub:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-sub .ms{font-size:19px}
@@ -285,25 +284,23 @@ input,select,textarea{font-family:var(--sans)}
 .mpnm{font-weight:700;font-family:var(--mono);font-size:.88rem}
 .mpmeta{font-size:.73rem;color:var(--t3);margin-top:4px;line-height:1.7}
 
-/* ─── SUCCESS BANNER (頂部) ─── */
+/* ─── SUCCESS BANNER (頂部滑入) ─── */
 .success-banner{
   position:fixed;top:0;left:0;right:0;z-index:9999;
   background:linear-gradient(135deg,#059669,#047857);
-  color:#fff;padding:0 16px;
+  color:#fff;padding:12px 16px;
   display:flex;align-items:center;gap:12px;
-  transform:translateY(-100%);transition:transform .35s cubic-bezier(.34,1.3,.64,1);
-  box-shadow:0 4px 20px rgba(5,150,105,.4);
-  min-height:72px}
+  transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1);
+  box-shadow:0 4px 24px rgba(5,150,105,.45);min-height:70px}
 .success-banner.sh{transform:translateY(0)}
-.sb-icon{width:42px;height:42px;background:rgba(255,255,255,.2);border-radius:50%;
+.sb-icon{width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:50%;
          display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-icon .ms{font-size:22px;color:#fff}
+.sb-icon .ms{font-size:24px;color:#fff}
 .sb-body{flex:1;min-width:0}
-.sb-title{font-size:.95rem;font-weight:700;letter-spacing:.01em}
-.sb-sub{font-size:.75rem;opacity:.85;margin-top:2px;font-family:var(--mono)}
-.sb-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-          border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;
-          transition:background .12s}
+.sb-title{font-size:1rem;font-weight:700}
+.sb-sub{font-size:.75rem;opacity:.88;margin-top:3px;font-family:var(--mono);letter-spacing:.02em}
+.sb-close{width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+          border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;border:none}
 .sb-close:hover{background:rgba(255,255,255,.3)}
 .sb-close .ms{font-size:18px;color:#fff}
 
@@ -328,9 +325,9 @@ input,select,textarea{font-family:var(--sans)}
 .empty .ms{font-size:44px;color:var(--t4)}
 .empty p{margin-top:10px;font-size:.85rem;color:var(--t3)}
 
-/* ─── MOBILE DEFAULT: sidebar hidden ─── */
+/* ─── MOBILE DEFAULT: sidebar + topbar hidden ─── */
 .sidebar{display:none}
-.topbar{display:flex}
+.topbar{display:none}
 .btmbar{display:flex}
 .content{padding:0 0 80px}
 .qa{display:none}
@@ -338,8 +335,9 @@ input,select,textarea{font-family:var(--sans)}
 /* ─── PC OVERRIDES ─── */
 @media(min-width:960px){
   .sidebar{display:flex!important}
-  .topbar{display:none!important}
+  .topbar{display:flex!important}
   .btmbar{display:none!important}
+  .user-strip{display:none!important}
   .content{padding:24px 36px 40px}
   .pg-hd{padding:0 0 10px}
   .card{margin:0 0 16px}
@@ -353,6 +351,12 @@ input,select,textarea{font-family:var(--sans)}
   .ql{display:grid;grid-template-columns:1fr 280px;gap:22px}
   .qa{display:block!important}
 }
+
+/* ─── USER STRIP (mobile only) ─── */
+.user-strip{display:flex;align-items:center;gap:8px;padding:12px 14px 4px}
+.us-title{font-size:.88rem;font-weight:700;color:var(--t1);flex:1}
+.us-badge{font-size:.63rem;font-weight:700;padding:3px 9px;border-radius:20px;
+          white-space:nowrap;font-family:var(--mono);background:var(--blue-bg);color:var(--blue)}
 .qab{background:var(--card);border-radius:var(--rx);box-shadow:var(--sh);padding:18px;position:sticky;top:24px}
 .qabtit{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
 .qabrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
@@ -385,12 +389,11 @@ input,select,textarea{font-family:var(--sans)}
 <!-- ═══ MAIN ═══ -->
 <div class="main">
 
-  <!-- TOPBAR (mobile) -->
+  <!-- TOPBAR (PC only) -->
   <header class="topbar">
     <div class="tb-ico"><span class="ms fi">inventory_2</span></div>
     <div class="tb-ttl">Shipment Registration</div>
     <span class="tb-badge b-rd" id="topBadge">—</span>
-    <div style="color:var(--t3);display:flex;align-items:center"><span class="ms">more_vert</span></div>
   </header>
 
   <!-- CONTENT -->
@@ -399,11 +402,17 @@ input,select,textarea{font-family:var(--sans)}
     <!-- ══ FORM PAGE ══ -->
     <div class="page act" id="pg-form">
 
+      <!-- User strip (mobile only) -->
+      <div class="user-strip">
+        <span class="ms fi" style="font-size:16px;color:var(--blue)">inventory_2</span>
+        <span class="us-title">Shipment Reg.</span>
+        <span class="us-badge" id="topBadge">—</span>
+      </div>
+
       <!-- Page Header -->
       <div class="pg-hd">
         <div class="pg-hd-l">
           <span class="pg-h1">Basic Info</span>
-          <span class="pg-meta">METADATA</span>
         </div>
       </div>
 
@@ -500,10 +509,10 @@ input,select,textarea{font-family:var(--sans)}
 <div class="success-banner" id="successBanner">
   <div class="sb-icon"><span class="ms fi">check_circle</span></div>
   <div class="sb-body">
-    <div class="sb-title" id="sbTitle">登錄成功！</div>
-    <div class="sb-sub"  id="sbSub"></div>
+    <div class="sb-title">✅ 登錄成功！資料已儲存</div>
+    <div class="sb-sub" id="sbSub"></div>
   </div>
-  <div class="sb-close" onclick="hideBanner()"><span class="ms">close</span></div>
+  <button class="sb-close" onclick="hideBanner()"><span class="ms">close</span></button>
 </div>
 
 <!-- TOAST -->
@@ -567,10 +576,14 @@ function setRole(role) {
   userRole = role;
   const name  = profile?.displayName || "—";
   const label = role==="procurement" ? "PROCUREMENT" : "R&D";
-  document.getElementById("topBadge").textContent  = label + " · " + name;
-  document.getElementById("topBadge").className    = "tb-badge " + (role==="procurement"?"b-proc":"b-rd");
-  document.getElementById("sb-name").textContent   = name;
-  document.getElementById("sb-role").textContent   = label;
+  const badgeText = label + " · " + name;
+  const badgeCls  = "tb-badge " + (role==="procurement"?"b-proc":"b-rd");
+  // PC topbar badge
+  const tb = document.getElementById("topBadge");
+  if (tb) { tb.textContent = badgeText; tb.className = badgeCls; }
+  // Mobile user-strip badge (same element id reused)
+  document.getElementById("sb-name").textContent = name;
+  document.getElementById("sb-role").textContent = label;
 }
 
 // ──────────────────────────────────────────
@@ -739,14 +752,12 @@ function collect(){
 // ──────────────────────────────────────────
 //  SUCCESS BANNER
 // ──────────────────────────────────────────
-let bannerTimer = null;
+let _bannerTimer = null;
 function showBanner(recordId){
-  const banner = document.getElementById("successBanner");
-  document.getElementById("sbTitle").textContent = "✅ 登錄成功！資料已儲存";
-  document.getElementById("sbSub").textContent   = "單號：" + recordId;
-  banner.classList.add("sh");
-  clearTimeout(bannerTimer);
-  bannerTimer = setTimeout(hideBanner, 5000);
+  document.getElementById("sbSub").textContent = "單號：" + recordId;
+  document.getElementById("successBanner").classList.add("sh");
+  clearTimeout(_bannerTimer);
+  _bannerTimer = setTimeout(hideBanner, 5000);
 }
 function hideBanner(){
   document.getElementById("successBanner").classList.remove("sh");
@@ -783,7 +794,7 @@ async function submitForm(){
   try {
     const res = await gas({ action:"submit", basic, parts });
     if (res.success) {
-      showBanner(res.recordId);   // 頂部成功 banner
+      showBanner(res.recordId);
       setTimeout(resetForm, 1600);
     } else {
       showToast(res.message||"送出失敗","err");
