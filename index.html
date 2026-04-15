@@ -106,7 +106,7 @@ input,select,textarea{font-family:var(--sans)}
 .field label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
 .field input,.field select,.field textarea{
   padding:9px 12px;background:var(--card-alt);border:1.5px solid var(--border);
-  border-radius:var(--r);font-size:.88rem;color:var(--t1);outline:none;transition:all .13s}
+  border-radius:var(--r);font-size:16px;color:var(--t1);outline:none;transition:all .13s}
 .field input::placeholder,.field textarea::placeholder{color:var(--t4);font-style:italic}
 .field input:focus,.field select:focus,.field textarea:focus{
   border-color:var(--focus);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
@@ -279,7 +279,12 @@ input,select,textarea{font-family:var(--sans)}
 .toast.ok{background:var(--green)}.toast.err{background:var(--red)}
 .toast .ms{font-size:16px}
 
-/* ─── SPINNER ─── */
+/* ─── QTY STEPPER ─── */
+.qty-wrap{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:var(--r);background:var(--card-alt);overflow:hidden}
+.qty-btn{width:36px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;flex-shrink:0;transition:background .12s}
+.qty-btn:hover{background:var(--blue-bg)}
+.qty-btn:active{background:#dbeafe}
+.qty-inp{flex:1;border:none;background:transparent;text-align:center;font-size:16px;font-weight:600;color:var(--t1);outline:none;padding:0;min-width:0}
 .spin{display:inline-block;width:15px;height:15px;
       border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
       border-radius:50%;animation:rot .65s linear infinite}
@@ -591,7 +596,11 @@ function addPart(data={}) {
         </div>
         <div class="field no-mb">
           <label>數量 (Qty)</label>
-          <input type="number" data-f="qty" value="${data.qty||1}" min="1"/>
+          <div class="qty-wrap">
+            <button class="qty-btn" type="button" onclick="adjQty('${id}',-1)">−</button>
+            <input type="number" class="qty-inp" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}"/>
+            <button class="qty-btn" type="button" onclick="adjQty('${id}',1)">＋</button>
+          </div>
         </div>
       </div>
 
@@ -606,16 +615,16 @@ function addPart(data={}) {
         </div>
       </div>
 
-      <!-- 存放位置 + 備註 -->
-      <div class="f2">
-        <div class="field no-mb">
-          <label>存放位置 (Bin)</label>
-          <input type="text" class="mono" data-f="bin" value="${h(data.bin)}" placeholder="B2-04-A"/>
-        </div>
-        <div class="field no-mb">
-          <label>備註 (Remarks)</label>
-          <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="PE03710拆下"/>
-        </div>
+      <!-- 存放位置 -->
+      <div class="field">
+        <label>存放位置 (Bin)</label>
+        <input type="text" class="mono" data-f="bin" value="${h(data.bin)}" placeholder="B2-04-A"/>
+      </div>
+
+      <!-- 備註 -->
+      <div class="field no-mb">
+        <label>備註 (Remarks)</label>
+        <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="PE03710拆下"/>
       </div>
 
     </div>
@@ -649,9 +658,14 @@ function selChip(partId, val, el){
   el.classList.add("sel");
 }
 
-// ──────────────────────────────────────────
-//  COLLECT
-// ──────────────────────────────────────────
+function adjQty(id, delta){
+  const inp = document.getElementById("qty_"+id);
+  if (!inp) return;
+  const v = Math.max(1, (parseInt(inp.value)||1) + delta);
+  inp.value = v;
+}
+
+
 function collect(){
   const g = id => document.getElementById(id)?.value?.trim()||"";
   const basic = {
@@ -659,7 +673,6 @@ function collect(){
     source:      g("fSource"),
     customer:    g("fCustomer"),
     submittedBy: profile?.displayName||"Unknown",
-    userId:      profile?.userId||"dev",
     lineUserId:  profile?.userId||"",
   };
   const parts = [];
