@@ -105,6 +105,7 @@ button,input,select,textarea{font:inherit}
 .m-part-num{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#004253,#005b71);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .m-part-name{flex:1;font-size:.88rem;font-weight:700;color:#181c20;font-family:JetBrains Mono,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .m-part-status{font-size:.63rem;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.det-stat{font-size:.78rem!important;font-weight:700!important;padding:8px 16px!important;border-radius:999px!important;white-space:nowrap;line-height:1.2}
 .st-pass{background:#a0f0f0;color:#004444}
 .st-fail{background:#ffdad6;color:#ba1a1a}
 .st-wait{background:#d6e5ec;color:#536167}
@@ -329,7 +330,7 @@ button,input,select,textarea{font:inherit}
 <div class="mbd" id="modal" onclick="closeModal(event)">
   <div class="msh" id="mSheet" onclick="event.stopPropagation()">
     <div class="md-head flex items-stretch shrink-0 sticky top-0 z-20 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/15">
-      <button type="button" class="flex items-center justify-center w-12 shrink-0 text-on-surface hover:bg-surface-container-low active:bg-surface-container-high rounded-none" aria-label="返回" onclick="document.getElementById('modal').classList.remove('op')">
+      <button type="button" class="flex items-center justify-center w-12 shrink-0 text-on-surface hover:bg-surface-container-low active:bg-surface-container-high rounded-none" aria-label="返回" onclick="closeDetailModal()">
         <span class="ms text-2xl">arrow_back</span>
       </button>
       <div class="flex-1 flex flex-col items-center justify-center py-3 min-w-0 px-2">
@@ -360,6 +361,8 @@ let profile  = null;
 let userRole = "rd";
 let pcnt     = 0;
 let recs     = [];
+let detailOpenRid   = null;
+let detailEditMode  = false;
 
 // Parts-level status: key = partId, value = 'pass'|'fail'|'wait'|'unkn'
 const partStatus = {};
@@ -768,36 +771,35 @@ function statusCls(s){
   return "st-unkn";
 }
 
-function showDetail(rid){
-  const r=recs.find(x=>x.recordId===rid); if(!r) return;
+function closeDetailModal(){
+  document.getElementById("modal").classList.remove("op");
+  detailEditMode = false;
+  detailOpenRid = null;
+}
 
-  const pills = (() => {
-    const keys = [...new Set((r.parts||[]).map(p=>p&&p.status).filter(Boolean))];
-    if(!keys.length) return `<span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">—</span>`;
-    return keys.map(st=>{
-      if(st==="PASS") return `<span class="inline-flex items-center gap-0.5 px-3 py-1.5 rounded-full text-xs font-bold bg-tertiary-fixed text-tertiary"><span class="ms fi text-base leading-none">check</span>PASS</span>`;
-      if(st==="FAIL") return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-error-container text-error">FAIL</span>`;
-      if(st==="待驗") return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-secondary-container text-secondary">待驗</span>`;
-      return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">${esc(st)}</span>`;
-    }).join("");
-  })();
+function detailKvRow(lbl,val){
+  const v = (val!=null && String(val).trim()) ? esc(String(val).trim()) : "—";
+  return `<div class="flex justify-between gap-4 items-start py-2.5 first:pt-0">
+    <span class="text-xs text-outline shrink-0 font-medium">${lbl}</span>
+    <span class="text-sm font-semibold text-on-surface text-right break-words max-w-[62%]">${v}</span>
+  </div>`;
+}
 
-  const kv = (lbl,val)=>{
-    const v = (val!=null && String(val).trim()) ? esc(String(val).trim()) : "—";
-    return `<div class="flex justify-between gap-4 items-start py-2.5 first:pt-0">
-      <span class="text-xs text-outline shrink-0 font-medium">${lbl}</span>
-      <span class="text-sm font-semibold text-on-surface text-right break-words max-w-[62%]">${v}</span>
-    </div>`;
-  };
+function refreshDetailModal(){
+  const rid = detailOpenRid;
+  if(!rid) return;
+  const r = recs.find(x=>x.recordId===rid);
+  if(!r) return;
 
-  const partsHtml = (r.parts||[]).map((p)=>`
+  if(!detailEditMode){
+    const partsHtml = (r.parts||[]).map((p)=>`
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
       <div class="flex justify-between items-start gap-3 mb-3">
         <div class="min-w-0 flex-1">
           <p class="text-[10px] font-bold uppercase tracking-wider text-outline mb-0.5">品名</p>
           <p class="font-headline font-bold text-base text-on-surface leading-snug">${esc(p.itemName)||"—"}</p>
         </div>
-        <span class="m-part-status ${statusCls(p.status)} shrink-0">${esc(p.status)||"—"}</span>
+        <span class="det-stat m-part-status ${statusCls(p.status)} shrink-0">${esc(p.status)||"—"}</span>
       </div>
       <div class="grid grid-cols-2 gap-x-4 gap-y-3">
         <div class="col-span-2">
@@ -813,41 +815,36 @@ function showDetail(rid){
           <span class="font-mono text-sm text-on-surface-variant">${esc(p.sn)||"—"}</span>
         </div>
       </div>
-      <div class="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-surface-container-high p-4">
+      <div class="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-surface-container-high/70 px-3 py-2.5">
         <div>
-          <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-outline mb-1">Quantity</p>
-          <p class="font-headline text-3xl font-extrabold text-primary leading-none tracking-tight">${esc(p.qty)||"1"}</p>
-          <p class="text-[10px] font-bold text-on-surface-variant uppercase mt-1 tracking-wide">Units</p>
+          <p class="text-[8px] font-bold uppercase tracking-wider text-outline mb-0.5">Quantity</p>
+          <p class="font-headline text-xl font-extrabold text-primary leading-none">${esc(p.qty)||"1"}</p>
+          <p class="text-[9px] font-semibold text-on-surface-variant uppercase mt-0.5">Units</p>
         </div>
         <div class="flex flex-col justify-end">
-          <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-outline mb-1">Storage Bin</p>
-          <p class="font-headline font-bold text-base text-on-surface font-mono tracking-tight">${esc(p.bin)||"—"}</p>
+          <p class="text-[8px] font-bold uppercase tracking-wider text-outline mb-0.5">Storage Bin</p>
+          <p class="font-mono text-sm font-bold text-on-surface">${esc(p.bin)||"—"}</p>
         </div>
       </div>
-      ${p.purpose?`<div class="mt-4"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1.5">目的 (Purpose)</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.purpose)}</p></div>`:""}
-      ${p.remark?`<div class="mt-3"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1.5">備註</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.remark)}</p></div>`:""}
+      ${p.purpose?`<div class="mt-3"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1">目的 (Purpose)</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.purpose)}</p></div>`:""}
+      ${p.remark?`<div class="mt-2"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1">備註</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.remark)}</p></div>`:""}
     </div>
   `).join("");
 
-  document.getElementById("mBody").innerHTML = `
-    <div class="px-4 pt-5 pb-2">
-      <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-outline mb-1.5">Unique Identifier</p>
-      <p class="font-headline text-xl sm:text-2xl font-extrabold text-on-surface tracking-tight break-all">${esc(r.recordId)}</p>
-      <div class="flex flex-wrap gap-2 mt-3">${pills}</div>
-    </div>
-    <div class="mx-4 mt-5 rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
+    document.getElementById("mBody").innerHTML = `
+    <div class="mx-4 mt-4 rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
       <div class="flex items-center gap-2 mb-1">
         <span class="ms text-primary text-lg">info</span>
         <span class="font-headline font-bold text-sm text-on-surface">基本資訊</span>
       </div>
       <div class="pt-1">
-        ${kv("日期",r.date)}
-        ${kv("客戶",r.customer)}
-        ${kv("來源",r.source)}
-        ${kv("登記人",r.submittedBy)}
+        ${detailKvRow("日期",r.date)}
+        ${detailKvRow("客戶",r.customer)}
+        ${detailKvRow("來源",r.source)}
+        ${detailKvRow("登記人",r.submittedBy)}
       </div>
     </div>
-    <div class="px-4 mt-6 pb-4">
+    <div class="px-4 mt-5 pb-4">
       <div class="flex items-center gap-2 mb-3">
         <span class="ms text-primary text-lg">inventory_2</span>
         <span class="font-headline font-bold text-sm text-on-surface">品項明細</span>
@@ -857,26 +854,190 @@ function showDetail(rid){
     </div>
   `;
 
-  document.getElementById("mActions").innerHTML = `
+    const rj = JSON.stringify(rid);
+    document.getElementById("mActions").innerHTML = `
   <div class="flex gap-2 px-3 sm:px-4 pt-3 pb-[max(14px,env(safe-area-inset-bottom))] bg-surface border-t border-outline-variant/15">
-    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-[11px] sm:text-xs font-bold shadow-md active:scale-[0.98] transition-transform" onclick="copyToForm('${rid}')">
-      <span class="ms fi shrink-0">content_copy</span><span class="truncate">複製到新增</span>
+    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold shadow-md active:scale-[0.98] transition-transform" onclick='copyToForm(${rj})'>
+      <span class="ms fi shrink-0">content_copy</span>複製
     </button>
-    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-secondary-container text-on-secondary-container text-[11px] sm:text-xs font-bold active:scale-[0.98] transition-transform" onclick="editRecord('${rid}')">
-      <span class="ms fi shrink-0">edit</span><span class="truncate">編輯詳情</span>
+    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-secondary-container text-on-secondary-container text-sm font-bold active:scale-[0.98] transition-transform" onclick='editRecord(${rj})'>
+      <span class="ms fi shrink-0">edit</span>編輯
     </button>
-    <button type="button" class="shrink-0 w-12 h-[46px] flex items-center justify-center rounded-xl bg-error-container text-error active:scale-95 transition-transform" onclick="deleteRecord('${rid}')" aria-label="刪除">
+    <button type="button" class="shrink-0 w-12 h-[46px] flex items-center justify-center rounded-xl bg-error-container text-error active:scale-95 transition-transform" onclick='deleteRecord(${rj})' aria-label="刪除">
       <span class="ms fi text-xl">delete</span>
     </button>
   </div>
   `;
+    return;
+  }
 
+  const partsEdit = (r.parts||[]).map((p,i)=>{
+    const st = p.status && ["PASS","FAIL","待驗","UNKNOW"].includes(p.status) ? p.status : "UNKNOW";
+    const opts = ["PASS","FAIL","待驗","UNKNOW"];
+    const optHtml = opts.map(o=>`<option value="${esc(o)}"${o===st?" selected":""}>${o==="待驗"?"待驗":esc(o)}</option>`).join("");
+    return `
+    <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 border border-outline-variant/15">
+      <div class="mb-3">
+        <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">品名</label>
+        <input type="text" id="det-p-${i}-name" value="${h(p.itemName)}" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+      </div>
+      <div class="mb-3">
+        <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">檢驗狀態</label>
+        <select id="det-p-${i}-status" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg py-2 px-2 focus:border-primary focus:ring-1 focus:ring-primary/20">${optHtml}</select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2">
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">型號 (Model)</label>
+          <input type="text" id="det-p-${i}-model" value="${h(p.model)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">P/N</label>
+          <input type="text" id="det-p-${i}-pn" value="${h(p.pn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">S/N</label>
+          <input type="text" id="det-p-${i}-sn" value="${h(p.sn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">數量</label>
+          <input type="number" min="1" id="det-p-${i}-qty" value="${h(String(p.qty||"1"))}" class="w-full text-sm font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">儲位 (BIN)</label>
+          <input type="text" id="det-p-${i}-bin" value="${h(p.bin)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div class="col-span-2">
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">目的</label>
+          <input type="text" id="det-p-${i}-purpose" value="${h(p.purpose)}" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div class="col-span-2">
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">備註</label>
+          <input type="text" id="det-p-${i}-remark" value="${h(p.remark)}" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+      </div>
+    </div>
+  `;
+  }).join("");
+
+  document.getElementById("mBody").innerHTML = `
+    <div class="mx-4 mt-4 rounded-2xl bg-surface-container-low p-4 border border-outline-variant/10">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="ms text-primary text-lg">info</span>
+        <span class="font-headline font-bold text-sm text-on-surface">基本資訊</span>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">日期</label>
+          <input type="date" id="det-date" value="${h(r.date)}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">客戶</label>
+          <input type="text" id="det-customer" value="${h(r.customer)}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">來源</label>
+          <input type="text" id="det-source" value="${h(r.source)}" class="w-full text-sm bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">登記人（唯讀）</label>
+          <p class="text-sm font-semibold text-on-surface-variant py-2">${esc(r.submittedBy)||"—"}</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-4 mt-5 pb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="ms text-primary text-lg">inventory_2</span>
+        <span class="font-headline font-bold text-sm text-on-surface">品項明細</span>
+        <span class="text-[11px] text-outline font-mono ml-auto">${(r.parts||[]).length} 項</span>
+      </div>
+      ${partsEdit || `<p class="text-sm text-on-surface-variant py-6 text-center">無零件資料</p>`}
+    </div>
+  `;
+
+  const rj = JSON.stringify(rid);
+  document.getElementById("mActions").innerHTML = `
+  <div class="flex gap-2 px-3 sm:px-4 pt-3 pb-[max(14px,env(safe-area-inset-bottom))] bg-surface border-t border-outline-variant/15">
+    <button type="button" class="flex-1 py-3.5 rounded-xl bg-surface-container-high text-on-surface-variant text-sm font-bold active:scale-[0.98]" onclick="cancelDetailEdit()">取消</button>
+    <button type="button" id="detSaveBtn" class="flex-1 py-3.5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold shadow-md active:scale-[0.98]" onclick="saveDetailEdit()">儲存</button>
+    <button type="button" class="shrink-0 w-12 h-[46px] flex items-center justify-center rounded-xl bg-error-container text-error active:scale-95" onclick='deleteRecord(${rj})' aria-label="刪除">
+      <span class="ms fi text-xl">delete</span>
+    </button>
+  </div>
+  `;
+}
+
+function showDetail(rid){
+  if(!recs.find(x=>x.recordId===rid)) return;
+  detailOpenRid = rid;
+  detailEditMode = false;
+  refreshDetailModal();
   document.getElementById("modal").classList.add("op");
 }
 
+function editRecord(rid){
+  const open = document.getElementById("modal").classList.contains("op");
+  if(!open || detailOpenRid !== rid) showDetail(rid);
+  detailEditMode = true;
+  refreshDetailModal();
+}
+
+function cancelDetailEdit(){
+  detailEditMode = false;
+  refreshDetailModal();
+}
+
+async function saveDetailEdit(){
+  const rid = detailOpenRid;
+  const r = recs.find(x=>x.recordId===rid);
+  if(!r || !detailEditMode) return;
+  const gv = id => document.getElementById(id)?.value?.trim() || "";
+  const basic = {
+    date:        gv("det-date"),
+    source:      gv("det-source"),
+    customer:    gv("det-customer"),
+    submittedBy: r.submittedBy || profile?.displayName || "Unknown",
+    lineUserId:  profile?.userId || "",
+    groupId:     new URLSearchParams(window.location.search).get("groupId") || "",
+  };
+  if(!basic.customer) return showToast("請填寫客戶","err");
+  const parts = [];
+  (r.parts||[]).forEach((_,i)=>{
+    parts.push({
+      itemName: gv("det-p-"+i+"-name"),
+      pn:       gv("det-p-"+i+"-pn"),
+      sn:       gv("det-p-"+i+"-sn"),
+      model:    gv("det-p-"+i+"-model"),
+      qty:      gv("det-p-"+i+"-qty") || "1",
+      status:   gv("det-p-"+i+"-status") || "UNKNOW",
+      bin:      gv("det-p-"+i+"-bin"),
+      purpose:  gv("det-p-"+i+"-purpose"),
+      remark:   gv("det-p-"+i+"-remark"),
+    });
+  });
+  if(!parts.length) return showToast("無零件可儲存","err");
+  if(parts.every(p=>!p.itemName)) return showToast("請填寫品名","err");
+
+  const btn = document.getElementById("detSaveBtn");
+  if(btn){ btn.disabled = true; btn.textContent = "儲存中…"; }
+  try{
+    const res = await gas({ action:"submit", basic, parts });
+    if(!res.success){ showToast(res.message||"儲存失敗","err"); return; }
+    const newId = res.recordId;
+    const delRes = await gas({ action:"delete", recordId:rid });
+    if(!delRes.success) showToast("新單已建立，但刪除舊單失敗，請手動刪除 "+rid,"err");
+    else if(newId !== rid) showToast("已儲存 · 新單號 "+newId,"");
+    else showToast("已儲存","");
+    closeDetailModal();
+    await loadRecs();
+  } catch(e){
+    showToast("網路錯誤："+e.message,"err");
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = "儲存"; }
+  }
+}
+
 function closeModal(e){
-  if(e.target===document.getElementById("modal"))
-    document.getElementById("modal").classList.remove("op");
+  if(e.target===document.getElementById("modal")) closeDetailModal();
 }
 
 // ──────────────────────────────────────────
@@ -884,7 +1045,7 @@ function closeModal(e){
 // ──────────────────────────────────────────
 function copyToForm(rid){
   const r=recs.find(x=>x.recordId===rid); if(!r) return;
-  document.getElementById("modal").classList.remove("op");
+  closeDetailModal();
   goPage("form");
 
   // Fill basic info
@@ -916,20 +1077,12 @@ function copyToForm(rid){
     partStatus[newId] = REV[p.status]||"unkn";
     const row = document.getElementById("chips_"+newId);
     if(row){
-      row.querySelectorAll(".chip").forEach(c=>c.classList.remove("sel"));
+      row.querySelectorAll("button").forEach(c=>c.classList.remove("ring-2","ring-primary/40"));
       const t = row.querySelector('[data-chip="'+(REV[p.status]||"unkn")+'"]');
-      if(t) t.classList.add("sel");
+      if(t) t.classList.add("ring-2","ring-primary/40");
     }
   });
   showToast("已複製，請確認後送出","");
-}
-
-// ──────────────────────────────────────────
-//  EDIT (placeholder - opens copy then shows toast)
-// ──────────────────────────────────────────
-function editRecord(rid){
-  showToast("編輯功能：請先複製到新增頁修改後重新送出","");
-  copyToForm(rid);
 }
 
 // ──────────────────────────────────────────
@@ -937,7 +1090,7 @@ function editRecord(rid){
 // ──────────────────────────────────────────
 async function deleteRecord(rid){
   if(!confirm("確定要刪除單號 "+rid+" 的記錄？此操作無法復原。")) return;
-  document.getElementById("modal").classList.remove("op");
+  closeDetailModal();
   try {
     const res = await gas({ action:"delete", recordId:rid });
     if(res.success){ showToast("已刪除",""); loadRecs(); }
