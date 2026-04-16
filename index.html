@@ -3,778 +3,357 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>RD Record · 出貨登錄</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<title>RD Record </title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: "#004253",
+        "primary-container": "#005b71",
+        surface: "#f7f9ff",
+        "surface-container-low": "#f1f4fa",
+        "surface-container": "#ebeef4",
+        "surface-container-high": "#e5e8ee",
+        "surface-container-highest": "#dfe3e8",
+        "surface-container-lowest": "#ffffff",
+        "on-surface": "#181c20",
+        "on-surface-variant": "#40484c",
+        outline: "#70787d",
+        "outline-variant": "#bfc8cc",
+        secondary: "#536167",
+        "secondary-container": "#d6e5ec",
+        "on-secondary-container": "#58676d",
+        tertiary: "#004444",
+        "tertiary-fixed": "#a0f0f0",
+        "tertiary-container": "#005d5d",
+        error: "#ba1a1a",
+        "error-container": "#ffdad6",
+        "on-primary": "#ffffff",
+        "on-primary-container": "#8ed1ea",
+        "on-error": "#ffffff",
+        "on-secondary": "#ffffff",
+        "on-tertiary": "#ffffff",
+      },
+      fontFamily: {
+        headline: ["Manrope", "Noto Sans TC", "sans-serif"],
+        body: ["Inter", "Noto Sans TC", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+      },
+      boxShadow: {
+        ambient: "0 8px 32px -4px rgba(24,28,32,0.06)",
+      },
+    },
+  },
+};
+</script>
 <style>
-/* ─── TOKENS · Industrial Curator（ui/DESIGN.md） ─── */
-:root {
-  --surface:              #f8f9fa;
-  --surface-low:          #f3f4f5;
-  --surface-high:         #e7e8e9;
-  --surface-highest:      #e1e3e4;
-  --surface-lowest:       #ffffff;
-
-  --primary:              #005bbf;
-  --primary-container:    #1a73e8;
-  --on-primary:           #ffffff;
-
-  --tertiary:             #006d39;
-  --tertiary-bg:          rgba(0,109,57,.1);
-  --on-tertiary:          #ffffff;
-
-  --error:                #ba1a1a;
-  --error-bg:             #ffdad6;
-
-  --amber:                #b45309;
-  --amber-bg:             #fff7ed;
-
-  --orange:               #c2410c;
-  --orange-bg:            #fff7ed;
-
-  --outline-ghost:        rgba(193,198,214,.22);
-  --focus-ring:           rgba(0,91,191,.14);
-
-  --on-surface:           #191c1d;
-  --on-variant:           #414754;
-  --outline-muted:        #727785;
-
-  --ghost:                0 12px 40px rgba(25,28,29,.06);
-  --ghost-sm:             0 4px 20px rgba(0,0,0,.04);
-
-  --r: 10px; --rl: 14px; --rx: 16px; --rxl: 20px;
-  --sw: 268px;
-  --mono: 'JetBrains Mono', monospace;
-  --sans: 'Inter','Noto Sans TC',system-ui,sans-serif;
-
-  --grad-cta: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
-  --glass: rgba(248,249,250,.82);
-
-  /* 相容舊樣式 token */
-  --bg: var(--surface);
-  --card: var(--surface-lowest);
-  --card-alt: var(--surface-highest);
-  --border: var(--outline-ghost);
-  --focus: var(--primary);
-  --t1: var(--on-surface);
-  --t2: var(--on-variant);
-  --t3: var(--outline-muted);
-  --t4: rgba(65,71,84,.5);
-  --blue: var(--primary-container);
-  --blue-bg: rgba(26,115,232,.12);
-  --blue-dk: #004a99;
-  --green: var(--tertiary);
-  --green-bg: var(--tertiary-bg);
-  --red: var(--error);
-  --red-bg: var(--error-bg);
-  --sh: var(--ghost-sm);
-  --sh-md: var(--ghost);
-}
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-family:var(--sans);background:var(--surface);color:var(--on-surface);-webkit-font-smoothing:antialiased;font-size:15px}
-body{min-height:100svh;touch-action:manipulation}
-button{font-family:var(--sans);cursor:pointer;border:none;background:none;touch-action:manipulation}
-input,select,textarea{font-family:var(--sans)}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-thumb{background:var(--outline-ghost);border-radius:6px}
-
-/* ─── MATERIAL SYMBOLS ─── */
-.ms{font-family:'Material Symbols Rounded';font-weight:300;font-style:normal;font-size:20px;
-    line-height:1;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;
-    font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24}
-.ms.fi{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
-.ms.s16{font-size:16px}.ms.s18{font-size:18px}
-
-/* ─── LAYOUT ─── */
-.shell{display:flex;min-height:100svh;max-width:1440px;margin:0 auto}
-@media(min-width:960px){.shell{max-width:none}}
-
-/* SIDEBAR */
-.sidebar{width:var(--sw);flex-shrink:0;background:var(--surface-lowest);
-         display:none;flex-direction:column;position:sticky;top:0;height:100svh;overflow-y:auto;
-         box-shadow:var(--ghost-sm)}
-.sb-brand{display:flex;align-items:center;gap:12px;padding:22px 18px 20px;background:var(--surface-low)}
-.sb-ico{width:40px;height:40px;border-radius:12px;background:var(--grad-cta);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--ghost-sm)}
-.sb-ico .ms{font-size:22px;color:#fff}
-.sb-ttl{font-size:.95rem;font-weight:700;color:var(--on-surface);line-height:1.25;letter-spacing:-.02em}
-.sb-sub{font-size:.68rem;color:var(--on-variant);letter-spacing:.04em}
-.sb-sec{padding:18px 18px 8px;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--outline-muted)}
-.sb-nav{padding:4px 10px 8px}
-.sb-row{display:flex;align-items:center;gap:10px;padding:12px 12px;border-radius:var(--rl);
-        font-size:.86rem;font-weight:500;color:var(--on-variant);cursor:pointer;transition:background .15s,color .15s}
-.sb-row .ms{font-size:20px;color:var(--primary-container)}
-.sb-row:hover{background:var(--surface-high);color:var(--on-surface)}
-.sb-row.act{background:rgba(0,91,191,.08);color:var(--primary);font-weight:600}
-.sb-row.act .ms{color:var(--primary);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
-.sb-sp{flex:1}
-.sb-user{margin:14px;padding:14px 14px;background:var(--surface-low);border-radius:var(--rl);
-         border:1px solid var(--outline-ghost)}
-.sb-uname{font-size:.84rem;font-weight:600;color:var(--on-surface)}
-.sb-urole{font-size:.68rem;color:var(--on-variant);margin-top:3px;font-family:var(--mono)}
-
-/* MAIN */
-.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--surface);min-height:100svh}
-
-/* TOPBAR · glass（手機與桌面皆顯示） */
-.topbar{min-height:56px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-        display:flex;align-items:center;padding:max(8px,env(safe-area-inset-top)) 16px 10px 16px;gap:12px;
-        position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--outline-ghost)}
-.tb-ico{width:40px;height:40px;border-radius:12px;background:var(--surface-low);display:flex;align-items:center;justify-content:center;color:var(--primary-container);flex-shrink:0}
-.tb-ico .ms{font-size:24px}
-.tb-ttl-wrap{flex:1;min-width:0}
-.tb-ttl{font-size:1rem;font-weight:700;color:var(--on-surface);letter-spacing:-.02em;line-height:1.2}
-.tb-sub{display:none;font-size:.72rem;color:var(--on-variant);margin-top:2px;font-weight:500}
-@media(max-width:959px){.tb-sub{display:block}}
-.tb-badge{font-size:.62rem;font-weight:700;padding:6px 12px;border-radius:999px;white-space:nowrap;font-family:var(--mono);max-width:42vw;overflow:hidden;text-overflow:ellipsis}
-.b-rd{background:rgba(26,115,232,.12);color:var(--primary)}
-.b-proc{background:var(--tertiary-bg);color:var(--tertiary)}
-
-/* CONTENT */
-.content{flex:1;padding:0 0 max(88px,env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch}
+/* RD Record UI — Industrial Ledger (a1–a3 zip) */
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:15px;-webkit-font-smoothing:antialiased}
+body{margin:0;min-height:100svh;touch-action:manipulation;font-family:Inter,Noto Sans TC,system-ui,sans-serif}
+button,input,select,textarea{font:inherit}
 .page{display:none}.page.act{display:block}
-
-/* ─── PAGE HEADER ─── */
-.pg-hero{padding:8px 16px 4px}
-.pg-hero h2{font-size:1.45rem;font-weight:800;color:var(--on-surface);letter-spacing:-.03em;line-height:1.2}
-.pg-hero p{font-size:.86rem;color:var(--on-variant);margin-top:6px;line-height:1.45;max-width:36rem}
-.pg-hd{display:flex;align-items:flex-end;justify-content:space-between;padding:20px 16px 12px;gap:12px}
-.pg-hd-l{display:flex;flex-direction:column;gap:4px}
-.pg-h1{font-size:1.15rem;font-weight:700;color:var(--on-surface);letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-.pg-h1 .ms{font-size:22px;color:var(--primary-container)}
-.pg-meta{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-         color:var(--outline-muted);cursor:pointer;transition:color .12s}
-.pg-meta:hover{color:var(--primary)}
-
-/* ─── SURFACE SECTION（無硬邊線） ─── */
-.surface-section{background:var(--surface-low);border-radius:var(--rxl);padding:20px 18px;margin:0 16px 16px;
-                 box-shadow:var(--ghost-sm)}
-@media(min-width:960px){.surface-section{margin:0 0 20px}}
-
-/* ─── CARD ─── */
-.card{background:transparent;margin:0 16px 16px;border-radius:0;box-shadow:none;overflow:visible}
-.cb{padding:0}
-@media(min-width:960px){.card{margin:0 0 20px}}
-
-/* ─── FIELD ─── */
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
-.f2>*{min-width:0}
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.field:last-child,.field.no-mb{margin-bottom:0}
-.field label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
-.field input,.field select,.field textarea{
-  padding:12px 14px;background:var(--surface-highest);border:1px solid transparent;
-  border-radius:var(--rl);font-size:16px;color:var(--t1);outline:none;transition:background .15s,box-shadow .15s,border-color .15s;
-  width:100%;-webkit-text-size-adjust:100%}
-.field input::placeholder,.field textarea::placeholder{color:var(--t4);font-style:italic}
-.field input:focus,.field select:focus,.field textarea:focus{
-  border-color:var(--outline-ghost);background:var(--surface-lowest);box-shadow:0 0 0 3px var(--focus-ring)}
-.field input.mono{font-family:var(--mono);font-size:15px}
-.field select{appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23727785' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;
-  background-color:var(--surface-highest);cursor:pointer}
-.field textarea{resize:vertical;line-height:1.55;min-height:56px}
-
-/* ─── QTY STEPPER ─── */
-.qty-wrap{display:flex;align-items:center;width:100%;min-width:0}
-.qty-btn{width:36px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-         font-size:1.3rem;font-weight:500;color:var(--blue);background:none;border:none;
-         cursor:pointer;transition:color .12s;-webkit-tap-highlight-color:transparent;padding:0}
-.qty-btn:active{color:var(--blue-dk)}
-.qty-inp-wrap{flex:1;min-width:0;padding:0 4px}
-.qty-inp{width:100%;padding:10px 8px;background:var(--surface-highest);border:1px solid transparent;
-         border-radius:var(--rl);font-size:16px;font-weight:600;color:var(--t1);
-         text-align:center;outline:none;-moz-appearance:textfield;transition:all .15s}
-.qty-inp:focus{background:var(--surface-lowest);box-shadow:0 0 0 3px var(--focus-ring)}
-.qty-inp::-webkit-outer-spin-button,.qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:8px 16px;border-radius:var(--rl);font-size:.74rem;font-weight:700;
-  letter-spacing:.03em;cursor:pointer;transition:all .15s;
-  border:2px solid transparent;font-family:var(--sans);user-select:none;line-height:1;
-}
-.chip-pass{background:var(--tertiary-bg);color:var(--tertiary);border-color:transparent}
-.chip-fail{background:rgba(186,26,26,.1);color:var(--error);border-color:transparent}
-.chip-wait{background:var(--amber-bg);color:var(--amber);border-color:transparent}
-.chip-unkn{background:var(--orange-bg);color:var(--orange);border-color:transparent}
-
-.chip-pass.sel{background:var(--tertiary);color:var(--on-tertiary);box-shadow:0 4px 14px rgba(0,109,57,.28)}
-.chip-fail.sel{background:var(--error);color:#fff;box-shadow:0 4px 14px rgba(186,26,26,.25)}
-.chip-wait.sel{background:var(--amber);color:#fff;box-shadow:0 4px 14px rgba(180,83,9,.22)}
-.chip-unkn.sel{background:var(--orange);color:#fff;box-shadow:0 4px 14px rgba(194,65,12,.22)}
-
-.chip:hover:not(.sel){filter:brightness(.97);transform:translateY(-1px)}
-
-/* ─── PARTS SECTION ─── */
-.sheet-sec-title{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:1.12rem;font-weight:700;color:var(--on-surface);letter-spacing:-.02em}
-.sheet-sec-title .ms{color:var(--primary-container);font-size:24px}
-.sec-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 14px}
-.sec-h2{font-size:1.08rem;font-weight:700;color:var(--on-surface);letter-spacing:-.02em;display:flex;align-items:center}
-.sec-count{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;
-           color:var(--primary);background:rgba(26,115,232,.1);padding:6px 14px;border-radius:999px}
-
-.pw{padding:0 16px}
-@media(min-width:960px){.pw{padding:0}}
-
-/* Part card */
-.pc{background:var(--surface-lowest);border-radius:var(--rxl);box-shadow:var(--ghost);margin-bottom:14px;overflow:hidden;
-    border:1px solid var(--outline-ghost);animation:cIn .2s cubic-bezier(.34,1.4,.64,1)}
-@keyframes cIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.pc-hd{display:flex;align-items:center;padding:14px 16px;cursor:pointer;user-select:none;
-       background:var(--surface-lowest)}
-.pc-num{width:26px;height:26px;border-radius:8px;background:var(--grad-cta);color:#fff;
-        font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--ghost-sm)}
-.pc-lbl{flex:1;font-size:.88rem;font-weight:600;color:var(--t1);margin:0 10px;
-        font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-acts{display:flex;align-items:center;gap:2px}
-.bico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;
-      color:var(--t3);transition:all .12s}
-.bico:hover{background:var(--bg)}
-.bico.del:hover{background:var(--red-bg);color:var(--red)}
-.bico .ms{font-size:17px}
-.caret{font-size:17px;color:var(--t3);transition:transform .2s}
-.pc-hd.op .caret{transform:rotate(180deg)}
-
-.pc-bd{padding:18px 16px 20px;background:var(--surface-lowest)}
-.pc-bd.hi{display:none}
-
-/* ─── ADD PART / SUBMIT ─── */
-.btn-add{width:100%;padding:14px;border-radius:var(--rxl);
-         border:2px dashed rgba(0,91,191,.28);background:rgba(216,226,255,.45);color:var(--primary);
-         font-size:.86rem;font-weight:600;display:flex;align-items:center;
-         justify-content:center;gap:8px;margin-bottom:14px;transition:all .15s}
-.btn-add:hover{background:rgba(216,226,255,.85);border-color:var(--primary-container)}
-.btn-add .ms{font-size:19px}
-
-/* Bottom bar（手機） */
-.btmbar{position:fixed;bottom:0;left:0;right:0;z-index:200;max-width:100%;
-        background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-        border-top:1px solid var(--outline-ghost);display:flex;align-items:stretch;gap:10px;
-        padding:10px 16px max(12px,env(safe-area-inset-bottom));
-        border-radius:var(--rxl) var(--rxl) 0 0;box-shadow:0 -8px 32px rgba(25,28,29,.06)}
-.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;
-      border-radius:var(--rl);color:var(--outline-muted);font-size:.62rem;font-weight:600;
-      letter-spacing:.04em;text-transform:uppercase;transition:all .15s;min-height:52px}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:20px;line-height:1;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}
+.ms.fi{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.ms.s18{font-size:18px}
+.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+@keyframes rot{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .65s linear infinite;vertical-align:-2px}
+.q-date-panel{display:none}.q-date-panel.open{display:block}
+.q-clear{opacity:0;pointer-events:none;transition:opacity .12s}
+.q-clear.vis{opacity:1;pointer-events:auto}
+.mbd,.cfm-bd{display:none}.mbd.op,.cfm-bd.op{display:flex}
+.success-banner{transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1)}
+.success-banner.sh{transform:translateY(0)}
+.toast{opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;transform:translate(-50%,8px)}
+.toast.sh{opacity:1;transform:translate(-50%,0)}
+.pchd .caret{transition:transform .2s}
+.pchd.op .caret{transform:rotate(180deg)}
+.q-pill{flex-shrink:0;padding:6px 16px;border-radius:9999px;font-size:12px;font-weight:600;cursor:pointer;background:#ebeef4;color:#58676d;border:none;transition:background .15s,color .15s}
+.q-pill.act{background:#005b71;color:#8ed1ea}
+.sb-row.act{background:rgba(0,66,83,.1);color:#004253;font-weight:600}
+.sb-row.act .ms{color:#004253}
+.btmbar{position:fixed;bottom:0;left:0;right:0;z-index:200;display:flex;align-items:stretch;gap:10px;padding:10px 16px max(12px,env(safe-area-inset-bottom));background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 -8px 32px -4px rgba(24,28,32,.06);border-radius:16px 16px 0 0}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border-radius:12px;color:#70787d;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;transition:background .15s,color .15s;min-height:52px;border:none;background:transparent;cursor:pointer}
 .bnav .ms{font-size:22px}
-.bnav.act{color:var(--primary);background:rgba(0,91,191,.08)}
-.bnav.act .ms{color:var(--primary-container);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
-
-/* PC Submit */
-.szn{padding:4px 14px 0}
-.btn-sub{width:100%;padding:15px 22px;border-radius:var(--rxl);background:var(--tertiary);color:var(--on-tertiary);
-         font-size:.92rem;font-weight:700;letter-spacing:.03em;
-         display:flex;align-items:center;justify-content:center;gap:8px;
-         box-shadow:0 8px 24px rgba(0,109,57,.28);transition:all .14s}
-.btn-sub:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 10px 28px rgba(0,109,57,.32)}
-.btn-sub:active{transform:translateY(0)}
-.btn-sub:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-.btn-sub .ms{font-size:19px}
-.sub-note{text-align:center;margin-top:8px;font-size:.63rem;color:var(--t4);
-          letter-spacing:.05em;text-transform:uppercase}
-
-/* ─── QUERY ─── */
-.sbar{display:flex;gap:8px;padding:0 14px 12px}
-.sfld{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);
-      border:1.5px solid var(--border);border-radius:var(--rl);padding:9px 12px;
-      box-shadow:var(--sh);transition:border-color .13s}
-.sfld:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.sfld .ms{font-size:17px;color:var(--t3);flex-shrink:0}
-.sfld input{flex:1;border:none;background:transparent;font-size:.88rem;color:var(--t1);outline:none}
-.sfld input::placeholder{color:var(--t4)}
-.btn-s{padding:9px 16px;background:var(--blue);color:#fff;border-radius:var(--rl);
-       font-size:.82rem;font-weight:600;box-shadow:var(--sh);transition:background .13s}
-.btn-s:hover{background:var(--blue-dk)}
-
-.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 12px}
-.sbox{background:var(--card);border-radius:var(--rx);padding:13px 10px;box-shadow:var(--sh);text-align:center}
-.snum{font-size:1.5rem;font-weight:800;line-height:1;font-family:var(--mono)}
-.slbl{font-size:.62rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-top:3px}
-.c-b{color:var(--blue)}.c-a{color:var(--amber)}.c-g{color:var(--green)}
-
-.rl{padding:0 14px}
-.rc{background:var(--surface-lowest);border-radius:var(--rxl);box-shadow:var(--ghost-sm);margin-bottom:14px;
-    cursor:pointer;transition:box-shadow .2s,transform .15s;overflow:hidden;border:1px solid var(--outline-ghost)}
-.rc:hover{box-shadow:var(--ghost);transform:translateY(-2px)}
-.rc-top{display:flex;align-items:flex-start;gap:14px;padding:18px 16px 12px}
-.rdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
-.dp{background:var(--amber)}.dv{background:var(--tertiary)}
-.ri{flex:1;min-width:0}
-.rc-id-top{font-size:.65rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);margin-bottom:6px;font-family:var(--mono)}
-.rc-cust{font-size:1rem;font-weight:700;color:var(--t1);line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.rc-id{font-size:.7rem;font-family:var(--mono);color:var(--t3);margin-top:1px}
-.rc-meta{font-size:.78rem;color:var(--t3);margin-top:6px;line-height:1.4}
-.rb{font-size:.64rem;font-weight:700;padding:3px 9px;border-radius:5px;white-space:nowrap}
-.rb-p{background:var(--amber-bg);color:var(--amber)}.rb-v{background:var(--tertiary-bg);color:var(--tertiary)}
-.rtags{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 16px}
-.rtag{background:rgba(178,201,254,.35);color:var(--on-variant);border:none;
-      padding:4px 10px;border-radius:8px;font-size:.7rem;font-family:var(--mono);font-weight:500}
-.btn-vfy{display:flex;align-items:center;gap:5px;margin:0 14px 12px;padding:7px 14px;
-         background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,.3);
-         border-radius:var(--r);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .12s}
-.btn-vfy:hover{background:#d1fae5}
-.btn-vfy.done{background:var(--green);color:#fff;border-color:var(--green)}
-.btn-vfy .ms{font-size:15px}
-
-/* ─── MODAL (detail sheet) ─── */
-.mbd{display:none;position:fixed;inset:0;z-index:500;background:rgba(25,28,29,.45);
-     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-     align-items:flex-end;justify-content:center;padding:0}
-.mbd.op{display:flex}
-.msh{background:var(--surface);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;
-     max-height:92vh;overflow-y:auto;box-shadow:var(--ghost);
-     animation:shUp .28s cubic-bezier(.34,1.2,.64,1)}
-@media(min-width:720px){
-  .mbd{align-items:center;padding:24px}
-  .msh{border-radius:var(--rxl);max-width:min(540px,100%);max-height:min(88dvh,920px)}
-}
+.bnav.act{color:#004253;background:rgba(0,66,83,.08)}
+.bnav.act .ms{color:#005b71;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+@media(min-width:1024px){.btmbar{display:none!important}}
+.mbd{position:fixed;inset:0;z-index:500;background:rgba(24,28,32,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0;align-items:flex-end;justify-content:center}
+.mbd.op{display:flex!important}
+@media(min-width:720px){.mbd.op{align-items:center;padding:24px}}
+.msh{background:#f7f9ff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;animation:shUp .28s cubic-bezier(.34,1.2,.64,1)}
+@media(min-width:720px){.msh{border-radius:16px;max-width:min(540px,100%);max-height:min(88dvh,920px)}}
 @keyframes shUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.m-header{background:var(--grad-cta);
-          padding:22px 18px 20px;position:sticky;top:0;z-index:10;
-          display:flex;align-items:flex-start;gap:12px}
-.m-header-ico{width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:12px;
-              display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.m-header-ico .ms{font-size:22px;color:#fff}
+.m-header{background:linear-gradient(135deg,#004253,#005b71);padding:20px 18px;display:flex;align-items:flex-start;gap:12px;position:sticky;top:0;z-index:10}
+.m-header-ico{width:44px;height:44px;background:rgba(255,255,255,.18);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.m-header-ico .ms{color:#fff;font-size:22px}
 .m-header-body{flex:1;min-width:0}
-.m-header-ttl{font-size:1rem;font-weight:700;color:#fff;
-              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m-header-sub{font-size:.7rem;color:rgba(255,255,255,.75);margin-top:3px;font-family:var(--mono)}
-.m-header-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);
-                display:flex;align-items:center;justify-content:center;flex-shrink:0;
-                cursor:pointer;border:none;transition:background .12s}
-.m-header-close:hover{background:rgba(255,255,255,.3)}
-.m-header-close .ms{font-size:18px;color:#fff}
+.m-header-ttl{font-size:1rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-header-sub{font-size:.7rem;color:rgba(255,255,255,.78);margin-top:3px;font-family:JetBrains Mono,monospace}
+.m-header-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:background .12s}
+.m-header-close:hover{background:rgba(255,255,255,.28)}
+.m-header-close .ms{color:#fff;font-size:18px}
 .m-body{padding:16px 16px 8px}
+.m-actions{display:flex;flex-wrap:wrap;gap:8px;padding:4px 16px 16px}
+.m-act-btn{flex:1;min-width:calc(50% - 4px);padding:10px 8px;border-radius:10px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .12s}
+.m-act-btn .ms{font-size:16px}
+.m-btn-copy{background:rgba(0,66,83,.1);color:#004253}
+.m-btn-copy:hover{filter:brightness(.95)}
+.m-btn-edit{background:#fff7ed;color:#b45309}
+.m-btn-del{background:#ffdad6;color:#ba1a1a}
 .m-section{margin-bottom:16px}
-.m-section-ttl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-               color:var(--t4);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.m-section-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
+.m-section-ttl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(64,72,76,.55);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.m-section-ttl::after{content:'';flex:1;height:1px;background:rgba(191,200,204,.25)}
 .m-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.m-info-cell{background:var(--card);border-radius:var(--rl);padding:11px 13px;
-             border:1px solid var(--border)}
+.m-info-cell{background:#fff;border-radius:12px;padding:11px 13px}
 .m-info-cell.full{grid-column:1/-1}
-.m-info-lbl{font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-            color:var(--t4);margin-bottom:3px}
-.m-info-val{font-size:.88rem;font-weight:600;color:var(--t1);font-family:var(--mono);
-            word-break:break-all}
-.m-part-card{background:var(--card);border-radius:var(--rl);margin-bottom:10px;
-             border:1px solid var(--border);overflow:hidden}
-.m-part-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;
-           background:linear-gradient(90deg,rgba(26,115,232,.1),transparent)}
-.m-part-num{width:24px;height:24px;border-radius:8px;background:var(--grad-cta);color:#fff;
-            font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.m-part-name{flex:1;font-size:.88rem;font-weight:700;color:var(--t1);
-             font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m-part-status{font-size:.63rem;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap}
-.st-pass{background:var(--tertiary-bg);color:var(--tertiary)}
-.st-fail{background:var(--error-bg);color:var(--error)}
-.st-wait{background:var(--amber-bg);color:var(--amber)}
-.st-unkn{background:var(--orange-bg);color:var(--orange)}
+.m-info-lbl{font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(64,72,76,.45);margin-bottom:3px}
+.m-info-val{font-size:.88rem;font-weight:600;color:#181c20;font-family:JetBrains Mono,monospace;word-break:break-all}
+.m-part-card{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.m-part-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(90deg,rgba(0,66,83,.08),transparent)}
+.m-part-num{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#004253,#005b71);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.m-part-name{flex:1;font-size:.88rem;font-weight:700;color:#181c20;font-family:JetBrains Mono,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-part-status{font-size:.63rem;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.st-pass{background:#a0f0f0;color:#004444}
+.st-fail{background:#ffdad6;color:#ba1a1a}
+.st-wait{background:#d6e5ec;color:#536167}
+.st-unkn{background:#fff7ed;color:#c2410c}
 .m-part-bd{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
 .m-part-row{display:flex;flex-direction:column;gap:2px}
 .m-part-row.full{grid-column:1/-1}
-.m-part-lbl{font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t4)}
-.m-part-val{font-size:.82rem;color:var(--t2);font-family:var(--mono)}
-.m-actions{display:flex;gap:8px;padding:4px 16px 16px;flex-wrap:wrap}
-.m-act-btn{flex:1;min-width:calc(50% - 4px);padding:10px 8px;border-radius:var(--r);
-           font-size:.78rem;font-weight:600;display:flex;align-items:center;
-           justify-content:center;gap:6px;cursor:pointer;transition:all .13s;border:none}
-.m-act-btn .ms{font-size:16px}
-.m-btn-copy{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(37,99,235,.2)}
-.m-btn-copy:hover{background:#dbeafe}
-.m-btn-edit{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,.2)}
-.m-btn-edit:hover{background:#fde68a}
-.m-btn-del{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.15)}
-.m-btn-del:hover{background:#fecaca}
+.m-part-lbl{font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(64,72,76,.45)}
+.m-part-val{font-size:.82rem;color:#40484c;font-family:JetBrains Mono,monospace}
+.cfm-bd{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}
+.cfm-bd.op{display:flex!important}
+.toast.err{background:#ba1a1a}
 
-/* ─── QUERY · 雙欄（PC） ─── */
-.ql{display:flex;flex-direction:column;gap:0;width:100%}
-@media(min-width:960px){
-  .ql{display:grid;grid-template-columns:1fr min(280px,30vw);gap:28px;align-items:start}
-}
-.q-wrap{padding:0 16px 24px;width:100%;min-width:0}
-.q-top-row{display:flex;gap:10px;margin-bottom:12px;align-items:stretch}
-.q-searchbox{flex:1;display:flex;align-items:center;gap:10px;background:var(--surface-highest);
-             border:1px solid transparent;border-radius:var(--rl);padding:12px 14px;
-             box-shadow:var(--ghost-sm);transition:all .15s;min-width:0}
-.q-searchbox:focus-within{background:var(--surface-lowest);box-shadow:0 0 0 3px var(--focus-ring)}
-.q-searchbox .ms{font-size:18px;color:var(--t3);flex-shrink:0}
-.q-searchbox input{flex:1;border:none;background:transparent;font-size:16px;color:var(--t1);
-                   outline:none;min-width:0}
-.q-searchbox input::placeholder{color:var(--t4)}
-.q-clear{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
-         justify-content:center;background:var(--border);color:var(--t3);flex-shrink:0;
-         cursor:pointer;border:none;opacity:0;pointer-events:none;transition:all .12s}
-.q-clear.vis{opacity:1;pointer-events:auto}
-.q-clear .ms{font-size:14px}
-.q-clear:hover{background:var(--t3);color:#fff}
-.q-search-btn{padding:12px 20px;background:var(--grad-cta);color:#fff;border-radius:var(--rl);
-              font-size:.84rem;font-weight:600;white-space:nowrap;transition:filter .15s,transform .12s;
-              border:none;flex-shrink:0;box-shadow:var(--ghost-sm);align-self:stretch}
-.q-search-btn:hover{filter:brightness(1.05)}
-.q-search-btn:active{transform:scale(.98)}
-
-/* Quick filters row */
-.q-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:nowrap;align-items:center;
-           overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.q-filters::-webkit-scrollbar{display:none}
-.q-filter-lbl{font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-              color:var(--t4);margin-right:2px;white-space:nowrap}
-.q-pill{padding:8px 16px;border-radius:999px;font-size:.74rem;font-weight:600;cursor:pointer;
-        border:1px solid var(--outline-ghost);background:var(--surface-high);color:var(--t2);
-        transition:all .13s;white-space:nowrap;flex-shrink:0}
-.q-pill:hover{border-color:rgba(0,91,191,.35);color:var(--primary);background:rgba(26,115,232,.08)}
-.q-pill.act{background:var(--primary);color:var(--on-primary);border-color:var(--primary);
-            box-shadow:0 4px 16px rgba(0,91,191,.22)}
-
-/* Date range panel */
-.q-date-panel{background:var(--card);border-radius:var(--rl);padding:14px;
-              border:1.5px solid var(--border);margin-bottom:12px;
-              box-shadow:var(--sh);display:none}
-.q-date-panel.open{display:block}
-.q-date-panel-ttl{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-                  color:var(--t3);margin-bottom:10px}
-.q-date-pair{display:flex;gap:8px;align-items:flex-end}
-.q-date-fld{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.q-date-fld label{font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t4)}
-.q-date-fld input{padding:9px 10px;background:var(--card-alt);border:1.5px solid var(--border);
-                  border-radius:var(--r);font-size:15px;color:var(--t1);outline:none;
-                  transition:border-color .13s;width:100%}
-.q-date-fld input:focus{border-color:var(--outline-ghost);background:var(--surface-lowest);box-shadow:0 0 0 3px var(--focus-ring)}
-.q-date-apply{padding:9px 14px;background:var(--blue);color:#fff;border-radius:var(--r);
-              font-size:.78rem;font-weight:600;border:none;cursor:pointer;
-              transition:background .13s;white-space:nowrap;flex-shrink:0}
-.q-date-apply:hover{background:var(--blue-dk)}
-.q-date-sep{color:var(--t4);flex-shrink:0;font-size:.9rem;padding-bottom:10px}
-.q-result-hd{display:flex;align-items:center;justify-content:space-between;
-             margin-bottom:10px}
-.q-result-lbl{font-size:.75rem;font-weight:600;color:var(--t3)}
-.q-result-count{font-size:.75rem;font-weight:700;color:var(--blue);font-family:var(--mono)}
-.success-banner{
-  position:fixed;top:0;left:0;right:0;z-index:9999;
-  background:linear-gradient(135deg,var(--tertiary),#004d28);
-  color:#fff;padding:12px 16px;
-  display:flex;align-items:center;gap:12px;
-  transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1);
-  box-shadow:0 4px 24px rgba(5,150,105,.45);min-height:70px}
-.success-banner.sh{transform:translateY(0)}
-.sb-icon{width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:50%;
-         display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-icon .ms{font-size:24px;color:#fff}
-.sb-body{flex:1;min-width:0}
-.sb-title{font-size:1rem;font-weight:700}
-.sb-sub{font-size:.75rem;opacity:.88;margin-top:3px;font-family:var(--mono);letter-spacing:.02em}
-.sb-close{width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-          border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;border:none}
-.sb-close:hover{background:rgba(255,255,255,.3)}
-.sb-close .ms{font-size:18px;color:#fff}
-
-/* ─── TOAST (error/info only) ─── */
-.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(8px);
-       background:var(--t1);color:#fff;padding:10px 18px;border-radius:var(--rl);
-       font-size:.83rem;font-weight:500;display:flex;align-items:center;gap:8px;
-       box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;pointer-events:none;
-       white-space:nowrap;z-index:9998;transition:all .22s;max-width:calc(100vw - 32px)}
-.toast.sh{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.err{background:var(--red)}
-.toast .ms{font-size:16px}
-
-/* ─── SPINNER ─── */
-.spin{display:inline-block;width:15px;height:15px;
-      border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
-      border-radius:50%;animation:rot .65s linear infinite}
-@keyframes rot{to{transform:rotate(360deg)}}
-
-/* ─── EMPTY ─── */
-.empty{text-align:center;padding:48px 24px}
-.empty .ms{font-size:44px;color:var(--t4)}
-.empty p{margin-top:10px;font-size:.85rem;color:var(--t3)}
-
-/* ─── 小螢幕：僅隱藏側欄 ─── */
-.sidebar{display:none}
-.btmbar{display:flex}
-.qa{display:none}
-
-/* ─── PC OVERRIDES ─── */
-@media(min-width:960px){
-  .sidebar{display:flex!important}
-  .btmbar{display:none!important}
-  .content{padding:20px 32px 40px}
-  .pg-hero{padding:4px 0 8px}
-  .pg-hd{padding:0 0 10px}
-  .card{margin:0 0 16px}
-  .cb{padding:20px 24px}
-  .pw{padding:0}
-  .sec-row{padding:6px 0 10px}
-  .sbar{padding:0 0 12px}
-  .stats3{padding:0 0 12px;gap:12px}
-  .rl{padding:0}
-  .szn{padding:4px 0 0;max-width:320px}
-  .qa{display:block!important}
-  .q-wrap{padding:0 0 24px}
-}
-
-/* ─── SIDE-BY-SIDE ADD+SUBMIT ─── */
-.btn-row{display:flex;gap:12px;padding:0 16px;margin-bottom:8px}
-.btn-add-sm{flex:1;padding:14px 12px;border-radius:var(--rxl);
-            border:2px dashed rgba(0,91,191,.28);background:rgba(216,226,255,.4);color:var(--primary);
-            font-size:.84rem;font-weight:600;display:flex;align-items:center;
-            justify-content:center;gap:6px;transition:all .15s;min-height:48px}
-.btn-add-sm:hover{background:rgba(216,226,255,.9);border-color:var(--primary-container)}
-.btn-add-sm .ms{font-size:20px}
-.btn-sub-sm{flex:1;padding:14px 12px;border-radius:var(--rxl);background:var(--tertiary);color:var(--on-tertiary);
-            font-size:.84rem;font-weight:700;display:flex;align-items:center;
-            justify-content:center;gap:6px;min-height:48px;
-            box-shadow:0 6px 20px rgba(0,109,57,.25);transition:all .14s}
-.btn-sub-sm:hover{filter:brightness(1.05);transform:translateY(-1px)}
-.btn-sub-sm:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-.btn-sub-sm .ms{font-size:20px}
-
-/* ─── CONFIRM MODAL ─── */
-.cfm-bd{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.5);
-        backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
-.cfm-bd.op{display:flex}
-.cfm-box{background:var(--card);border-radius:var(--rxl);padding:24px;width:100%;max-width:360px;
-         box-shadow:var(--ghost),0 24px 80px rgba(25,28,29,.12);animation:cfmIn .22s cubic-bezier(.34,1.3,.64,1);
-         border:1px solid var(--outline-ghost)}
-@keyframes cfmIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
-.cfm-ico{width:52px;height:52px;border-radius:50%;background:var(--tertiary-bg);
-         display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.cfm-ico .ms{font-size:26px;color:var(--tertiary)}
-.cfm-ttl{font-size:1rem;font-weight:700;color:var(--t1);text-align:center;margin-bottom:6px}
-.cfm-sub{font-size:.8rem;color:var(--t3);text-align:center;line-height:1.5;margin-bottom:20px}
-.cfm-acts{display:flex;gap:10px}
-.cfm-cancel{flex:1;padding:11px;border-radius:var(--r);background:var(--bg);color:var(--t2);
-            font-size:.88rem;font-weight:600;border:1.5px solid var(--border);transition:all .12s}
-.cfm-cancel:hover{background:var(--border)}
-.cfm-ok{flex:1;padding:11px;border-radius:var(--r);background:var(--tertiary);color:#fff;
-        font-size:.88rem;font-weight:700;transition:all .12s;border:none}
-.cfm-ok:hover{filter:brightness(1.06)}
-.cfm-ok:disabled{opacity:.6;cursor:not-allowed}
-
-.qab{background:var(--surface-low);border-radius:var(--rxl);box-shadow:var(--ghost-sm);
-     padding:20px 18px;position:sticky;top:88px;border:1px solid var(--outline-ghost)}
-.qabtit{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
-.qabrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
-.qabrow:last-child{border-bottom:none}
-.qabl{font-size:.82rem;color:var(--t2)}
-.qabv{font-size:1.15rem;font-weight:800;font-family:var(--mono)}
 </style>
 </head>
 <body>
-<div class="shell">
+<div class="flex min-h-svh w-full bg-surface text-on-surface font-body">
 
-<!-- ═══ SIDEBAR (PC) ═══ -->
-<aside class="sidebar">
-  <div class="sb-brand">
-    <div class="sb-ico"><span class="ms fi s18">precision_manufacturing</span></div>
-    <div><div class="sb-ttl">RD Record</div><div class="sb-sub">零件與出貨</div></div>
+<aside class="sidebar hidden lg:flex w-[268px] shrink-0 flex-col sticky top-0 h-svh overflow-y-auto bg-surface-container-low shadow-ambient">
+  <div class="flex items-center gap-3 px-5 pt-6 pb-5 bg-surface-container border-b border-outline-variant/20">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-ambient bg-gradient-to-br from-primary to-primary-container text-white">
+      <span class="ms fi s18">precision_manufacturing</span>
+    </div>
+    <div>
+      <div class="font-headline font-bold text-on-surface text-[15px] tracking-tight">RD Record</div>
+      <div class="text-[11px] text-outline mt-0.5 tracking-wide">零件與出貨</div>
+    </div>
   </div>
-  <div class="sb-sec">選單</div>
-  <div class="sb-nav">
-    <div class="sb-row act" id="sn-form" onclick="goPage('form')"><span class="ms s18">add_circle</span> 新增登錄</div>
-    <div class="sb-row"     id="sn-query" onclick="goPage('query')"><span class="ms s18">database_search</span> 查詢紀錄</div>
-  </div>
-  <div class="sb-sp"></div>
-  <div class="sb-user">
-    <div class="sb-uname" id="sb-name">—</div>
-    <div class="sb-urole" id="sb-role">初始化中…</div>
+  <div class="px-5 pt-4 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-outline">選單</div>
+  <nav class="px-3 pb-4 flex flex-col gap-0.5">
+    <div class="sb-row act flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium text-on-surface-variant cursor-pointer hover:bg-surface-container-high transition-colors" id="sn-form" onclick="goPage('form')">
+      <span class="ms s18 text-primary-container">add_circle</span> 新增登錄
+    </div>
+    <div class="sb-row flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium text-on-surface-variant cursor-pointer hover:bg-surface-container-high transition-colors" id="sn-query" onclick="goPage('query')">
+      <span class="ms s18 text-primary-container">database_search</span> 查詢紀錄
+    </div>
+  </nav>
+  <div class="flex-1 min-h-4"></div>
+  <div class="m-3.5 p-3.5 rounded-2xl bg-surface-container-lowest shadow-ambient">
+    <div class="text-sm font-semibold text-on-surface" id="sb-name">—</div>
+    <div class="text-[11px] text-on-surface-variant mt-1 font-mono" id="sb-role">初始化中…</div>
   </div>
 </aside>
 
-<!-- ═══ MAIN ═══ -->
-<div class="main">
+<div class="main flex flex-1 min-w-0 flex-col min-h-svh bg-surface">
 
-  <header class="topbar" role="banner">
-    <div class="tb-ico"><span class="ms fi">precision_manufacturing</span></div>
-    <div class="tb-ttl-wrap">
-      <div class="tb-ttl">RD Record System</div>
-      <div class="tb-sub">零件與出貨登錄</div>
+<header class="topbar sticky top-0 z-[100] flex items-center gap-3 px-4 pt-[max(8px,env(safe-area-inset-top))] pb-2.5 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/20" role="banner">
+  <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary-container shrink-0">
+    <span class="ms fi">analytics</span>
+  </div>
+  <div class="flex-1 min-w-0">
+    <div class="font-headline font-extrabold text-lg text-primary tracking-tight leading-tight">RD Record</div>
+    <div class="text-[11px] text-on-surface-variant font-medium mt-0.5 lg:hidden">零件與出貨登錄</div>
+  </div>
+  <span class="inline-flex items-center text-[11px] font-bold font-mono px-3 py-1.5 rounded-full max-w-[42vw] truncate bg-primary/10 text-primary" id="topBadge">—</span>
+</header>
+
+<div class="content flex-1 overflow-y-auto pb-28 lg:pb-10 lg:px-8">
+
+<div class="page act max-w-lg lg:max-w-3xl mx-auto w-full px-4 pt-4 pb-2" id="pg-form">
+  <div class="mb-6">
+    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-secondary mb-1">Architectural Ledger</p>
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface tracking-tight">新增登錄</h2>
+    <p class="text-sm text-on-surface-variant mt-2 leading-relaxed">登錄新到貨零件與出貨資訊，送出後將寫入 Google Sheets。</p>
+  </div>
+
+  <section class="space-y-3 mb-6">
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] font-bold tracking-[0.1em] uppercase text-secondary">Section 01</span>
+      <h3 class="font-headline font-bold text-primary text-xs uppercase tracking-wide">基本資訊</h3>
+      <div class="h-px flex-1 bg-outline-variant/20"></div>
     </div>
-    <span class="tb-badge b-rd" id="topBadge">—</span>
-  </header>
-
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- ══ FORM PAGE ══ -->
-    <div class="page act" id="pg-form">
-
-      <div class="pg-hero">
-        <h2>新增登錄</h2>
-        <p>登錄新到貨零件與出貨資訊，送出後將寫入 Google Sheets。</p>
-      </div>
-
-      <div class="surface-section">
-        <div class="sheet-sec-title">
-          <span class="ms fi">assignment</span>
-          <span>基本資料</span>
+    <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-ambient space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">日期</label>
+          <input type="date" id="fDate" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm text-on-surface rounded-none focus:border-primary focus:ring-0 font-mono"/>
         </div>
-
-          <div class="field" style="margin-bottom:14px">
-            <label>DATE（日期）</label>
-            <input type="date" id="fDate" class="mono"/>
-          </div>
-
-          <div class="field" style="margin-bottom:14px">
-            <label>SOURCE（來源）</label>
-            <input type="text" id="fSource" placeholder="庫存 / 機台"/>
-          </div>
-
-          <div class="field no-mb">
-            <label>CUSTOMER（客戶）</label>
-            <input type="text" id="fCustomer" placeholder="XFAB 3月"/>
-          </div>
-      </div>
-
-      <div class="sec-row">
-        <span class="sec-h2"><span class="ms fi" style="font-size:20px;color:var(--primary-container);vertical-align:-4px;margin-right:6px">inventory_2</span>零件清單</span>
-        <span class="sec-count"><span id="pcNum">0</span> 項</span>
-      </div>
-
-      <div class="pw" id="partsList"></div>
-
-      <!-- Side-by-side: ADD PART + SUBMIT -->
-      <div class="btn-row">
-        <button type="button" class="btn-add-sm" onclick="addPart()">
-          <span class="ms fi">add_circle</span> 新增零件
-        </button>
-        <button type="button" class="btn-sub-sm" id="btnSub" onclick="confirmSubmit()">
-          <span class="ms fi">check_circle</span> 送出
-        </button>
-      </div>
-      <p class="sub-note" style="padding:8px 16px 0;text-align:center">送出前請再次確認欄位；資料將儲存至 Google Sheets</p>
-
-    </div><!-- /pg-form -->
-
-    <!-- ══ QUERY PAGE ══ -->
-    <div class="page" id="pg-query">
-      <div class="pg-hero">
-        <h2>查詢紀錄</h2>
-        <p>依關鍵字、日期篩選已登錄的出貨資料。</p>
-      </div>
-
-      <div class="ql">
-      <div class="q-wrap">
-        <!-- 搜尋框 + 搜尋按鈕 同一列 -->
-        <div class="q-top-row">
-          <div class="q-searchbox">
-            <span class="ms">search</span>
-            <input type="text" id="srch" placeholder="客戶、品名、P/N…"
-                   oninput="onSrchInput()" onkeydown="if(event.key==='Enter')doSearch()"/>
-            <button class="q-clear" id="srchClear" onclick="clearSearch()">
-              <span class="ms">close</span>
-            </button>
-          </div>
-          <button class="q-search-btn" onclick="doSearch()">搜尋</button>
+        <div>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">來源</label>
+          <input type="text" id="fSource" placeholder="庫存 / 機台" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
         </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">客戶 / 廠商</label>
+        <input type="text" id="fCustomer" placeholder="XFAB 3月" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+      </div>
+    </div>
+  </section>
 
-        <!-- 快速篩選 pills -->
-        <div class="q-filters">
-          <span class="q-filter-lbl">快速</span>
-          <button class="q-pill act" id="qp-all"   onclick="qPill('all')">全部</button>
-          <button class="q-pill"     id="qp-today" onclick="qPill('today')">今天</button>
-          <button class="q-pill"     id="qp-week"  onclick="qPill('week')">本週</button>
-          <button class="q-pill"     id="qp-month" onclick="qPill('month')">本月</button>
-          <button class="q-pill"     id="qp-range" onclick="qPill('range')">
-            <span class="ms" style="font-size:13px;vertical-align:middle">date_range</span> 區間
+  <section class="space-y-3 mb-4">
+    <div class="flex items-end justify-between gap-3">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="ms fi text-primary-container text-xl shrink-0">inventory_2</span>
+        <div>
+          <span class="text-[10px] font-bold tracking-[0.1em] uppercase text-secondary block">Section 02</span>
+          <h3 class="font-headline font-bold text-on-surface text-sm">零件清單</h3>
+        </div>
+      </div>
+      <span class="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full font-mono shrink-0"><span id="pcNum">0</span> 項</span>
+    </div>
+    <div id="partsList" class="space-y-3"></div>
+  </section>
+
+  <div class="grid grid-cols-2 gap-3 pt-1 pb-4">
+    <button type="button" onclick="addPart()" class="w-full bg-surface-container-high text-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-transform shadow-sm">
+      <span class="ms fi text-lg">add_circle</span> 新增零件
+    </button>
+    <button type="button" id="btnSub" onclick="confirmSubmit()" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-transform" style="box-shadow:0 8px 32px -4px rgba(0,66,83,0.22)">
+      <span class="ms fi text-lg">check_circle</span> 送出
+    </button>
+  </div>
+  <p class="text-center text-[10px] uppercase tracking-[0.08em] text-outline pb-4">送出前請再次確認欄位 · 資料將儲存至 Google Sheets</p>
+</div>
+
+<div class="page max-w-lg lg:max-w-5xl mx-auto w-full px-4 pt-4 pb-2" id="pg-query">
+  <div class="mb-5">
+    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-secondary mb-1">Query</p>
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface tracking-tight">查詢紀錄</h2>
+    <p class="text-sm text-on-surface-variant mt-2 leading-relaxed">依關鍵字、日期篩選已登錄的出貨資料。</p>
+  </div>
+
+  <div class="lg:grid lg:grid-cols-[1fr_min(280px,28vw)] lg:gap-8 lg:items-start">
+    <div class="q-wrap min-w-0">
+      <div class="flex flex-col lg:flex-row lg:items-stretch gap-3 mb-4">
+        <div class="relative flex-1 group min-w-0">
+          <span class="absolute left-0 top-1/2 -translate-y-1/2 ms text-outline text-lg pointer-events-none">search</span>
+          <input type="text" id="srch" placeholder="搜尋日期、客戶、品名或 P/N…" oninput="onSrchInput()" onkeydown="if(event.key==='Enter')doSearch()" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 focus:border-primary focus:ring-0 text-sm py-2.5 pl-9 pr-10 transition-colors"/>
+          <button type="button" class="q-clear absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-outline-variant hover:text-primary hover:bg-surface-container-low transition-colors" id="srchClear" onclick="clearSearch()">
+            <span class="ms text-lg">close</span>
           </button>
         </div>
+        <button type="button" class="lg:self-end shrink-0 px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container text-sm font-semibold shadow-ambient active:scale-[0.99] transition-transform hidden lg:inline-flex items-center justify-center gap-2" onclick="doSearch()"><span class="ms">search</span> 搜尋</button>
+      </div>
+      <button type="button" class="w-full mb-4 py-2.5 rounded-full bg-primary-container text-on-primary-container text-sm font-semibold shadow-ambient active:scale-[0.99] transition-transform lg:hidden" onclick="doSearch()">搜尋</button>
 
-        <!-- 日期區間面板（展開式） -->
-        <div class="q-date-panel" id="qDatePanel">
-          <div class="q-date-panel-ttl">自訂日期區間</div>
-          <div class="q-date-pair">
-            <div class="q-date-fld">
-              <label>開始日期</label>
-              <input type="date" id="qDateFrom"/>
-            </div>
-            <span class="q-date-sep">—</span>
-            <div class="q-date-fld">
-              <label>結束日期</label>
-              <input type="date" id="qDateTo"/>
-            </div>
-            <button class="q-date-apply" onclick="doSearch()">套用</button>
+      <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-3">
+        <button type="button" class="q-pill act" id="qp-all" onclick="qPill('all')">全部</button>
+        <button type="button" class="q-pill" id="qp-today" onclick="qPill('today')">今天</button>
+        <button type="button" class="q-pill" id="qp-week" onclick="qPill('week')">本週</button>
+        <button type="button" class="q-pill" id="qp-month" onclick="qPill('month')">本月</button>
+        <button type="button" class="q-pill" id="qp-range" onclick="qPill('range')"><span class="ms" style="font-size:14px;vertical-align:middle">date_range</span> 區間</button>
+      </div>
+
+      <div class="q-date-panel bg-surface-container-lowest rounded-xl p-4 shadow-ambient mb-4" id="qDatePanel">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-outline mb-3">自訂日期區間</div>
+        <div class="flex flex-wrap items-end gap-2">
+          <div class="flex-1 min-w-[120px]">
+            <label class="block text-[10px] font-bold uppercase tracking-wide text-outline mb-1">開始</label>
+            <input type="date" id="qDateFrom" class="w-full rounded-lg border-0 bg-surface-container py-2 px-2 text-sm focus:ring-2 focus:ring-primary/20"/>
           </div>
-        </div>
-
-        <!-- 結果標題列 -->
-        <div class="q-result-hd">
-          <span class="q-result-lbl">搜尋結果</span>
-          <span class="q-result-count" id="qResultCount"></span>
-        </div>
-
-        <!-- 記錄列表 -->
-        <div id="recList">
-          <div class="empty"><span class="ms">hourglass_empty</span><p>載入中…</p></div>
+          <span class="text-outline-variant pb-2">—</span>
+          <div class="flex-1 min-w-[120px]">
+            <label class="block text-[10px] font-bold uppercase tracking-wide text-outline mb-1">結束</label>
+            <input type="date" id="qDateTo" class="w-full rounded-lg border-0 bg-surface-container py-2 px-2 text-sm focus:ring-2 focus:ring-primary/20"/>
+          </div>
+          <button type="button" class="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shrink-0" onclick="doSearch()">套用</button>
         </div>
       </div>
 
-      <aside class="qa">
-        <div class="qab">
-          <div class="qabtit">統計</div>
-          <div class="qabrow"><span class="qabl">筆數</span><span class="qabv c-b" id="stT2">—</span></div>
+      <div class="flex justify-between items-center mb-2 px-0.5">
+        <span class="text-[11px] font-bold uppercase tracking-widest text-outline">搜尋結果</span>
+        <span class="text-[11px] font-mono font-bold text-primary" id="qResultCount"></span>
+      </div>
+
+      <div id="recList">
+        <div class="text-center py-14 px-6 text-on-surface-variant"><span class="ms text-5xl text-outline-variant/50 block mb-2">hourglass_empty</span><p class="text-sm">載入中…</p></div>
+      </div>
+    </div>
+
+    <aside class="qa hidden lg:block pt-1">
+      <div class="bg-surface-container-low rounded-2xl p-5 shadow-ambient sticky top-24">
+        <div class="text-[11px] font-bold uppercase tracking-[0.1em] text-outline mb-4">統計</div>
+        <div class="flex justify-between items-center py-2">
+          <span class="text-sm text-on-surface-variant">筆數</span>
+          <span class="font-headline text-2xl font-extrabold text-primary font-mono" id="stT2">—</span>
         </div>
-      </aside>
-      </div><!-- /ql -->
-    </div><!-- /pg-query -->
+      </div>
+    </aside>
+  </div>
+</div>
 
-  </div><!-- /content -->
+</div>
 
-  <!-- BOTTOM NAV (mobile) -->
-  <nav class="btmbar" aria-label="主要導覽">
-    <button type="button" class="bnav act" id="bn-form"  onclick="goPage('form')"><span class="ms">add_circle</span>新增</button>
-    <button type="button" class="bnav"     id="bn-query" onclick="goPage('query')"><span class="ms">database_search</span>查詢</button>
-  </nav>
+<nav class="btmbar lg:hidden" aria-label="主要導覽">
+  <button type="button" class="bnav act" id="bn-form" onclick="goPage('form')"><span class="ms">add_circle</span>新增</button>
+  <button type="button" class="bnav" id="bn-query" onclick="goPage('query')"><span class="ms">history</span>歷史</button>
+</nav>
 
-</div><!-- /main -->
-</div><!-- /shell -->
+</div>
+</div>
 
-<!-- CONFIRM MODAL -->
 <div class="cfm-bd" id="cfmModal">
-  <div class="cfm-box">
-    <div class="cfm-ico"><span class="ms fi">upload_file</span></div>
-    <div class="cfm-ttl">確認送出？</div>
-    <div class="cfm-sub" id="cfmSub">請確認所有零件資料已填寫完整，送出後將儲存至 Google Sheets。</div>
-    <div class="cfm-acts">
-      <button class="cfm-cancel" onclick="closeCfm()">取消</button>
-      <button class="cfm-ok" id="cfmOk" onclick="doSubmit()">
-        <span class="ms fi" style="font-size:16px;vertical-align:middle">check_circle</span> 確認送出
+  <div class="cfm-box bg-surface-container-lowest rounded-2xl p-6 w-full max-w-sm shadow-ambient mx-4" style="box-shadow:0 8px 32px -4px rgba(24,28,32,0.12)">
+    <div class="w-[52px] h-[52px] rounded-full bg-tertiary-fixed/80 flex items-center justify-center mx-auto mb-3">
+      <span class="ms fi text-2xl text-tertiary">upload_file</span>
+    </div>
+    <div class="font-headline text-lg font-bold text-on-surface text-center mb-1">確認送出？</div>
+    <div class="text-sm text-on-surface-variant text-center leading-relaxed whitespace-pre-line mb-6" id="cfmSub">請確認所有零件資料已填寫完整，送出後將儲存至 Google Sheets。</div>
+    <div class="grid grid-cols-2 gap-3">
+      <button type="button" class="py-3 rounded-full bg-surface-container-high text-on-surface-variant text-sm font-semibold" onclick="closeCfm()">取消</button>
+      <button type="button" class="py-3 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold flex items-center justify-center gap-1" id="cfmOk" onclick="doSubmit()">
+        <span class="ms fi" style="font-size:17px">check_circle</span> 確認
       </button>
     </div>
   </div>
 </div>
 
-<!-- SUCCESS BANNER -->
-<div class="success-banner" id="successBanner">
-  <div class="sb-icon"><span class="ms fi">check_circle</span></div>
-  <div class="sb-body">
-    <div class="sb-title">✅ 登錄成功！資料已儲存</div>
-    <div class="sb-sub" id="sbSub"></div>
+<div class="success-banner fixed top-0 left-0 right-0 z-[9999] flex items-center gap-3 px-4 py-3 min-h-[70px] text-white" style="background:linear-gradient(135deg,#004444,#005d5d);box-shadow:0 4px 24px rgba(0,68,68,0.35)" id="successBanner">
+  <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+    <span class="ms fi text-2xl text-white">check_circle</span>
   </div>
-  <button class="sb-close" onclick="hideBanner()"><span class="ms">close</span></button>
+  <div class="flex-1 min-w-0">
+    <div class="font-headline font-bold text-base">登錄成功 · 資料已儲存</div>
+    <div class="text-xs opacity-90 mt-0.5 font-mono tracking-wide" id="sbSub"></div>
+  </div>
+  <button type="button" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center shrink-0" onclick="hideBanner()"><span class="ms text-white">close</span></button>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"><span class="ms" id="tIco">error</span><span id="tMsg"></span></div>
+<div class="toast fixed bottom-24 left-1/2 z-[9998] flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-white max-w-[calc(100vw-32px)] whitespace-nowrap shadow-lg bg-on-surface" id="toast"><span class="ms" id="tIco">error</span><span id="tMsg"></span></div>
 
-<!-- MODAL (detail) -->
 <div class="mbd" id="modal" onclick="closeModal(event)">
-  <div class="msh" id="mSheet">
+  <div class="msh" id="mSheet" onclick="event.stopPropagation()">
     <div class="m-header" id="mHeader">
       <div class="m-header-ico"><span class="ms fi">inventory_2</span></div>
       <div class="m-header-body">
         <div class="m-header-ttl" id="mTtl">記錄詳情</div>
         <div class="m-header-sub" id="mSub"></div>
       </div>
-      <button class="m-header-close" onclick="document.getElementById('modal').classList.remove('op')">
+      <button type="button" class="m-header-close" onclick="document.getElementById('modal').classList.remove('op')">
         <span class="ms">close</span>
       </button>
     </div>
-    <div class="m-body" id="mBody"></div>
+    <div class="m-body text-on-surface" id="mBody"></div>
     <div class="m-actions" id="mActions"></div>
   </div>
 </div>
@@ -833,8 +412,9 @@ function setRole(role) {
   const name  = profile?.displayName || "—";
   const label = role==="procurement" ? "PROCUREMENT" : "R&D";
   const badgeText = label + " · " + name;
-  const badgeCls  = "tb-badge " + (role==="procurement"?"b-proc":"b-rd");
-  // PC topbar badge
+  const badgeCls =
+    "inline-flex items-center text-[11px] font-bold font-mono px-3 py-1.5 rounded-full max-w-[42vw] truncate " +
+    (role === "procurement" ? "bg-secondary-container text-secondary" : "bg-primary/10 text-primary");
   const tb = document.getElementById("topBadge");
   if (tb) { tb.textContent = badgeText; tb.className = badgeCls; }
   // Mobile user-strip badge (same element id reused)
@@ -866,85 +446,85 @@ function addPart(data={}) {
   partStatus[id] = data.status || "unkn";
 
   const div = document.createElement("div");
-  div.className = "pc"; div.id = id;
+  div.className = "rounded-2xl bg-surface-container-lowest shadow-ambient mb-3 overflow-hidden border border-outline-variant/10";
+  div.id = id;
+  const ring = (v) => (partStatus[id] === v ? " ring-2 ring-primary/40" : "");
   div.innerHTML = `
-    <div class="pc-hd op" id="hd_${id}" onclick="togPart('${id}')">
-      <div class="pc-num">${pcnt}</div>
-      <div class="pc-lbl" id="lbl_${id}">${esc(data.itemName)||"ITEM NAME"}</div>
-      <div class="pc-acts">
-        <button class="bico del" onclick="delPart(event,'${id}')">
-          <span class="ms" style="color:var(--red);font-size:18px">delete</span>
+    <div class="pchd op flex items-center gap-3 px-4 py-3.5 cursor-pointer select-none bg-surface-container-lowest" id="hd_${id}" onclick="togPart('${id}')">
+      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm">${pcnt}</div>
+      <div class="flex-1 font-mono font-semibold text-sm text-on-surface truncate min-w-0" id="lbl_${id}">${esc(data.itemName)||"ITEM NAME"}</div>
+      <div class="flex items-center gap-0.5 shrink-0">
+        <button type="button" class="p-1.5 rounded-lg text-outline-variant hover:bg-error-container/40 hover:text-error transition-colors" onclick="delPart(event,'${id}')">
+          <span class="ms text-lg">delete</span>
         </button>
-        <span class="ms caret">expand_more</span>
+        <span class="ms caret text-outline-variant text-xl">expand_more</span>
       </div>
     </div>
-    <div class="pc-bd" id="bd_${id}">
+    <div class="px-4 pb-5 pt-2 space-y-4 bg-surface-container-low" id="bd_${id}">
 
-      <!-- 品名 -->
-      <div class="field">
-        <label>品名 (Item Name)</label>
-        <input type="text" class="mono" data-f="itemName" value="${h(data.itemName)}"
-          placeholder="PCB X INTERFACE A1 (used)"
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">品名</label>
+        <input type="text" data-f="itemName" value="${h(data.itemName)}" placeholder="PCB X INTERFACE A1 (used)"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"
           oninput="updLbl('${id}',this.value)"/>
       </div>
 
-      <!-- PN + SN -->
-      <div class="f2" style="margin-bottom:12px">
-        <div class="field no-mb">
-          <label>PN</label>
-          <input type="text" class="mono" data-f="pn" value="${h(data.pn)}" placeholder="PN-XXXX"/>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">PN</label>
+          <input type="text" data-f="pn" value="${h(data.pn)}" placeholder="PN-XXXX"
+            class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
-        <div class="field no-mb">
-          <label>SN</label>
-          <input type="text" class="mono" data-f="sn" value="${h(data.sn)}" placeholder="SN-XXXXXXXX"/>
+        <div>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">SN</label>
+          <input type="text" data-f="sn" value="${h(data.sn)}" placeholder="SN-XXXXXXXX"
+            class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
       </div>
 
-      <!-- Model + 數量 -->
-      <div class="f2" style="margin-bottom:14px">
-        <div class="field no-mb">
-          <label>Model</label>
-          <input type="text" class="mono" data-f="model" value="${h(data.model)}" placeholder="Model No"/>
+      <div class="grid grid-cols-2 gap-4 items-start">
+        <div>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">Model</label>
+          <input type="text" data-f="model" value="${h(data.model)}" placeholder="Model No"
+            class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
-        <div class="field no-mb">
-          <label>數量 (Qty)</label>
-          <div class="qty-wrap">
-            <button class="qty-btn" type="button" onclick="adjQty('${id}',-1)">−</button>
-            <div class="qty-inp-wrap">
-              <input type="number" class="qty-inp" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}" inputmode="numeric"/>
-            </div>
-            <button class="qty-btn" type="button" onclick="adjQty('${id}',1)">＋</button>
+        <div>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量 (PCS)</label>
+          <div class="flex items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-1">
+            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
+            <input type="number" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}" inputmode="numeric"
+              class="w-12 bg-transparent text-center text-base font-bold text-primary border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
+            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-container text-on-primary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',1)">＋</button>
           </div>
         </div>
       </div>
 
-      <!-- 狀態 chips — per part -->
-      <div class="field" style="margin-bottom:14px">
-        <label>狀態 (Status)</label>
-        <div class="chips" id="chips_${id}">
-          <button class="chip chip-pass${partStatus[id]==='pass'?' sel':''}" onclick="selChip('${id}','pass',this)">PASS</button>
-          <button class="chip chip-fail${partStatus[id]==='fail'?' sel':''}" onclick="selChip('${id}','fail',this)">FAIL</button>
-          <button class="chip chip-wait${partStatus[id]==='wait'?' sel':''}" onclick="selChip('${id}','wait',this)">待驗</button>
-          <button class="chip chip-unkn${partStatus[id]==='unkn'?' sel':''}" onclick="selChip('${id}','unkn',this)">UNKNOW</button>
+      <div>
+        <label class="block text-[11px] font-bold text-secondary uppercase tracking-[0.08em] mb-2">檢驗狀態</label>
+        <div class="grid grid-cols-4 gap-2" id="chips_${id}">
+          <button type="button" data-chip="pass" class="py-2.5 rounded-xl text-[10px] font-bold transition-transform active:scale-95 bg-tertiary-fixed text-tertiary${ring("pass")}" onclick="selChip('${id}','pass',this)">PASS</button>
+          <button type="button" data-chip="fail" class="py-2.5 rounded-xl text-[10px] font-bold transition-transform active:scale-95 bg-error-container text-error${ring("fail")}" onclick="selChip('${id}','fail',this)">FAIL</button>
+          <button type="button" data-chip="wait" class="py-2.5 rounded-xl text-[10px] font-bold transition-transform active:scale-95 bg-secondary-container text-secondary${ring("wait")}" onclick="selChip('${id}','wait',this)">待驗</button>
+          <button type="button" data-chip="unkn" class="py-2.5 rounded-xl text-[10px] font-bold transition-transform active:scale-95 bg-surface-container-high text-on-surface-variant${ring("unkn")}" onclick="selChip('${id}','unkn',this)">UNKNOW</button>
         </div>
       </div>
 
-      <!-- 存放位置 -->
-      <div class="field">
-        <label>存放位置 (Bin)</label>
-        <input type="text" class="mono" data-f="bin" value="${h(data.bin)}" placeholder="B2-04-A"/>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">儲位 (BIN)</label>
+        <input type="text" data-f="bin" value="${h(data.bin)}" placeholder="B2-04-A"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
-      <!-- 目的 -->
-      <div class="field">
-        <label>目的 (Purpose)</label>
-        <input type="text" data-f="purpose" value="${h(data.purpose)}" placeholder="出貨 / 維修 / 備料"/>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">用途</label>
+        <input type="text" data-f="purpose" value="${h(data.purpose)}" placeholder="出貨 / 維修 / 備料"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
-      <!-- 備註 -->
-      <div class="field no-mb">
-        <label>備註 (Remarks)</label>
-        <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="PE03710拆下"/>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">備註</label>
+        <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="PE03710拆下"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
     </div>
@@ -959,7 +539,7 @@ function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function updLbl(id,v){ document.getElementById("lbl_"+id).textContent = v||"ITEM NAME"; }
 function togPart(id){
   document.getElementById("hd_"+id).classList.toggle("op");
-  document.getElementById("bd_"+id).classList.toggle("hi");
+  document.getElementById("bd_"+id).classList.toggle("hidden");
 }
 function delPart(e,id){
   e.stopPropagation();
@@ -968,14 +548,15 @@ function delPart(e,id){
   setTimeout(()=>{ el.remove(); delete partStatus[id]; updCount(); },190);
 }
 function updCount(){
-  document.getElementById("pcNum").textContent = document.querySelectorAll(".pc").length;
+  const pl = document.getElementById("partsList");
+  document.getElementById("pcNum").textContent = pl ? pl.children.length : 0;
 }
 
 function selChip(partId, val, el){
   partStatus[partId] = val;
   const row = document.getElementById("chips_"+partId);
-  row.querySelectorAll(".chip").forEach(c => c.classList.remove("sel"));
-  el.classList.add("sel");
+  row.querySelectorAll("button").forEach(c => { c.classList.remove("ring-2","ring-primary/40"); });
+  el.classList.add("ring-2","ring-primary/40");
 }
 
 function adjQty(id, delta){
@@ -998,7 +579,7 @@ function collect(){
     groupId:     new URLSearchParams(window.location.search).get("groupId")||"",
   };
   const parts = [];
-  document.querySelectorAll(".pc").forEach(c => {
+  document.querySelectorAll("#partsList > div").forEach(c => {
     const f = k => (c.querySelector(`[data-f="${k}"]`)?.value||"").trim();
     const pid = c.id;
     parts.push({
@@ -1132,7 +713,7 @@ function qPill(type){
 
 async function loadRecs(kw="", dateFrom="", dateTo=""){
   const list=document.getElementById("recList");
-  list.innerHTML=`<div class="empty"><span class="ms">hourglass_empty</span><p>載入中…</p></div>`;
+  list.innerHTML=`<div class="text-center py-14 px-6 text-on-surface-variant"><span class="ms text-5xl text-outline-variant/40 block mb-2">hourglass_empty</span><p class="text-sm">載入中…</p></div>`;
   try {
     const r=await gas({action:"query", keyword:kw, dateFrom, dateTo});
     recs=r.records||[];
@@ -1141,7 +722,7 @@ async function loadRecs(kw="", dateFrom="", dateTo=""){
     if(cnt) cnt.textContent = recs.length ? recs.length+" 筆" : "";
     const t2=document.getElementById("stT2"); if(t2) t2.textContent=recs.length;
   } catch(e){
-    list.innerHTML=`<div class="empty"><span class="ms">error_outline</span><p>載入失敗</p></div>`;
+    list.innerHTML=`<div class="text-center py-14 px-6 text-error"><span class="ms text-5xl block mb-2">error_outline</span><p class="text-sm font-medium">載入失敗</p></div>`;
   }
 }
 function doSearch(){
@@ -1153,20 +734,38 @@ function doSearch(){
 
 function renderRecs(rs){
   const list=document.getElementById("recList");
-  if(!rs.length){ list.innerHTML=`<div class="empty"><span class="ms">inventory_2</span><p>查無資料</p></div>`; return; }
+  if(!rs.length){
+    list.innerHTML=`<div class="text-center py-14 px-6 text-on-surface-variant"><span class="ms text-5xl text-outline-variant/35 block mb-2">inventory_2</span><p class="text-sm">查無資料</p></div>`;
+    return;
+  }
   list.innerHTML=rs.map(r=>`
-    <div class="rc" onclick="showDetail('${r.recordId}')">
-      <div class="rc-top">
-        <div class="ri">
-          <div class="rc-id-top">${esc(r.recordId)}</div>
-          <div class="rc-cust">${esc(r.customer)||"（未填客戶）"}</div>
-          <div class="rc-meta">${esc(r.date)} · ${esc(r.submittedBy)} · ${r.partCount} 項零件</div>
+    <div class="group cursor-pointer mb-4 last:mb-0 bg-surface-container-lowest rounded-xl p-4 shadow-ambient hover:shadow-lg transition-all border border-outline-variant/10 hover:border-primary/15" onclick="showDetail('${r.recordId}')">
+      <div class="flex justify-between items-start gap-3 mb-3">
+        <div class="min-w-0">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-outline block mb-0.5">Record ID</span>
+          <span class="font-headline font-extrabold text-[15px] text-primary tracking-tight break-all">${esc(r.recordId)}</span>
         </div>
-        <span class="rb rb-v">已登錄</span>
+        <div class="bg-surface-container-low px-2.5 py-1 rounded-full shrink-0 max-w-[45%]">
+          <span class="text-[10px] font-semibold text-on-secondary-container truncate block">${esc(r.submittedBy)||"—"}</span>
+        </div>
       </div>
-      <div class="rtags">
-        ${(r.partNames||[]).slice(0,4).map(n=>`<span class="rtag">${esc(n)}</span>`).join("")}
-        ${(r.partNames||[]).length>4?`<span class="rtag">+${r.partNames.length-4}</span>`:""}
+      <div class="flex items-center justify-between gap-2">
+        <div class="grid grid-cols-2 gap-x-4 flex-1 min-w-0">
+          <div>
+            <span class="text-[9px] text-outline font-medium uppercase tracking-wider">客戶</span>
+            <div class="font-headline font-semibold text-xs text-on-surface-variant truncate">${esc(r.customer)||"（未填）"}</div>
+          </div>
+          <div>
+            <span class="text-[9px] text-outline font-medium uppercase tracking-wider">日期</span>
+            <div class="font-headline font-semibold text-xs text-on-surface-variant truncate">${esc(r.date)||"—"}</div>
+          </div>
+        </div>
+        <span class="ms text-outline-variant group-hover:text-primary transition-colors text-xl shrink-0">chevron_right</span>
+      </div>
+      <div class="flex flex-wrap gap-1.5 mt-3">
+        <span class="text-[10px] font-mono text-on-surface-variant/80">${r.partCount != null ? r.partCount : 0} 項</span>
+        ${(r.partNames||[]).slice(0,4).map(n=>`<span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant max-w-full truncate inline-block">${esc(n)}</span>`).join("")}
+        ${(r.partNames||[]).length>4?`<span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary/10 text-primary">+${r.partNames.length-4}</span>`:""}
       </div>
     </div>
   `).join("");
@@ -1301,7 +900,7 @@ function copyToForm(rid){
     const row = document.getElementById("chips_"+newId);
     if(row){
       row.querySelectorAll(".chip").forEach(c=>c.classList.remove("sel"));
-      const t = row.querySelector(".chip-"+(REV[p.status]||"unkn"));
+      const t = row.querySelector('[data-chip="'+(REV[p.status]||"unkn")+'"]');
       if(t) t.classList.add("sel");
     }
   });
