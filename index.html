@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>RD Record </title>
+<title>RD Record · 出貨登錄</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
@@ -87,26 +87,11 @@ button,input,select,textarea{font:inherit}
 .mbd{position:fixed;inset:0;z-index:500;background:rgba(24,28,32,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0;align-items:flex-end;justify-content:center}
 .mbd.op{display:flex!important}
 @media(min-width:720px){.mbd.op{align-items:center;padding:24px}}
-.msh{background:#f7f9ff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;animation:shUp .28s cubic-bezier(.34,1.2,.64,1)}
+.msh{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow:hidden;animation:shUp .28s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column}
 @media(min-width:720px){.msh{border-radius:16px;max-width:min(540px,100%);max-height:min(88dvh,920px)}}
 @keyframes shUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.m-header{background:linear-gradient(135deg,#004253,#005b71);padding:20px 18px;display:flex;align-items:flex-start;gap:12px;position:sticky;top:0;z-index:10}
-.m-header-ico{width:44px;height:44px;background:rgba(255,255,255,.18);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.m-header-ico .ms{color:#fff;font-size:22px}
-.m-header-body{flex:1;min-width:0}
-.m-header-ttl{font-size:1rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.m-header-sub{font-size:.7rem;color:rgba(255,255,255,.78);margin-top:3px;font-family:JetBrains Mono,monospace}
-.m-header-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:background .12s}
-.m-header-close:hover{background:rgba(255,255,255,.28)}
-.m-header-close .ms{color:#fff;font-size:18px}
-.m-body{padding:16px 16px 8px}
-.m-actions{display:flex;flex-wrap:wrap;gap:8px;padding:4px 16px 16px}
-.m-act-btn{flex:1;min-width:calc(50% - 4px);padding:10px 8px;border-radius:10px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .12s}
-.m-act-btn .ms{font-size:16px}
-.m-btn-copy{background:rgba(0,66,83,.1);color:#004253}
-.m-btn-copy:hover{filter:brightness(.95)}
-.m-btn-edit{background:#fff7ed;color:#b45309}
-.m-btn-del{background:#ffdad6;color:#ba1a1a}
+.m-body{padding:0;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.m-actions{flex-shrink:0;padding:0}
 .m-section{margin-bottom:16px}
 .m-section-ttl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(64,72,76,.55);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .m-section-ttl::after{content:'';flex:1;height:1px;background:rgba(191,200,204,.25)}
@@ -343,17 +328,18 @@ button,input,select,textarea{font:inherit}
 
 <div class="mbd" id="modal" onclick="closeModal(event)">
   <div class="msh" id="mSheet" onclick="event.stopPropagation()">
-    <div class="m-header" id="mHeader">
-      <div class="m-header-ico"><span class="ms fi">inventory_2</span></div>
-      <div class="m-header-body">
-        <div class="m-header-ttl" id="mTtl">記錄詳情</div>
-        <div class="m-header-sub" id="mSub"></div>
+    <div class="md-head flex items-stretch shrink-0 sticky top-0 z-20 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/15">
+      <button type="button" class="flex items-center justify-center w-12 shrink-0 text-on-surface hover:bg-surface-container-low active:bg-surface-container-high rounded-none" aria-label="返回" onclick="document.getElementById('modal').classList.remove('op')">
+        <span class="ms text-2xl">arrow_back</span>
+      </button>
+      <div class="flex-1 flex flex-col items-center justify-center py-3 min-w-0 px-2">
+        <span class="font-headline font-extrabold text-[11px] sm:text-xs tracking-[0.14em] text-primary uppercase text-center leading-tight">RD Record · 詳情</span>
       </div>
-      <button type="button" class="m-header-close" onclick="document.getElementById('modal').classList.remove('op')">
-        <span class="ms">close</span>
+      <button type="button" class="flex items-center justify-center w-12 shrink-0 text-outline hover:bg-surface-container-low active:bg-surface-container-high rounded-none opacity-40 cursor-default" aria-label="選單" tabindex="-1">
+        <span class="ms text-2xl">more_vert</span>
       </button>
     </div>
-    <div class="m-body text-on-surface" id="mBody"></div>
+    <div class="m-body text-on-surface bg-surface" id="mBody"></div>
     <div class="m-actions" id="mActions"></div>
   </div>
 </div>
@@ -785,73 +771,104 @@ function statusCls(s){
 function showDetail(rid){
   const r=recs.find(x=>x.recordId===rid); if(!r) return;
 
-  // Header
-  document.getElementById("mTtl").textContent = r.customer || "記錄詳情";
-  document.getElementById("mSub").textContent =
-    r.recordId + "  ·  " + r.date + "  ·  " + r.submittedBy;
+  const pills = (() => {
+    const keys = [...new Set((r.parts||[]).map(p=>p&&p.status).filter(Boolean))];
+    if(!keys.length) return `<span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">—</span>`;
+    return keys.map(st=>{
+      if(st==="PASS") return `<span class="inline-flex items-center gap-0.5 px-3 py-1.5 rounded-full text-xs font-bold bg-tertiary-fixed text-tertiary"><span class="ms fi text-base leading-none">check</span>PASS</span>`;
+      if(st==="FAIL") return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-error-container text-error">FAIL</span>`;
+      if(st==="待驗") return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-secondary-container text-secondary">待驗</span>`;
+      return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">${esc(st)}</span>`;
+    }).join("");
+  })();
 
-  // Body
-  document.getElementById("mBody").innerHTML=`
-    <div class="m-section">
-      <div class="m-section-ttl">基本資訊</div>
-      <div class="m-info-grid">
-        <div class="m-info-cell">
-          <div class="m-info-lbl">單號</div>
-          <div class="m-info-val" style="font-size:.75rem">${esc(r.recordId)}</div>
+  const kv = (lbl,val)=>{
+    const v = (val!=null && String(val).trim()) ? esc(String(val).trim()) : "—";
+    return `<div class="flex justify-between gap-4 items-start py-2.5 first:pt-0">
+      <span class="text-xs text-outline shrink-0 font-medium">${lbl}</span>
+      <span class="text-sm font-semibold text-on-surface text-right break-words max-w-[62%]">${v}</span>
+    </div>`;
+  };
+
+  const partsHtml = (r.parts||[]).map((p)=>`
+    <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
+      <div class="flex justify-between items-start gap-3 mb-3">
+        <div class="min-w-0 flex-1">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-outline mb-0.5">品名</p>
+          <p class="font-headline font-bold text-base text-on-surface leading-snug">${esc(p.itemName)||"—"}</p>
         </div>
-        <div class="m-info-cell">
-          <div class="m-info-lbl">日期</div>
-          <div class="m-info-val">${esc(r.date)}</div>
+        <span class="m-part-status ${statusCls(p.status)} shrink-0">${esc(p.status)||"—"}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div class="col-span-2">
+          <span class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-0.5">型號 (Model)</span>
+          <span class="font-semibold font-mono text-sm text-on-surface">${esc(p.model)||"—"}</span>
         </div>
-        <div class="m-info-cell">
-          <div class="m-info-lbl">客戶</div>
-          <div class="m-info-val">${esc(r.customer)||"—"}</div>
+        <div>
+          <span class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-0.5">P/N</span>
+          <span class="font-mono text-sm text-on-surface-variant">${esc(p.pn)||"—"}</span>
         </div>
-        <div class="m-info-cell">
-          <div class="m-info-lbl">來源</div>
-          <div class="m-info-val">${esc(r.source)||"—"}</div>
-        </div>
-        <div class="m-info-cell full">
-          <div class="m-info-lbl">登記人</div>
-          <div class="m-info-val">${esc(r.submittedBy)||"—"}</div>
+        <div>
+          <span class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-0.5">S/N</span>
+          <span class="font-mono text-sm text-on-surface-variant">${esc(p.sn)||"—"}</span>
         </div>
       </div>
-    </div>
-
-    <div class="m-section">
-      <div class="m-section-ttl">零件清單（${(r.parts||[]).length} 項）</div>
-      ${(r.parts||[]).map((p,i)=>`
-        <div class="m-part-card">
-          <div class="m-part-hd">
-            <div class="m-part-num">${i+1}</div>
-            <div class="m-part-name">${esc(p.itemName)||"—"}</div>
-            <span class="m-part-status ${statusCls(p.status)}">${esc(p.status)||"—"}</span>
-          </div>
-          <div class="m-part-bd">
-            <div class="m-part-row"><span class="m-part-lbl">P/N</span><span class="m-part-val">${esc(p.pn)||"—"}</span></div>
-            <div class="m-part-row"><span class="m-part-lbl">S/N</span><span class="m-part-val">${esc(p.sn)||"—"}</span></div>
-            <div class="m-part-row"><span class="m-part-lbl">Model</span><span class="m-part-val">${esc(p.model)||"—"}</span></div>
-            <div class="m-part-row"><span class="m-part-lbl">Qty</span><span class="m-part-val">${esc(p.qty)||"1"}</span></div>
-            <div class="m-part-row"><span class="m-part-lbl">Bin</span><span class="m-part-val">${esc(p.bin)||"—"}</span></div>
-            <div class="m-part-row"><span class="m-part-lbl">目的</span><span class="m-part-val">${esc(p.purpose)||"—"}</span></div>
-            ${p.remark?`<div class="m-part-row full"><span class="m-part-lbl">備註</span><span class="m-part-val">${esc(p.remark)}</span></div>`:""}
-          </div>
+      <div class="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-surface-container-high p-4">
+        <div>
+          <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-outline mb-1">Quantity</p>
+          <p class="font-headline text-3xl font-extrabold text-primary leading-none tracking-tight">${esc(p.qty)||"1"}</p>
+          <p class="text-[10px] font-bold text-on-surface-variant uppercase mt-1 tracking-wide">Units</p>
         </div>
-      `).join("")}
+        <div class="flex flex-col justify-end">
+          <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-outline mb-1">Storage Bin</p>
+          <p class="font-headline font-bold text-base text-on-surface font-mono tracking-tight">${esc(p.bin)||"—"}</p>
+        </div>
+      </div>
+      ${p.purpose?`<div class="mt-4"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1.5">目的 (Purpose)</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.purpose)}</p></div>`:""}
+      ${p.remark?`<div class="mt-3"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1.5">備註</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.remark)}</p></div>`:""}
+    </div>
+  `).join("");
+
+  document.getElementById("mBody").innerHTML = `
+    <div class="px-4 pt-5 pb-2">
+      <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-outline mb-1.5">Unique Identifier</p>
+      <p class="font-headline text-xl sm:text-2xl font-extrabold text-on-surface tracking-tight break-all">${esc(r.recordId)}</p>
+      <div class="flex flex-wrap gap-2 mt-3">${pills}</div>
+    </div>
+    <div class="mx-4 mt-5 rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="ms text-primary text-lg">info</span>
+        <span class="font-headline font-bold text-sm text-on-surface">基本資訊</span>
+      </div>
+      <div class="pt-1">
+        ${kv("日期",r.date)}
+        ${kv("客戶",r.customer)}
+        ${kv("來源",r.source)}
+        ${kv("登記人",r.submittedBy)}
+      </div>
+    </div>
+    <div class="px-4 mt-6 pb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="ms text-primary text-lg">inventory_2</span>
+        <span class="font-headline font-bold text-sm text-on-surface">品項明細</span>
+        <span class="text-[11px] text-outline font-mono ml-auto">${(r.parts||[]).length} 項</span>
+      </div>
+      ${partsHtml || `<p class="text-sm text-on-surface-variant py-8 text-center rounded-xl bg-surface-container-low">無零件資料</p>`}
     </div>
   `;
 
-  // Action buttons
-  document.getElementById("mActions").innerHTML=`
-    <button class="m-act-btn m-btn-copy" onclick="copyToForm('${rid}')">
-      <span class="ms fi">content_copy</span> 複製到新增
+  document.getElementById("mActions").innerHTML = `
+  <div class="flex gap-2 px-3 sm:px-4 pt-3 pb-[max(14px,env(safe-area-inset-bottom))] bg-surface border-t border-outline-variant/15">
+    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-[11px] sm:text-xs font-bold shadow-md active:scale-[0.98] transition-transform" onclick="copyToForm('${rid}')">
+      <span class="ms fi shrink-0">content_copy</span><span class="truncate">複製到新增</span>
     </button>
-    <button class="m-act-btn m-btn-edit" onclick="editRecord('${rid}')">
-      <span class="ms fi">edit</span> 編輯
+    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-secondary-container text-on-secondary-container text-[11px] sm:text-xs font-bold active:scale-[0.98] transition-transform" onclick="editRecord('${rid}')">
+      <span class="ms fi shrink-0">edit</span><span class="truncate">編輯詳情</span>
     </button>
-    <button class="m-act-btn m-btn-del" onclick="deleteRecord('${rid}')">
-      <span class="ms fi">delete</span> 刪除
+    <button type="button" class="shrink-0 w-12 h-[46px] flex items-center justify-center rounded-xl bg-error-container text-error active:scale-95 transition-transform" onclick="deleteRecord('${rid}')" aria-label="刪除">
+      <span class="ms fi text-xl">delete</span>
     </button>
+  </div>
   `;
 
   document.getElementById("modal").classList.add("op");
