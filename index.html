@@ -791,14 +791,14 @@ function renderRecs(rs){
     return `
     <div class="q-rec-card group cursor-pointer mb-4 last:mb-0 bg-surface-container-lowest rounded-xl p-4 shadow-ambient hover:shadow-lg transition-all border border-outline-variant/10 hover:border-primary/15" onclick="showDetail('${r.recordId}')">
       <div class="flex justify-between items-start gap-3 mb-3">
-        <div class="min-w-0 flex-1">
-          <div class="mb-2">
-            <span class="text-[9px] text-outline font-medium uppercase tracking-wider block">日期</span>
-            <div class="font-headline font-semibold text-xs text-on-surface truncate">${esc(r.date)||"—"}</div>
+        <div class="min-w-0 flex-1 grid grid-cols-2 gap-2.5">
+          <div class="min-w-0 rounded-lg bg-surface-container-low/90 px-2.5 py-2">
+            <span class="text-[9px] text-outline font-medium uppercase tracking-wider block mb-0.5">日期</span>
+            <div class="font-headline font-semibold text-[13px] leading-snug text-on-surface truncate">${esc(r.date)||"—"}</div>
           </div>
-          <div>
-            <span class="text-[9px] text-outline font-medium uppercase tracking-wider block">登記人</span>
-            <div class="font-headline font-semibold text-xs text-on-surface truncate">${esc(r.submittedBy)||"—"}</div>
+          <div class="min-w-0 rounded-lg bg-surface-container-low/90 px-2.5 py-2">
+            <span class="text-[9px] text-outline font-medium uppercase tracking-wider block mb-0.5">登記人</span>
+            <div class="font-headline font-semibold text-[13px] leading-snug text-on-surface truncate">${esc(r.submittedBy)||"—"}</div>
           </div>
         </div>
         <div class="bg-surface-container-low px-2.5 py-1 rounded-full shrink-0">
@@ -842,9 +842,9 @@ function closeDetailModal(){
 
 function detailKvRow(lbl,val){
   const v = (val!=null && String(val).trim()) ? esc(String(val).trim()) : "—";
-  return `<div class="flex justify-between gap-4 items-start py-2.5 first:pt-0">
-    <span class="text-xs text-outline shrink-0 font-medium">${lbl}</span>
-    <span class="text-sm font-semibold text-on-surface text-right break-words max-w-[62%]">${v}</span>
+  return `<div class="det-kv-row grid grid-cols-[4.75rem_1fr] gap-x-3 items-baseline py-2.5 first:pt-0 pr-2">
+    <span class="text-xs text-outline font-medium">${lbl}</span>
+    <span class="text-sm font-semibold text-on-surface break-words min-w-0 text-left">${v}</span>
   </div>`;
 }
 
@@ -878,15 +878,14 @@ function refreshDetailModal(){
           <span class="font-mono text-sm text-on-surface-variant">${esc(p.sn)||"—"}</span>
         </div>
       </div>
-      <div class="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-surface-container-high/70 px-3 py-2.5">
-        <div>
-          <p class="text-[8px] font-bold uppercase tracking-wider text-outline mb-0.5">Quantity</p>
+      <div class="mt-3 grid grid-cols-2 gap-3 items-start rounded-lg bg-surface-container-high/70 px-3 py-3">
+        <div class="min-w-0 flex flex-col gap-1">
+          <p class="text-[8px] font-bold uppercase tracking-wider text-outline leading-none">Quantity</p>
           <p class="font-headline text-xl font-extrabold text-primary leading-none">${esc(p.qty)||"1"}</p>
-          <p class="text-[9px] font-semibold text-on-surface-variant uppercase mt-0.5">Units</p>
         </div>
-        <div class="flex flex-col justify-end">
-          <p class="text-[8px] font-bold uppercase tracking-wider text-outline mb-0.5">Storage Bin</p>
-          <p class="font-mono text-sm font-bold text-on-surface">${esc(p.bin)||"—"}</p>
+        <div class="min-w-0 flex flex-col gap-1">
+          <p class="text-[8px] font-bold uppercase tracking-wider text-outline leading-none">Storage Bin</p>
+          <p class="font-mono text-sm font-bold text-on-surface leading-none">${esc(p.bin)||"—"}</p>
         </div>
       </div>
       ${p.purpose?`<div class="mt-3"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1">目的 (Purpose)</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.purpose)}</p></div>`:""}
@@ -900,7 +899,7 @@ function refreshDetailModal(){
         <span class="ms text-primary text-lg">info</span>
         <span class="font-headline font-bold text-sm text-on-surface">基本資訊</span>
       </div>
-      <div class="pt-1">
+      <div class="pt-1 det-basic-kv">
         ${detailKvRow("日期",r.date)}
         ${detailKvRow("客戶",r.customer)}
         ${detailKvRow("來源",r.source)}
