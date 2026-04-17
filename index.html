@@ -122,6 +122,12 @@ button,input,select,textarea{font:inherit}
 .cfm-chip{display:inline-flex;align-items:center;padding:.375rem .75rem;border-radius:9999px;background:#e5e8ee;color:#181c20;font-size:.875rem;font-weight:500;max-width:100%;word-break:break-word}
 .cfm-chip--ph{opacity:.55}
 .toast.err{background:#ba1a1a}
+.md-head{position:relative}
+.det-share-pop{display:none;position:absolute;right:2px;top:100%;margin-top:4px;min-width:11.5rem;z-index:80;border-radius:12px;background:#fff;box-shadow:0 8px 32px -4px rgba(24,28,32,.12),0 0 0 1px rgba(0,66,83,.08);overflow:hidden}
+.det-share-pop.op{display:block}
+.det-share-pop button{display:block;width:100%;text-align:left;padding:12px 16px;font-size:14px;font-weight:600;color:#181c20;border:none;background:transparent;cursor:pointer}
+.det-share-pop button+button{border-top:1px solid rgba(191,200,204,.35)}
+.det-share-pop button:active{background:#f1f4fa}
 /* 手機：表單 / 查詢 / 詳情 sheet 輸入字級 ≥16px，避免 iOS 聚焦自動放大 */
 @media(max-width:1023px){
 #pg-form input,#pg-form select,#pg-form textarea,
@@ -356,9 +362,15 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       <div class="flex-1 flex flex-col items-center justify-center py-3 min-w-0 px-2">
         <span class="font-headline font-extrabold text-[11px] sm:text-xs tracking-[0.14em] text-primary uppercase text-center leading-tight">RD Record · 詳情</span>
       </div>
-      <button type="button" class="flex items-center justify-center w-12 shrink-0 text-outline hover:bg-surface-container-low active:bg-surface-container-high rounded-none opacity-40 cursor-default" aria-label="選單" tabindex="-1">
-        <span class="ms text-2xl">more_vert</span>
-      </button>
+      <div class="relative flex items-stretch justify-center w-12 shrink-0">
+        <button type="button" id="detMenuBtn" class="flex items-center justify-center w-full text-on-surface hover:bg-surface-container-low active:bg-surface-container-high rounded-none" aria-label="選單" aria-expanded="false" aria-haspopup="true" onclick="toggleDetShareMenu(event)">
+          <span class="ms text-2xl">more_vert</span>
+        </button>
+        <div id="detShareMenu" class="det-share-pop" role="menu" aria-hidden="true">
+          <button type="button" role="menuitem" onclick="detailShareToLine(event)">分享到 LINE</button>
+          <button type="button" role="menuitem" onclick="detailCopyShareText(event)">複製分享文字</button>
+        </div>
+      </div>
     </div>
     <div class="m-body text-on-surface bg-surface" id="mBody"></div>
     <div class="m-actions" id="mActions"></div>
@@ -415,6 +427,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   addPart();
   if (!listLoadedInLiff) loadRecs();
+  document.getElementById("mSheet").addEventListener("click", (e)=>{
+    const menu=document.getElementById("detShareMenu");
+    const btn=document.getElementById("detMenuBtn");
+    if(!menu||!menu.classList.contains("op")) return;
+    if(btn&&(e.target===btn||btn.contains(e.target))) return;
+    if(menu.contains(e.target)) return;
+    closeDetShareMenu();
+  });
 });
 
 async function fetchRole(uid) {
@@ -835,9 +855,159 @@ function statusCls(s){
 }
 
 function closeDetailModal(){
+  closeDetShareMenu();
   document.getElementById("modal").classList.remove("op");
   detailEditMode = false;
   detailOpenRid = null;
+}
+
+function getCurrentDetailRecord(){
+  if(!detailOpenRid) return null;
+  return recs.find(x=>x.recordId===detailOpenRid) || null;
+}
+
+function closeDetShareMenu(){
+  const m=document.getElementById("detShareMenu"), b=document.getElementById("detMenuBtn");
+  if(m){ m.classList.remove("op"); m.setAttribute("aria-hidden","true"); }
+  if(b) b.setAttribute("aria-expanded","false");
+}
+function toggleDetShareMenu(ev){
+  ev.stopPropagation();
+  const m=document.getElementById("detShareMenu"), b=document.getElementById("detMenuBtn");
+  if(!m||!b) return;
+  const open=!m.classList.contains("op");
+  m.classList.toggle("op",open);
+  m.setAttribute("aria-hidden",open?"false":"true");
+  b.setAttribute("aria-expanded",open?"true":"false");
+}
+
+/** 分享用：空值回傳空字串，不輸出 null / - / undefined */
+function shareField(v){
+  if(v==null) return "";
+  const s=String(v).replace(/\r\n/g,"\n").trim();
+  return s;
+}
+
+function formatShareDate(d){
+  const s=shareField(d);
+  if(!s) return "";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s.replace(/-/g,"");
+  return s;
+}
+
+/** 品名後括號：依檢驗狀態區分 (used) / (new) */
+function partConditionSuffix(status){
+  const u=String(status||"").trim().toUpperCase();
+  if(/NEW/i.test(String(status||""))) return "(new)";
+  if(u==="PASS"||u==="FAIL"||u==="待驗"||u==="UNKNOW"||u==="UNKNOWN"||!u) return "(used)";
+  return "(used)";
+}
+
+function aggregatePartStatuses(r){
+  const ps=(r.parts||[]).map(p=>shareField(p.status)).filter(Boolean);
+  if(!ps.length) return "";
+  return [...new Set(ps)].map(s=>s.toLowerCase()).join("、");
+}
+
+function aggregatePurpose(r){
+  const set=new Set();
+  (r.parts||[]).forEach(p=>{ const x=shareField(p.purpose); if(x) set.add(x); });
+  return [...set].join("、");
+}
+
+function buildLineShareText(r){
+  if(!r) return "";
+  const lines=[];
+  lines.push(`📦 日期 : ${formatShareDate(r.date)}`);
+  lines.push(`🏷️ 來源 : ${shareField(r.source)}`);
+  lines.push(`👤 客戶 : ${shareField(r.customer)}`);
+  lines.push(`🧾 單號 : ${shareField(r.recordId)}`);
+  lines.push("");
+  const parts=r.parts||[];
+  if(parts.length){
+    parts.forEach((p,idx)=>{
+      if(idx>0) lines.push("");
+      const nm=String(p.itemName!=null?p.itemName:"").replace(/\r\n/g,"\n");
+      const nmLines=nm.split("\n");
+      const sfx=partConditionSuffix(p.status);
+      const head=(nmLines[0]!=null?nmLines[0].trim():"");
+      lines.push(`${idx+1}. ${head}${sfx}`.trim());
+      for(let j=1;j<nmLines.length;j++){
+        const t=nmLines[j].trim();
+        if(t) lines.push(t);
+      }
+      lines.push(`PN : ${shareField(p.pn)}`);
+      lines.push(`SN : ${shareField(p.sn)}`);
+      const rem=shareField(p.remark);
+      if(rem) lines.push(rem);
+      const bin=shareField(p.bin);
+      if(bin) lines.push(`櫃位 : ${bin}`);
+    });
+    lines.push("");
+  }
+  const st=aggregatePartStatuses(r)||shareField(r.status).toLowerCase();
+  const pur=aggregatePurpose(r);
+  lines.push(`📌 狀態 : ${st}`);
+  lines.push(`🎯 目的 : ${pur}`);
+  return lines.join("\n");
+}
+
+async function copyShareTextToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch(_){
+    try{
+      const ta=document.createElement("textarea");
+      ta.value=text; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.left="-9999px";
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,text.length);
+      const ok=document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch(__){ return false; }
+  }
+}
+
+function detailCopyShareText(ev){
+  ev.stopPropagation();
+  const r=getCurrentDetailRecord();
+  if(!r){ showToast("無法取得紀錄","err"); return; }
+  const text=buildLineShareText(r);
+  copyShareTextToClipboard(text).then(ok=>{
+    closeDetShareMenu();
+    showToast(ok?"已複製分享文字":"複製失敗，請稍後再試",ok?"":"err");
+  });
+}
+
+async function detailShareToLine(ev){
+  ev.stopPropagation();
+  const r=getCurrentDetailRecord();
+  if(!r){ showToast("無法取得紀錄","err"); return; }
+  const text=buildLineShareText(r);
+  if(typeof liff!=="undefined"&&liff.isInClient&&liff.isInClient()&&typeof liff.shareTargetPicker==="function"&&(!liff.isApiAvailable||liff.isApiAvailable("shareTargetPicker"))){
+    try{
+      const ok=await liff.shareTargetPicker([{type:"text",text}]);
+      closeDetShareMenu();
+      if(ok) showToast("已成功分享","");
+      else showToast("已取消分享","");
+      return;
+    } catch(e){
+      console.warn("shareTargetPicker:",e);
+    }
+  }
+  try{
+    if(navigator.share){
+      await navigator.share({text,title:"RD Record"});
+      closeDetShareMenu();
+      showToast("已開啟系統分享","");
+      return;
+    }
+  } catch(e){
+    console.warn("navigator.share:",e);
+  }
+  const ok=await copyShareTextToClipboard(text);
+  closeDetShareMenu();
+  showToast(ok?"無法直接分享到 LINE，已複製分享文字":"分享失敗，請稍後再試",ok?"":"err");
 }
 
 /** 登記時間欄：由 GAS query 的 createdAt（Sheets「登記時間」）取時刻顯示 */
@@ -1059,6 +1229,7 @@ function refreshDetailModal(){
 
 function showDetail(rid){
   if(!recs.find(x=>x.recordId===rid)) return;
+  closeDetShareMenu();
   detailOpenRid = rid;
   detailEditMode = false;
   refreshDetailModal();
