@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>RD Record · 出貨登錄</title>
+<title>RD Record · System</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
@@ -64,8 +64,19 @@ button,input,select,textarea{font:inherit}
 .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
 @keyframes rot{to{transform:rotate(360deg)}}
 .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .65s linear infinite;vertical-align:-2px}
-.q-clear{opacity:0;pointer-events:none;transition:opacity .12s}
+.q-clear{opacity:0;pointer-events:none;transition:opacity .12s,background .15s,color .15s,transform .1s}
 .q-clear.vis{opacity:1;pointer-events:auto}
+@media(max-width:1023px){
+  #qSearchShell .q-clear.vis{
+    display:flex;align-items:center;justify-content:center;
+    width:2.375rem;height:2.375rem;padding:0;border-radius:9999px;
+    right:0.5rem;
+    background:rgba(229,232,238,.96);
+    color:#536167;
+  }
+  #qSearchShell .q-clear.vis:hover{background:rgba(213,220,228,1);color:#004253}
+  #qSearchShell .q-clear.vis:active{transform:scale(0.94)}
+}
 .mbd,.cfm-bd{display:none}.mbd.op,.cfm-bd.op{display:flex}
 .success-banner{transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1)}
 .success-banner.sh{transform:translateY(0)}
@@ -111,13 +122,13 @@ button,input,select,textarea{font:inherit}
 .q-rec-card-v2{background:#fff;border-radius:14px;border:1px solid rgba(191,200,204,.28);margin-bottom:12px;padding:14px 14px 12px;cursor:pointer;transition:border-color .15s,background .15s}
 .q-rec-card-v2:active{background:#fafbfc}
 .q-rec-card-v2:hover{border-color:rgba(0,66,83,.2)}
-.q-rec-v2-row1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.q-rec-v2-row1{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
 .q-rec-v2-dateblk{flex:1;min-width:0;padding-right:6px}
 .q-rec-v2-dtlbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a9398;margin-bottom:4px}
 .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em}
-.q-rec-v2-mid{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0;max-width:min(48%,12rem);min-width:0;text-align:right}
-.q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
-.q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:5px 11px;border-radius:999px;font-size:11px;font-weight:800;background:#c5f0ef;color:#004253}
+.q-rec-v2-mid{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0;max-width:min(48%,12rem);min-width:0;text-align:right;padding-bottom:1px}
+.q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+.q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.1rem;padding:7px 16px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
 .q-rec-v2-sep{height:1px;background:rgba(191,200,204,.35);margin:0 0 10px}
 .q-rec-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .q-rec-v2-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-width:0}
@@ -168,11 +179,13 @@ button,input,select,textarea{font:inherit}
 .det-item-val-mono{font-size:14px;font-weight:700;color:#181c20;line-height:1.4;margin:0;font-family:JetBrains Mono,monospace;word-break:break-all}
 .det-item-val-qty{font-size:1.25rem;font-weight:800;color:#004253;line-height:1.2;margin:0;font-family:Manrope,Noto Sans TC,sans-serif}
 .det-item-val-body{font-size:14px;font-weight:600;color:#242a2f;line-height:1.55;margin:0;word-break:break-word}
-/* 詳情唯讀品項：PN/SN 一體式灰底區（非兩張獨立小卡） */
-.det-pnsn-wrap{border-radius:0.75rem;background:rgba(229,232,238,.45);border:1px solid rgba(191,200,204,.22)}
-.det-pnsn-inner{display:grid;grid-template-columns:1fr 1fr;gap:0;min-width:0}
-.det-pnsn-col{min-width:0;padding:0.65rem 0.85rem}
-.det-pnsn-col:first-child{border-right:1px solid rgba(191,200,204,.35)}
+/* 詳情唯讀品項：PN/SN 與 QTY/BIN 背景對調；PN/SN 無中線 */
+.det-pnsn-wrap{border-radius:0.75rem;background:transparent;border:none}
+.det-pnsn-inner{display:grid;grid-template-columns:1fr 1fr;gap:0 0.75rem;min-width:0}
+.det-pnsn-col{min-width:0;padding:0.15rem 0}
+.det-pnsn-col:first-child{border-right:none!important}
+.det-qty-bin-wrap{border-radius:0.75rem;background:rgba(229,232,238,.45);border:1px solid rgba(191,200,204,.22)}
+.det-qty-bin-inner{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem 1rem;min-width:0;padding:0.65rem 0.85rem}
 .m-part-bd{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
 .m-part-row{display:flex;flex-direction:column;gap:2px}
 .m-part-row.full{grid-column:1/-1}
@@ -182,7 +195,8 @@ button,input,select,textarea{font:inherit}
 .cfm-bd.op{display:flex!important}
 .cfm-a4-box{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 8px 32px -4px rgba(24,28,32,.06),0 0 0 1px rgba(255,255,255,.25)}
 .toast.err{background:#ba1a1a}
-.md-head{position:relative}
+.md-head{position:relative;box-shadow:none!important}
+header.topbar{box-shadow:none!important}
 .det-share-pop{display:none;position:absolute;right:2px;top:100%;margin-top:4px;min-width:11.5rem;z-index:80;border-radius:12px;background:#fff;box-shadow:0 8px 32px -4px rgba(24,28,32,.12),0 0 0 1px rgba(0,66,83,.08);overflow:hidden}
 .det-share-pop.op{display:block}
 .det-share-pop button{display:block;width:100%;text-align:left;padding:12px 16px;font-size:14px;font-weight:600;color:#181c20;border:none;background:transparent;cursor:pointer}
@@ -242,7 +256,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
 
 <div class="main flex flex-1 min-w-0 flex-col min-h-svh bg-surface">
 
-<header class="topbar sticky top-0 z-[100] flex items-center gap-3 px-4 pt-[max(8px,env(safe-area-inset-top))] pb-2.5 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/20" role="banner">
+<header class="topbar sticky top-0 z-[100] flex items-center gap-3 px-4 pt-[max(8px,env(safe-area-inset-top))] pb-2.5 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/20 shadow-none" role="banner">
   <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary-container shrink-0">
     <span class="ms fi">analytics</span>
   </div>
@@ -316,8 +330,8 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <div id="qSearchShell" class="relative flex-1 min-w-0 flex items-center rounded-md border border-outline-variant/35 bg-surface-container-lowest shadow-none lg:block lg:rounded-none lg:border-0 lg:bg-transparent">
           <span class="ms text-outline shrink-0 text-xl pl-3 pointer-events-none lg:absolute lg:left-0 lg:top-1/2 lg:-translate-y-1/2 lg:pl-0 lg:text-lg">search</span>
           <input type="text" id="srch" placeholder="搜尋日期、客戶、品名或 P/N…" oninput="onSrchInput()" onkeydown="if(event.key==='Enter')doSearch()" class="min-w-0 flex-1 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-base leading-snug text-on-surface placeholder:text-outline-variant/55 py-3 pl-2 pr-11 rounded-md lg:block lg:flex-none lg:w-full lg:rounded-none lg:py-2.5 lg:pl-9 lg:pr-10 lg:text-sm lg:border-0 lg:border-b-2 lg:border-outline-variant/30 lg:focus:border-primary transition-colors"/>
-          <button type="button" class="q-clear absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-outline-variant hover:text-primary hover:bg-surface-container-low/80 transition-colors lg:right-0 lg:p-1 lg:rounded-full" id="srchClear" onclick="clearSearch()">
-            <span class="ms text-lg">close</span>
+          <button type="button" class="q-clear absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-md text-outline-variant hover:text-primary hover:bg-surface-container-low/80 transition-colors lg:right-0 lg:p-1 lg:rounded-full" id="srchClear" onclick="clearSearch()" aria-label="清除搜尋">
+            <span class="ms text-lg leading-none">close</span>
           </button>
         </div>
         <button type="button" class="lg:self-end shrink-0 px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container text-sm font-semibold shadow-ambient active:scale-[0.99] transition-transform hidden lg:inline-flex items-center justify-center gap-2" onclick="doSearch()"><span class="ms">search</span> 搜尋</button>
@@ -450,7 +464,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
 
 <div class="mbd" id="modal" onclick="closeModal(event)">
   <div class="msh" id="mSheet" onclick="event.stopPropagation()">
-    <div class="md-head flex items-stretch shrink-0 sticky top-0 z-20 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/15">
+    <div class="md-head flex items-stretch shrink-0 sticky top-0 z-20 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/15 shadow-none">
       <button type="button" class="flex items-center justify-center w-12 shrink-0 text-on-surface hover:bg-surface-container-low active:bg-surface-container-high rounded-none" aria-label="返回" onclick="closeDetailModal()">
         <span class="ms text-2xl">arrow_back</span>
       </button>
@@ -1540,7 +1554,8 @@ function refreshDetailModal(){
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-3 gap-y-4">
+      <div class="det-qty-bin-wrap mb-4">
+        <div class="det-qty-bin-inner">
         <div class="min-w-0">
           <p class="det-item-lbl mb-1">Quantity</p>
           <p class="det-item-val-qty">${esc(p.qty)||"1"}</p>
@@ -1548,6 +1563,7 @@ function refreshDetailModal(){
         <div class="min-w-0">
           <p class="det-item-lbl mb-1">Storage Bin</p>
           <p class="det-item-val-mono">${binStr||"—"}</p>
+        </div>
         </div>
       </div>
       ${p.purpose?`<div class="mt-4 pt-3 border-t border-outline-variant/12"><p class="det-item-lbl mb-1.5">目的 (Purpose)</p><p class="det-item-val-body">${esc(p.purpose)}</p></div>`:""}
