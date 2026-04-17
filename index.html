@@ -119,6 +119,9 @@ button,input,select,textarea{font:inherit}
 .cfm-bd{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}
 .cfm-bd.op{display:flex!important}
 .toast.err{background:#ba1a1a}
+/* 新增登錄頁：隱藏共用 topbar（查詢頁維持顯示） */
+body:has(#pg-form.page.act) header.topbar{display:none!important}
+body:has(#pg-form.page.act) #pg-form{padding-top:max(1rem, env(safe-area-inset-top, 0px))}
 
 </style>
 </head>
@@ -167,14 +170,9 @@ button,input,select,textarea{font:inherit}
 <div class="content flex-1 overflow-y-auto pb-28 lg:pb-10 lg:px-8">
 
 <div class="page act max-w-lg lg:max-w-3xl mx-auto w-full px-4 pt-4 pb-2" id="pg-form">
-  <div class="mb-6">
-    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-secondary mb-1">Architectural Ledger</p>
-    <h2 class="font-headline text-2xl font-extrabold text-on-surface tracking-tight">新增登錄</h2>
-    <p class="text-sm text-on-surface-variant mt-2 leading-relaxed">登錄新到貨零件與出貨資訊，送出後將寫入 Google Sheets。</p>
-  </div>
-
   <section class="space-y-3 mb-6">
     <div class="flex items-center gap-2">
+      <span class="ms fi text-primary-container text-xl shrink-0">assignment</span>
       <span class="text-[10px] font-bold tracking-[0.1em] uppercase text-secondary">Section 01</span>
       <h3 class="font-headline font-bold text-primary text-xs uppercase tracking-wide">基本資訊</h3>
       <div class="h-px flex-1 bg-outline-variant/20"></div>
@@ -198,13 +196,12 @@ button,input,select,textarea{font:inherit}
   </section>
 
   <section class="space-y-3 mb-4">
-    <div class="flex items-end justify-between gap-3">
-      <div class="flex items-center gap-2 min-w-0">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
         <span class="ms fi text-primary-container text-xl shrink-0">inventory_2</span>
-        <div>
-          <span class="text-[10px] font-bold tracking-[0.1em] uppercase text-secondary block">Section 02</span>
-          <h3 class="font-headline font-bold text-on-surface text-sm">零件清單</h3>
-        </div>
+        <span class="text-[10px] font-bold tracking-[0.1em] uppercase text-secondary">Section 02</span>
+        <h3 class="font-headline font-bold text-primary text-xs uppercase tracking-wide">零件清單</h3>
+        <div class="h-px flex-1 bg-outline-variant/20"></div>
       </div>
       <span class="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full font-mono shrink-0"><span id="pcNum">0</span> 項</span>
     </div>
