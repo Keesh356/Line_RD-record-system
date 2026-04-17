@@ -128,7 +128,7 @@ button,input,select,textarea{font:inherit}
 .sb-row.act .ms{color:#004253}
 .btmbar{position:fixed;bottom:0;left:0;right:0;z-index:200;display:flex;align-items:center;gap:8px;padding:6px 14px max(10px,env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 -6px 24px -6px rgba(24,28,32,.05);border-radius:14px 14px 0 0}
 .bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px 6px;border-radius:0;color:#004253;font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;transition:color .15s;min-height:52px;border:none;background:transparent;cursor:pointer;max-width:50%}
-.bnav-chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 14px 9px;border-radius:14px;min-width:3.25rem;transition:background .15s,box-shadow .15s}
+.bnav-chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 22px 9px;border-radius:14px;min-width:4.5rem;transition:background .15s,box-shadow .15s}
 .bnav .ms{font-size:20px;color:#004253}
 .bnav.act{color:#004253;background:transparent;box-shadow:none}
 .bnav.act .bnav-chip{background:rgba(230,236,240,.95);box-shadow:inset 0 0 0 1px rgba(191,200,204,.35)}
@@ -299,11 +299,11 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
   </section>
 
   <div class="grid grid-cols-2 gap-3 pt-1 pb-4">
-    <button type="button" onclick="addPart()" class="w-full bg-surface-container-high text-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-transform shadow-sm">
-      <span class="ms fi text-lg">add_circle</span> 新增零件
+    <button type="button" onclick="addPart()" class="w-full bg-surface-container-high text-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2.5 text-sm active:scale-[0.98] transition-transform shadow-sm tracking-wide">
+      <span class="ms fi text-lg">add_circle</span> ADD PART
     </button>
-    <button type="button" id="btnSub" onclick="confirmSubmit()" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-transform" style="box-shadow:0 8px 32px -4px rgba(0,66,83,0.22)">
-      <span class="ms fi text-lg">check_circle</span> 送出
+    <button type="button" id="btnSub" onclick="confirmSubmit()" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2.5 text-sm active:scale-[0.98] transition-transform tracking-wide" style="box-shadow:0 8px 32px -4px rgba(0,66,83,0.22)">
+      <span class="ms fi text-lg">check_circle</span> SUBMIT
     </button>
   </div>
   <p class="text-center text-[10px] uppercase tracking-[0.08em] text-outline pb-4">送出前請再次確認欄位 · 資料將儲存至 Google Sheets</p>
@@ -486,7 +486,7 @@ const CFG = {
 // ──────────────────────────────────────────
 let profile  = null;
 let userRole = "rd";
-let pcnt     = 0;
+let pcnt     = 0; /* 僅用於產生穩定 DOM id（p1,p2…），畫面編號請用 reindexPartBadges() */
 let recs     = [];
 let detailOpenRid   = null;
 let detailEditMode  = false;
@@ -602,7 +602,7 @@ function addPart(data={}) {
   div.id = id;
   div.innerHTML = `
     <div class="pchd op flex items-center gap-3 px-4 py-3.5 cursor-pointer select-none bg-surface-container-lowest" id="hd_${id}" onclick="togPart('${id}')">
-      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm">${pcnt}</div>
+      <div class="part-item-idx w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm">0</div>
       <div class="flex-1 font-mono font-semibold text-sm text-on-surface truncate min-w-0" id="lbl_${id}">${esc(data.itemName)||"ITEM NAME"}</div>
       <div class="flex items-center gap-0.5 shrink-0">
         <button type="button" class="p-1.5 rounded-lg text-outline-variant hover:bg-error-container/40 hover:text-error transition-colors" onclick="delPart(event,'${id}')">
@@ -682,6 +682,17 @@ function addPart(data={}) {
   `;
   document.getElementById("partsList").appendChild(div);
   updCount();
+  reindexPartBadges();
+}
+
+/** 依 #partsList 子元素順序更新 header 數字 badge（1…n），與 internal id 無關 */
+function reindexPartBadges(){
+  const pl = document.getElementById("partsList");
+  if (!pl) return;
+  Array.from(pl.children).forEach((row, i) => {
+    const badge = row.querySelector(".part-item-idx");
+    if (badge) badge.textContent = String(i + 1);
+  });
 }
 
 function h(s){ return s ? String(s).replace(/"/g,'&quot;') : ''; }
@@ -696,7 +707,7 @@ function delPart(e,id){
   e.stopPropagation();
   const el=document.getElementById(id);
   el.style.transition="all .18s"; el.style.opacity="0"; el.style.transform="scale(0.97)";
-  setTimeout(()=>{ el.remove(); delete partStatus[id]; updCount(); },190);
+  setTimeout(()=>{ el.remove(); delete partStatus[id]; updCount(); reindexPartBadges(); },190);
 }
 function updCount(){
   const pl = document.getElementById("partsList");
@@ -823,8 +834,20 @@ function confirmSubmit(){
 function closeCfm(){
   document.getElementById("cfmModal").classList.remove("op");
 }
+const CFM_OK_BTN_HTML = `<span class="ms fi" style="font-size:18px">check</span>確認`;
+
 async function doSubmit(){
   const { basic, parts } = collect();
+  if (!basic.customer) {
+    closeCfm();
+    showToast("請填寫 Customer", "err");
+    return;
+  }
+  if (!parts.length) {
+    closeCfm();
+    showToast("請新增至少一項零件", "err");
+    return;
+  }
   const badIdx = firstEmptyItemNameIndex(parts);
   if (badIdx >= 0){
     closeCfm();
@@ -841,19 +864,32 @@ async function doSubmit(){
 
   try {
     const res = await gas({ action:"submit", basic, parts });
-    closeCfm();
-    if (res.success) {
-      showBanner(res.recordId);
-      setTimeout(resetForm, 1600);
-    } else {
-      showToast(res.message||"送出失敗","err");
+    const ok =
+      res &&
+      res.success === true &&
+      typeof res.recordId === "string" &&
+      res.recordId.trim().length > 0;
+    if (!ok) {
+      const msg =
+        (res && typeof res.message === "string" && res.message.trim())
+          ? res.message.trim()
+          : "資料尚未成功寫入 Google Sheets";
+      showErrorBanner("送出失敗", msg);
+      showToast("送出失敗：" + msg, "err");
+      return;
     }
-  } catch(e){
     closeCfm();
-    showToast("網路錯誤："+e.message,"err");
+    showBanner(res.recordId);
+    setTimeout(resetForm, 1600);
+  } catch (e) {
+    const hint =
+      (e && e.responseSnippet) ? e.responseSnippet : (e && e.message ? String(e.message) : "請稍後再試");
+    showErrorBanner("送出失敗", "無法完成寫入：" + hint);
+    showToast("送出失敗，請稍後再試", "err");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = CFM_OK_BTN_HTML;
   }
-  btn.disabled = false;
-  btn.innerHTML = `<span class="ms fi" style="font-size:18px">check</span>確認`;
 }
 
 function resetForm(){
@@ -1803,8 +1839,34 @@ async function deleteRecord(rid){
 async function gas(p) {
   const url = CFG.GAS_URL + "?payload=" + encodeURIComponent(JSON.stringify(p));
   const r = await fetch(url, { method: "GET" });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  return r.json();
+  const raw = await r.text();
+  if (!r.ok) {
+    const err = new Error("HTTP " + r.status);
+    err.responseSnippet = raw.replace(/\s+/g, " ").trim().slice(0, 120);
+    throw err;
+  }
+  const t = raw.trim();
+  if (!t) {
+    const err = new Error("伺服器回應空白");
+    throw err;
+  }
+  if (t[0] === "<") {
+    const err = new Error("伺服器回傳 HTML 而非 JSON（請確認 GAS 部署網址）");
+    err.responseSnippet = t.replace(/\s+/g, " ").slice(0, 100);
+    throw err;
+  }
+  let data;
+  try {
+    data = JSON.parse(t);
+  } catch (_) {
+    const err = new Error("無法解析 JSON");
+    err.responseSnippet = t.slice(0, 120);
+    throw err;
+  }
+  if (data === null || typeof data !== "object") {
+    throw new Error("回應格式異常");
+  }
+  return data;
 }
 function showToast(msg,type=""){
   const t=document.getElementById("toast"),i=document.getElementById("tIco"),m=document.getElementById("tMsg");
