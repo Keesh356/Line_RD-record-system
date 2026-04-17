@@ -73,10 +73,10 @@ button,input,select,textarea{font:inherit}
 .error-banner{transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1)}
 .error-banner.sh{transform:translateY(0)}
 /* 新增登錄 · 零件卡「檢驗狀態」四鍵：未選弱化 / 已選強化 */
-.ins-ch{min-height:2.75rem;border-radius:0.75rem;font-size:10px;line-height:1.15;font-weight:700;border:2px solid transparent;transition:background .15s,color .15s,box-shadow .15s,border-color .15s,opacity .18s,transform .1s;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 4px;touch-action:manipulation;white-space:nowrap}
+.ins-ch{min-height:2.35rem;border-radius:0.625rem;font-size:10px;line-height:1.12;font-weight:700;border:2px solid transparent;transition:background .15s,color .15s,box-shadow .15s,border-color .15s,opacity .18s,transform .1s;display:flex;align-items:center;justify-content:center;gap:2px;padding:0 3px;touch-action:manipulation;white-space:nowrap}
 .ins-ch:active{transform:scale(0.97)}
-.ins-ch-mark{font-size:13px!important;line-height:1;display:inline-flex;max-width:0;opacity:0;overflow:hidden;transition:max-width .2s,opacity .15s,margin .15s;margin:0}
-.ins-ch-on .ins-ch-mark{max-width:1.25rem;opacity:1;margin-right:1px}
+.ins-ch-mark{font-size:11px!important;line-height:1;display:inline-flex;max-width:0;opacity:0;overflow:hidden;transition:max-width .2s,opacity .15s,margin .15s;margin:0}
+.ins-ch-on .ins-ch-mark{max-width:1.1rem;opacity:1;margin-right:1px}
 .ins-ch-off{opacity:.58;font-weight:600;box-shadow:none}
 .ins-ch-on{opacity:1;font-weight:800;box-shadow:0 5px 16px -2px rgba(24,28,32,.22)}
 .ins-ch-off.ins-ch-pass{background:rgba(160,240,240,.22);color:rgba(0,66,83,.42);border-color:rgba(0,68,68,.06)}
@@ -136,6 +136,11 @@ button,input,select,textarea{font:inherit}
 .det-item-val-mono{font-size:14px;font-weight:700;color:#181c20;line-height:1.4;margin:0;font-family:JetBrains Mono,monospace;word-break:break-all}
 .det-item-val-qty{font-size:1.25rem;font-weight:800;color:#004253;line-height:1.2;margin:0;font-family:Manrope,Noto Sans TC,sans-serif}
 .det-item-val-body{font-size:14px;font-weight:600;color:#242a2f;line-height:1.55;margin:0;word-break:break-word}
+/* 詳情唯讀品項：PN/SN 一體式灰底區（非兩張獨立小卡） */
+.det-pnsn-wrap{border-radius:0.75rem;background:rgba(229,232,238,.45);border:1px solid rgba(191,200,204,.22)}
+.det-pnsn-inner{display:grid;grid-template-columns:1fr 1fr;gap:0;min-width:0}
+.det-pnsn-col{min-width:0;padding:0.65rem 0.85rem}
+.det-pnsn-col:first-child{border-right:1px solid rgba(191,200,204,.35)}
 .m-part-bd{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
 .m-part-row{display:flex;flex-direction:column;gap:2px}
 .m-part-row.full{grid-column:1/-1}
@@ -467,7 +472,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     setRole("rd");
   }
   addPart();
-  if (!listLoadedInLiff) loadRecs();
+  if (!listLoadedInLiff) await loadRecs();
+  await tryOpenDetailFromUrl();
   document.getElementById("mSheet").addEventListener("click", (e)=>{
     const menu=document.getElementById("detShareMenu");
     const btn=document.getElementById("detMenuBtn");
@@ -871,6 +877,18 @@ async function loadRecs(kw, dateFrom, dateTo, opts = {}){
 
   try {
     const r = await gas({ action:"query", keyword:kw, dateFrom, dateTo });
+    if (!r.success) {
+      showToast(r.message || "查詢失敗", "err");
+      if (!canSoft) {
+        recs = [];
+        renderRecs([]);
+        const cnt = document.getElementById("qResultCount");
+        if (cnt) cnt.textContent = "";
+        const t2 = document.getElementById("stT2");
+        if (t2) t2.textContent = "—";
+      }
+      return;
+    }
     recs = r.records || [];
     _lastQueryKey = key;
     renderRecs(recs);
@@ -1041,6 +1059,219 @@ function buildLineShareText(r){
   return lines.join("\n");
 }
 
+const _FLEX_ITEM_SHOW = 5;
+
+/** LIFF 詳情深連結（Flex 底部 URI、外部開啟用） */
+function buildDetailRecordLiffUrl(recordId){
+  const u = new URL("https://liff.line.me/" + CFG.LIFF_ID);
+  u.searchParams.set("recordId", String(recordId || "").trim());
+  const g = new URLSearchParams(window.location.search).get("groupId");
+  if (g) u.searchParams.set("groupId", g);
+  return u.href;
+}
+
+function flexPlain(s, maxLen){
+  if (s == null) return "";
+  let t = String(s).replace(/\r\n/g, "\n").replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+  if (!t) return "";
+  if (maxLen && t.length > maxLen) t = t.slice(0, maxLen - 1) + "…";
+  return t;
+}
+
+function flexStatusBadge(stRaw){
+  const st = flexPlain(stRaw, 24);
+  if (!st) return null;
+  const u = st.toUpperCase();
+  let bg = "#e5e8ee", fg = "#40484c";
+  if (u === "PASS") { bg = "#a0f0f0"; fg = "#004444"; }
+  else if (u === "FAIL") { bg = "#ffdad6"; fg = "#ba1a1a"; }
+  else if (st === "待驗" || u === "待驗") { bg = "#d6e5ec"; fg = "#536167"; }
+  else { bg = "#fff7ed"; fg = "#c2410c"; }
+  return {
+    type: "box",
+    layout: "horizontal",
+    contents: [{
+      type: "text",
+      text: st,
+      size: "xxs",
+      color: fg,
+      weight: "bold",
+      align: "center"
+    }],
+    backgroundColor: bg,
+    cornerRadius: "8px",
+    paddingAll: "4px 10px",
+    flex: 0
+  };
+}
+
+/** 組裝 LINE Flex（shareTargetPicker 用），內容皆來自紀錄 r */
+function buildLineFlexMessage(r){
+  if (!r) return null;
+  const parts = r.parts || [];
+  const n = parts.length;
+  const infoRows = [];
+  function addInfo(label, val){
+    const t = flexPlain(val, 220);
+    if (!t) return;
+    infoRows.push({
+      type: "box",
+      layout: "horizontal",
+      spacing: "md",
+      margin: "sm",
+      contents: [
+        { type: "text", text: label, size: "xs", color: "#536167", flex: 2 },
+        { type: "text", text: t, size: "sm", color: "#004253", weight: "bold", flex: 5, wrap: true }
+      ]
+    });
+  }
+  const dShow = formatShareDate(r.date) || flexPlain(r.date, 32);
+  addInfo("日期", dShow);
+  addInfo("來源", r.source);
+  addInfo("客戶", r.customer);
+  addInfo("單號", r.recordId);
+
+  const itemBlocks = [];
+  const shown = parts.slice(0, _FLEX_ITEM_SHOW);
+  const rest = Math.max(0, n - shown.length);
+  shown.forEach((p, idx) => {
+    if (idx > 0) itemBlocks.push({ type: "separator", margin: "md" });
+    const name = flexPlain(p.itemName, 56) || " ";
+    const pn = flexPlain(p.pn, 40);
+    const sn = flexPlain(p.sn, 40);
+    const sub = [pn ? ("PN " + pn) : "", sn ? ("SN " + sn) : ""].filter(Boolean).join("  ·  ");
+    const topRow = [
+      { type: "text", text: String(idx + 1) + ".", size: "xs", color: "#70787d", flex: 0 },
+      { type: "text", text: name, size: "sm", weight: "bold", color: "#181c20", flex: 4, wrap: true }
+    ];
+    const bd = flexStatusBadge(p.status);
+    if (bd) topRow.push(bd);
+    itemBlocks.push({
+      type: "box",
+      layout: "vertical",
+      spacing: "xs",
+      margin: "sm",
+      contents: [
+        { type: "box", layout: "horizontal", spacing: "sm", contents: topRow },
+        { type: "text", text: sub || " ", size: "xxs", color: "#58676d", wrap: true }
+      ]
+    });
+  });
+  if (rest > 0) {
+    itemBlocks.push({ type: "separator", margin: "md" });
+    itemBlocks.push({
+      type: "text",
+      text: "其餘 " + rest + " 項請點擊下方按鈕查看",
+      size: "xs",
+      color: "#58676d",
+      wrap: true
+    });
+  }
+
+  const bodyContents = [].concat(
+    infoRows,
+    [{ type: "separator", margin: "lg" }],
+    [{ type: "text", text: "品項摘要", size: "xs", color: "#004253", weight: "bold", margin: "md" }],
+    itemBlocks.length ? itemBlocks : [{ type: "text", text: "（無品項）", size: "xs", color: "#70787d" }]
+  );
+
+  const alt = flexPlain("RD Record " + (r.recordId || "") + " · " + n + "項", 380) || "RD Record";
+
+  return {
+    type: "flex",
+    altText: alt,
+    contents: {
+      type: "bubble",
+      size: "kilo",
+      header: {
+        type: "box",
+        layout: "vertical",
+        paddingAll: "16px",
+        backgroundColor: "#004253",
+        contents: [
+          { type: "text", text: "RD Record 零件出貨紀錄", weight: "bold", color: "#ffffff", size: "md", wrap: true },
+          {
+            type: "text",
+            text: "共 " + n + " 項 · 請確認以下出貨內容",
+            size: "xs",
+            color: "#b8d4dc",
+            margin: "sm",
+            wrap: true
+          }
+        ]
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        paddingAll: "14px",
+        spacing: "sm",
+        contents: bodyContents
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        paddingAll: "12px",
+        contents: [{
+          type: "button",
+          style: "primary",
+          color: "#005b71",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "查看完整紀錄",
+            uri: buildDetailRecordLiffUrl(r.recordId)
+          }
+        }]
+      }
+    }
+  };
+}
+
+/** 分享到 LINE：優先 Flex → 失敗則純文字 → 再失敗則系統分享 / 剪貼簿 */
+async function shareRecordToLine(r){
+  if (!r) { showToast("無法取得紀錄", "err"); return; }
+  const textFb = buildLineShareText(r);
+  const flexMsg = buildLineFlexMessage(r);
+
+  const canPicker = typeof liff !== "undefined" && liff.isInClient && liff.isInClient() &&
+    typeof liff.shareTargetPicker === "function" &&
+    (!liff.isApiAvailable || liff.isApiAvailable("shareTargetPicker"));
+
+  if (canPicker && flexMsg) {
+    try {
+      const ok = await liff.shareTargetPicker([flexMsg]);
+      closeDetShareMenu();
+      if (ok) showToast("已開啟 LINE 分享", "");
+      else showToast("已取消分享", "");
+      return;
+    } catch (e1) {
+      console.warn("shareTargetPicker flex:", e1);
+      try {
+        const ok2 = await liff.shareTargetPicker([{ type: "text", text: textFb }]);
+        closeDetShareMenu();
+        if (ok2) showToast("Flex 卡片分享失敗，已改用文字分享", "");
+        else showToast("已取消分享", "");
+        return;
+      } catch (e2) {
+        console.warn("shareTargetPicker text:", e2);
+      }
+    }
+  }
+
+  try {
+    if (navigator.share) {
+      await navigator.share({ text: textFb, title: "【RD Record 零件出貨紀錄】" });
+      closeDetShareMenu();
+      showToast("已開啟系統分享", "");
+      return;
+    }
+  } catch (e) { console.warn("navigator.share:", e); }
+
+  const ok = await copyShareTextToClipboard(textFb);
+  closeDetShareMenu();
+  showToast(ok ? "無法直接分享，已為你複製分享內容" : "分享失敗，請稍後再試", ok ? "" : "err");
+}
+
 async function copyShareTextToClipboard(text){
   try{
     await navigator.clipboard.writeText(text);
@@ -1070,33 +1301,8 @@ function detailCopyShareText(ev){
 
 async function detailShareToLine(ev){
   ev.stopPropagation();
-  const r=getCurrentDetailRecord();
-  if(!r){ showToast("無法取得紀錄","err"); return; }
-  const text=buildLineShareText(r);
-  if(typeof liff!=="undefined"&&liff.isInClient&&liff.isInClient()&&typeof liff.shareTargetPicker==="function"&&(!liff.isApiAvailable||liff.isApiAvailable("shareTargetPicker"))){
-    try{
-      const ok=await liff.shareTargetPicker([{type:"text",text}]);
-      closeDetShareMenu();
-      if(ok) showToast("已成功分享","");
-      else showToast("已取消分享","");
-      return;
-    } catch(e){
-      console.warn("shareTargetPicker:",e);
-    }
-  }
-  try{
-    if(navigator.share){
-      await navigator.share({text,title:"【RD Record 零件出貨紀錄】"});
-      closeDetShareMenu();
-      showToast("已開啟系統分享","");
-      return;
-    }
-  } catch(e){
-    console.warn("navigator.share:",e);
-  }
-  const ok=await copyShareTextToClipboard(text);
-  closeDetShareMenu();
-  showToast(ok?"無法直接分享到 LINE，已複製分享文字":"分享失敗，請稍後再試",ok?"":"err");
+  const r = getCurrentDetailRecord();
+  await shareRecordToLine(r);
 }
 
 /** 登記時間：完整 yyyy-MM-dd HH:mm:ss（createdAt 來自 GAS query／Sheets「登記時間」；僅時間時用 date 欄組合） */
@@ -1162,14 +1368,16 @@ function refreshDetailModal(){
         <p class="det-item-lbl mb-1">型號 (Model)</p>
         <p class="det-item-val-mono">${esc(p.model)||"—"}</p>
       </div>
-      <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="rounded-xl bg-surface-container-high/40 border border-outline-variant/12 px-3 py-2.5 min-w-0">
-          <p class="det-item-lbl mb-1.5">P/N</p>
-          <p class="det-item-val-mono">${esc(p.pn)||"—"}</p>
-        </div>
-        <div class="rounded-xl bg-surface-container-high/40 border border-outline-variant/12 px-3 py-2.5 min-w-0">
-          <p class="det-item-lbl mb-1.5">S/N</p>
-          <p class="det-item-val-mono">${esc(p.sn)||"—"}</p>
+      <div class="det-pnsn-wrap mb-4">
+        <div class="det-pnsn-inner">
+          <div class="det-pnsn-col">
+            <p class="det-item-lbl mb-1.5">P/N</p>
+            <p class="det-item-val-mono">${esc(p.pn)||"—"}</p>
+          </div>
+          <div class="det-pnsn-col">
+            <p class="det-item-lbl mb-1.5">S/N</p>
+            <p class="det-item-val-mono">${esc(p.sn)||"—"}</p>
+          </div>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-3 gap-y-4">
@@ -1333,6 +1541,20 @@ function showDetail(rid){
   detailEditMode = false;
   refreshDetailModal();
   document.getElementById("modal").classList.add("op");
+}
+
+/** 從 URL ?recordId= 開啟詳情（Flex 底部按鈕用）；必要時改查「全部日期」以載入該筆 */
+async function tryOpenDetailFromUrl(){
+  try{
+    const id = new URLSearchParams(window.location.search).get("recordId");
+    if(!id) return;
+    if(!recs.some(x=>x.recordId===id))
+      await loadRecs("", "", "");
+    if(recs.some(x=>x.recordId===id)){
+      goPage("query");
+      showDetail(id);
+    }
+  } catch(e){ console.warn("tryOpenDetailFromUrl:", e); }
 }
 
 function editRecord(rid){
