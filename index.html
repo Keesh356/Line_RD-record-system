@@ -840,8 +840,31 @@ function closeDetailModal(){
   detailOpenRid = null;
 }
 
-function detailKvRow(lbl,val){
-  const v = (val!=null && String(val).trim()) ? esc(String(val).trim()) : "—";
+/** 登記時間欄：由 GAS query 的 createdAt（Sheets「登記時間」）取時刻顯示 */
+function formatRegTime(v){
+  if(v==null||v==="") return "";
+  if(typeof v==="object"&&v instanceof Date){
+    const d=v, hh=String(d.getHours()).padStart(2,"0"), mm=String(d.getMinutes()).padStart(2,"0");
+    const ss=d.getSeconds();
+    return ss ? `${hh}:${mm}:${String(ss).padStart(2,"0")}` : `${hh}:${mm}`;
+  }
+  const s=String(v).trim();
+  if(!s) return "";
+  const d=new Date(s);
+  if(!Number.isNaN(d.getTime())){
+    const hh=String(d.getHours()).padStart(2,"0"), mm=String(d.getMinutes()).padStart(2,"0");
+    const ss=d.getSeconds();
+    return ss ? `${hh}:${mm}:${String(ss).padStart(2,"0")}` : `${hh}:${mm}`;
+  }
+  const m=s.match(/\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b/);
+  if(m) return m[3] ? `${m[1].padStart(2,"0")}:${m[2]}:${m[3]}` : `${m[1].padStart(2,"0")}:${m[2]}`;
+  return "";
+}
+
+function detailKvRow(lbl,val,opts){
+  const blankEmpty = opts && opts.blankEmpty;
+  const raw = (val!=null && String(val).trim()) ? String(val).trim() : "";
+  const v = raw ? esc(raw) : (blankEmpty ? "" : "—");
   return `<div class="det-kv-row grid grid-cols-[4.75rem_1fr] gap-x-3 items-baseline py-2.5 first:pt-0 pr-2">
     <span class="text-xs text-outline font-medium">${lbl}</span>
     <span class="text-sm font-semibold text-on-surface break-words min-w-0 text-left">${v}</span>
@@ -855,7 +878,9 @@ function refreshDetailModal(){
   if(!r) return;
 
   if(!detailEditMode){
-    const partsHtml = (r.parts||[]).map((p)=>`
+    const partsHtml = (r.parts||[]).map((p)=>{
+    const binStr = (p.bin!=null && String(p.bin).trim()!=="") ? esc(String(p.bin).trim()) : "";
+    return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
       <div class="flex justify-between items-start gap-3 mb-3">
         <div class="min-w-0 flex-1">
@@ -885,25 +910,29 @@ function refreshDetailModal(){
         </div>
         <div class="min-w-0 flex flex-col gap-1">
           <p class="text-[8px] font-bold uppercase tracking-wider text-outline leading-none">Storage Bin</p>
-          <p class="font-mono text-sm font-bold text-on-surface leading-none">${esc(p.bin)||"—"}</p>
+          <p class="font-mono text-sm font-bold text-on-surface leading-none">${binStr}</p>
         </div>
       </div>
       ${p.purpose?`<div class="mt-3"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1">目的 (Purpose)</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.purpose)}</p></div>`:""}
       ${p.remark?`<div class="mt-2"><p class="text-[10px] font-bold uppercase tracking-wide text-outline mb-1">備註</p><p class="text-sm text-on-surface-variant leading-relaxed">${esc(p.remark)}</p></div>`:""}
     </div>
-  `).join("");
+  `;
+  }).join("");
 
     document.getElementById("mBody").innerHTML = `
-    <div class="mx-4 mt-4 rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
-      <div class="flex items-center gap-2 mb-1">
+    <div class="px-4 mt-4">
+      <div class="flex items-center gap-2 mb-3">
         <span class="ms text-primary text-lg">info</span>
         <span class="font-headline font-bold text-sm text-on-surface">基本資訊</span>
       </div>
-      <div class="pt-1 det-basic-kv">
+      <div class="rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
+        <div class="pt-1 det-basic-kv">
         ${detailKvRow("日期",r.date)}
         ${detailKvRow("客戶",r.customer)}
         ${detailKvRow("來源",r.source)}
         ${detailKvRow("登記人",r.submittedBy)}
+        ${detailKvRow("登記時間",formatRegTime(r.createdAt),{blankEmpty:true})}
+        </div>
       </div>
     </div>
     <div class="px-4 mt-5 pb-4">
