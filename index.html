@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>RD Record · 出貨登錄</title>
+<title>RD Record</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
@@ -251,8 +251,8 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       </div>
 
       <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-3">
-        <button type="button" class="q-pill act" id="qp-all" onclick="qPill('all')">全部</button>
-        <button type="button" class="q-pill" id="qp-today" onclick="qPill('today')">今天</button>
+        <button type="button" class="q-pill" id="qp-all" onclick="qPill('all')">全部</button>
+        <button type="button" class="q-pill act" id="qp-today" onclick="qPill('today')">今天</button>
         <button type="button" class="q-pill" id="qp-week" onclick="qPill('week')">本週</button>
         <button type="button" class="q-pill" id="qp-month" onclick="qPill('month')">本月</button>
         <button type="button" class="q-pill" id="qp-range" onclick="qPill('range')"><span class="ms" style="font-size:14px;vertical-align:middle">date_range</span> 區間</button>
@@ -406,6 +406,17 @@ const partStatus = {};
 // ──────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("fDate").value = today();
+  (function initQueryDefaultToday(){
+    const from=document.getElementById("qDateFrom"), to=document.getElementById("qDateTo");
+    if(!from||!to) return;
+    const d=today();
+    from.value=d; to.value=d;
+    _activePill="today";
+    ["all","today","week","month","range"].forEach(t=>{
+      document.getElementById("qp-"+t)?.classList.toggle("act",t==="today");
+    });
+    document.getElementById("qDatePanel")?.classList.remove("open");
+  })();
   let listLoadedInLiff = false;
   try {
     await liff.init({ liffId: CFG.LIFF_ID });
@@ -715,7 +726,7 @@ function resetForm(){
 // ──────────────────────────────────────────
 //  QUERY
 // ──────────────────────────────────────────
-let _activePill = "all";
+let _activePill = "today";
 
 function onSrchInput(){
   const v = document.getElementById("srch").value;
@@ -757,7 +768,16 @@ function queryCacheKey(kw, dateFrom, dateTo) {
   return kw + "\t" + dateFrom + "\t" + dateTo;
 }
 
-async function loadRecs(kw="", dateFrom="", dateTo="", opts = {}){
+async function loadRecs(kw, dateFrom, dateTo, opts = {}){
+  if(arguments.length===0){
+    kw=document.getElementById("srch")?.value.trim()||"";
+    dateFrom=document.getElementById("qDateFrom")?.value||"";
+    dateTo=document.getElementById("qDateTo")?.value||"";
+  } else {
+    if(kw===undefined||kw===null) kw="";
+    if(dateFrom===undefined||dateFrom===null) dateFrom="";
+    if(dateTo===undefined||dateTo===null) dateTo="";
+  }
   const soft = opts.soft === true;
   const key  = queryCacheKey(kw, dateFrom, dateTo);
   const list = document.getElementById("recList");
@@ -811,18 +831,19 @@ function renderRecs(rs){
     return `
     <div class="q-rec-card group cursor-pointer mb-4 last:mb-0 bg-surface-container-lowest rounded-xl p-4 shadow-ambient hover:shadow-lg transition-all border border-outline-variant/10 hover:border-primary/15" onclick="showDetail('${r.recordId}')">
       <div class="flex justify-between items-start gap-3 mb-3">
-        <div class="min-w-0 flex-1 grid grid-cols-2 gap-2.5">
-          <div class="min-w-0 rounded-lg bg-surface-container-low/90 px-2.5 py-2">
+        <div class="min-w-0 flex-1 grid grid-cols-2 gap-3">
+          <div class="min-w-0 py-0.5 pr-1">
             <span class="text-[9px] text-outline font-medium uppercase tracking-wider block mb-0.5">日期</span>
             <div class="font-headline font-semibold text-[13px] leading-snug text-on-surface truncate">${esc(r.date)||"—"}</div>
           </div>
-          <div class="min-w-0 rounded-lg bg-surface-container-low/90 px-2.5 py-2">
+          <div class="min-w-0 py-0.5 pl-1">
             <span class="text-[9px] text-outline font-medium uppercase tracking-wider block mb-0.5">登記人</span>
             <div class="font-headline font-semibold text-[13px] leading-snug text-on-surface truncate">${esc(r.submittedBy)||"—"}</div>
           </div>
         </div>
-        <div class="bg-surface-container-low px-2.5 py-1 rounded-full shrink-0">
-          <span class="text-[10px] font-semibold text-on-secondary-container whitespace-nowrap">${pc} 項</span>
+        <div class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-full bg-gradient-to-br from-primary-container to-primary text-on-primary shadow-md ring-2 ring-primary/25" aria-hidden="true">
+          <span class="text-[11px] font-extrabold leading-none">${pc}</span>
+          <span class="text-[8px] font-bold leading-none opacity-95 mt-px">項</span>
         </div>
       </div>
       <div class="flex items-center justify-between gap-2">
@@ -903,52 +924,48 @@ function partConditionSuffix(status){
   return "(used)";
 }
 
-function aggregatePartStatuses(r){
-  const ps=(r.parts||[]).map(p=>shareField(p.status)).filter(Boolean);
-  if(!ps.length) return "";
-  return [...new Set(ps)].map(s=>s.toLowerCase()).join("、");
-}
-
-function aggregatePurpose(r){
-  const set=new Set();
-  (r.parts||[]).forEach(p=>{ const x=shareField(p.purpose); if(x) set.add(x); });
-  return [...set].join("、");
-}
-
+/** 組裝詳情「分享到 LINE / 複製分享文字」共用內容（單一維護點） */
 function buildLineShareText(r){
   if(!r) return "";
-  const lines=[];
-  lines.push(`📦 日期 : ${formatShareDate(r.date)}`);
-  lines.push(`🏷️ 來源 : ${shareField(r.source)}`);
-  lines.push(`👤 客戶 : ${shareField(r.customer)}`);
-  lines.push(`🧾 單號 : ${shareField(r.recordId)}`);
-  lines.push("");
   const parts=r.parts||[];
-  if(parts.length){
-    parts.forEach((p,idx)=>{
-      if(idx>0) lines.push("");
-      const nm=String(p.itemName!=null?p.itemName:"").replace(/\r\n/g,"\n");
-      const nmLines=nm.split("\n");
-      const sfx=partConditionSuffix(p.status);
-      const head=(nmLines[0]!=null?nmLines[0].trim():"");
-      lines.push(`${idx+1}. ${head}${sfx}`.trim());
-      for(let j=1;j<nmLines.length;j++){
-        const t=nmLines[j].trim();
+  const n=parts.length;
+  const lines=[];
+  lines.push("【RD Record 零件出貨紀錄】");
+  lines.push(`共 ${n} 項，請確認以下出貨內容`);
+  lines.push("");
+  lines.push(`日期 : ${formatShareDate(r.date)}`);
+  lines.push(`來源 : ${shareField(r.source)}`);
+  lines.push(`客戶 : ${shareField(r.customer)}`);
+  lines.push(`單號 : ${shareField(r.recordId)}`);
+  lines.push("");
+  lines.push("──────────");
+  lines.push("");
+  parts.forEach((p,idx)=>{
+    if(idx>0) lines.push("");
+    const nm=String(p.itemName!=null?p.itemName:"").replace(/\r\n/g,"\n");
+    const nmLines=nm.split("\n");
+    const sfx=partConditionSuffix(p.status);
+    const head=(nmLines[0]!=null?nmLines[0].trim():"");
+    lines.push(`${idx+1}. ${[head,sfx].filter(Boolean).join(" ")}`.trim());
+    for(let j=1;j<nmLines.length;j++){
+      const t=nmLines[j].trim();
+      if(t) lines.push(t);
+    }
+    lines.push(`PN : ${shareField(p.pn)}`);
+    lines.push(`SN : ${shareField(p.sn)}`);
+    const remRaw=shareField(p.remark);
+    if(remRaw){
+      remRaw.split("\n").forEach(seg=>{
+        const t=seg.trim();
         if(t) lines.push(t);
-      }
-      lines.push(`PN : ${shareField(p.pn)}`);
-      lines.push(`SN : ${shareField(p.sn)}`);
-      const rem=shareField(p.remark);
-      if(rem) lines.push(rem);
-      const bin=shareField(p.bin);
-      if(bin) lines.push(`櫃位 : ${bin}`);
-    });
-    lines.push("");
-  }
-  const st=aggregatePartStatuses(r)||shareField(r.status).toLowerCase();
-  const pur=aggregatePurpose(r);
-  lines.push(`📌 狀態 : ${st}`);
-  lines.push(`🎯 目的 : ${pur}`);
+      });
+    }
+    const bin=shareField(p.bin);
+    if(bin) lines.push(`櫃位 : ${bin}`);
+    const st=shareField(p.status);
+    lines.push(`📌 狀態 : ${st?st.toLowerCase():""}`);
+    lines.push(`🎯 目的 : ${shareField(p.purpose)}`);
+  });
   return lines.join("\n");
 }
 
@@ -997,7 +1014,7 @@ async function detailShareToLine(ev){
   }
   try{
     if(navigator.share){
-      await navigator.share({text,title:"RD Record"});
+      await navigator.share({text,title:"【RD Record 零件出貨紀錄】"});
       closeDetShareMenu();
       showToast("已開啟系統分享","");
       return;
