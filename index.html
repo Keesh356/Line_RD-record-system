@@ -122,11 +122,12 @@ button,input,select,textarea{font:inherit}
 .q-rec-card-v2{background:#fff;border-radius:14px;border:1px solid rgba(191,200,204,.28);margin-bottom:12px;padding:14px 14px 12px;cursor:pointer;transition:border-color .15s,background .15s}
 .q-rec-card-v2:active{background:#fafbfc}
 .q-rec-card-v2:hover{border-color:rgba(0,66,83,.2)}
-.q-rec-v2-row1{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
-.q-rec-v2-dateblk{flex:1;min-width:0;padding-right:6px}
+/* 上列：右側人名／badge 與「日期值」列對齊（grid 第 2 列） */
+.q-rec-v2-row1{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:0 10px;margin-bottom:10px;align-items:start}
+.q-rec-v2-dateblk{grid-column:1;grid-row:1/-1;min-width:0;padding-right:6px;display:flex;flex-direction:column}
 .q-rec-v2-dtlbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a9398;margin-bottom:4px}
 .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em}
-.q-rec-v2-mid{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0;max-width:min(48%,12rem);min-width:0;text-align:right;padding-bottom:1px}
+.q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0;max-width:min(48%,12rem);min-width:0;text-align:right}
 .q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
 .q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.1rem;padding:7px 16px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
 .q-rec-v2-sep{height:1px;background:rgba(191,200,204,.35);margin:0 0 10px}
@@ -453,7 +454,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
     <span class="ms fi text-2xl text-white">check_circle</span>
   </div>
   <div class="flex-1 min-w-0">
-    <div class="font-headline font-bold text-base">登錄成功 · 資料已儲存</div>
+    <div class="font-headline font-bold text-base" id="sbTitle">登錄成功 · 資料已儲存</div>
     <div class="text-xs opacity-90 mt-0.5 font-mono tracking-wide" id="sbSub"></div>
   </div>
   <button type="button" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center shrink-0" onclick="hideBanner()"><span class="ms text-white">close</span></button>
@@ -787,9 +788,14 @@ function collect(){
 //  SUCCESS BANNER
 // ──────────────────────────────────────────
 let _bannerTimer = null;
-function showBanner(recordId){
+/** @param {string} recordId @param {{title?:string}} [opts] opts.title：編輯成功等覆寫主標（預設為新增登錄文案） */
+function showBanner(recordId, opts){
+  opts = opts || {};
   hideErrorBanner();
-  document.getElementById("sbSub").textContent = "單號：" + recordId;
+  const titleEl = document.getElementById("sbTitle");
+  if(titleEl) titleEl.textContent = opts.title || "登錄成功 · 資料已儲存";
+  const sub = document.getElementById("sbSub");
+  if(sub) sub.textContent = recordId ? ("單號：" + recordId) : "";
   document.getElementById("successBanner").classList.add("sh");
   clearTimeout(_bannerTimer);
   _bannerTimer = setTimeout(hideBanner, 5000);
@@ -861,6 +867,7 @@ function closeCfm(){
   document.getElementById("cfmModal").classList.remove("op");
 }
 const CFM_OK_BTN_HTML = `<span class="ms fi" style="font-size:18px">check</span>確認`;
+const DET_SAVE_BTN_LABEL = "儲存";
 
 async function doSubmit(){
   const { basic, parts } = collect();
@@ -1627,14 +1634,18 @@ function refreshDetailModal(){
   }
 
   const partsEdit = (r.parts||[]).map((p,i)=>{
+    const seq = i + 1;
     const st = p.status && ["PASS","FAIL","待驗","UNKNOW"].includes(p.status) ? p.status : "UNKNOW";
     const opts = ["PASS","FAIL","待驗","UNKNOW"];
     const optHtml = opts.map(o=>`<option value="${esc(o)}"${o===st?" selected":""}>${o==="待驗"?"待驗":esc(o)}</option>`).join("");
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 border border-outline-variant/15">
-      <div class="mb-3">
-        <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">品名</label>
-        <input type="text" id="det-p-${i}-name" value="${h(p.itemName)}" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+      <div class="det-edit-part-hd flex items-center gap-3 mb-3 pb-3 border-b border-outline-variant/15">
+        <div class="det-seq-badge shrink-0" aria-hidden="true">${seq}</div>
+        <div class="flex-1 min-w-0">
+          <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">品名</label>
+          <input type="text" id="det-p-${i}-name" value="${h(p.itemName)}" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
       </div>
       <div class="mb-3">
         <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">檢驗狀態</label>
@@ -1788,21 +1799,32 @@ async function saveDetailEdit(){
   if(parts.every(p=>!p.itemName)) return showToast("請填寫品名","err");
 
   const btn = document.getElementById("detSaveBtn");
-  if(btn){ btn.disabled = true; btn.textContent = "儲存中…"; }
+  if(btn){ btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 送出中…`; }
   try{
     const res = await gas({ action:"submit", basic, parts });
-    if(!res.success){ showToast(res.message||"儲存失敗","err"); return; }
-    const newId = res.recordId;
+    const okSubmit =
+      res &&
+      res.success === true &&
+      typeof res.recordId === "string" &&
+      res.recordId.trim().length > 0;
+    if(!okSubmit){
+      const msg = (res && typeof res.message === "string" && res.message.trim()) ? res.message.trim() : "儲存失敗";
+      showToast(msg,"err");
+      return;
+    }
+    const newId = res.recordId.trim();
     const delRes = await gas({ action:"delete", recordId:rid });
-    if(!delRes.success) showToast("新單已建立，但刪除舊單失敗，請手動刪除 "+rid,"err");
-    else if(newId !== rid) showToast("已儲存 · 新單號 "+newId,"");
-    else showToast("已儲存","");
+    if(!delRes.success){
+      showToast("新單已建立，但刪除舊單失敗，請手動刪除 "+rid,"err");
+      return;
+    }
     closeDetailModal();
+    showBanner(newId, { title: "編輯成功．資料已儲存" });
     await loadRecs();
   } catch(e){
     showToast("網路錯誤："+e.message,"err");
   } finally {
-    if(btn){ btn.disabled = false; btn.textContent = "儲存"; }
+    if(btn){ btn.disabled = false; btn.textContent = DET_SAVE_BTN_LABEL; }
   }
 }
 
