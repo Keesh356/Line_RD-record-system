@@ -122,13 +122,13 @@ button,input,select,textarea{font:inherit}
 .q-rec-card-v2{background:#fff;border-radius:14px;border:1px solid rgba(191,200,204,.28);margin-bottom:12px;padding:14px 14px 12px;cursor:pointer;transition:border-color .15s,background .15s}
 .q-rec-card-v2:active{background:#fafbfc}
 .q-rec-card-v2:hover{border-color:rgba(0,66,83,.2)}
-/* 上列：右側人名／badge 與「日期值」列對齊（grid 第 2 列） */
-.q-rec-v2-row1{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:0 10px;margin-bottom:10px;align-items:start}
+/* 上列：左欄日期、右欄占滿剩餘寬度；登記人 + badge 同列，badge 靠右 */
+.q-rec-v2-row1{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:0 10px;margin-bottom:10px;align-items:start}
 .q-rec-v2-dateblk{grid-column:1;grid-row:1/-1;min-width:0;padding-right:6px;display:flex;flex-direction:column}
 .q-rec-v2-dtlbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a9398;margin-bottom:4px}
 .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em}
-.q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0;max-width:min(48%,12rem);min-width:0;text-align:right}
-.q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+.q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;min-width:0;width:100%;box-sizing:border-box}
+.q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25;text-align:right}
 .q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.1rem;padding:7px 16px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
 .q-rec-v2-sep{height:1px;background:rgba(191,200,204,.35);margin:0 0 10px}
 .q-rec-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -1090,6 +1090,13 @@ function doSearch(){
   loadRecs(kw, dateFrom, dateTo);
 }
 
+/** 查詢卡右上角：登記人（ Sheets「登記人」→ submittedBy）；trim 後輸出，空則 — */
+function formatQueryCardSubmittedBy(r){
+  const raw = r && r.submittedBy != null ? r.submittedBy : "";
+  const t = String(raw).trim();
+  return t ? esc(t) : "—";
+}
+
 /** 查詢列表卡：僅顯示 Sheets「日期」欄（r.date），不混入登記時間 */
 function formatQueryCardSheetDate(r){
   if (!r || r.date == null) return "";
@@ -1115,11 +1122,16 @@ function renderRecs(rs){
     return;
   }
   list.innerHTML = rs.map(r => {
-    const pc = r.partCount != null ? r.partCount : 0;
+    const pc =
+      typeof r.partCount === "number" && !Number.isNaN(r.partCount)
+        ? r.partCount
+        : Array.isArray(r.parts)
+          ? r.parts.length
+          : 0;
     const dt = esc(formatQueryCardSheetDate(r) || "—");
     const cust = esc(r.customer) || "";
     const src = esc(r.source) || "";
-    const by = esc(r.submittedBy) || "";
+    const byHtml = formatQueryCardSubmittedBy(r);
     return `
     <div class="q-rec-card-v2 group" onclick="showDetail('${r.recordId}')">
       <div class="q-rec-v2-row1">
@@ -1128,7 +1140,7 @@ function renderRecs(rs){
           <div class="q-rec-v2-dtval">${dt}</div>
         </div>
         <div class="q-rec-v2-mid">
-          <span class="q-rec-v2-by">${by || " "}</span>
+          <span class="q-rec-v2-by">${byHtml}</span>
           <span class="q-rec-v2-badge" aria-hidden="true">${pc}項</span>
         </div>
       </div>
