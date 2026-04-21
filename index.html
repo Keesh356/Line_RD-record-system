@@ -299,13 +299,25 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <div>
           <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">來源</label>
           <div class="sec01-field-under">
-            <input type="text" id="fSource" placeholder="庫存 / 機台" class="sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+            <input type="text" id="fSource" placeholder="機拆/庫存/廠商名稱" class="sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
           </div>
         </div>
       </div>
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">客戶 / 廠商</label>
-        <input type="text" id="fCustomer" placeholder="XFAB 3月" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">客戶</label>
+        <input type="text" id="fCustomer" placeholder="UMC" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">單號</label>
+        <input type="text" id="fOrderNo" placeholder="KH-260414D01/PK-26xxx00" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">訂單案號</label>
+        <input type="text" id="fProjectNo" placeholder="26078-xxx" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
+        <select id="fPurpose" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-2 text-sm rounded-none focus:border-primary focus:ring-0"></select>
       </div>
     </div>
   </section>
@@ -340,7 +352,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       <div class="flex flex-col lg:flex-row lg:items-stretch gap-3 mb-4">
         <div id="qSearchShell" class="relative flex-1 min-w-0 flex items-center rounded-md border border-outline-variant/35 bg-surface-container-lowest shadow-none lg:block lg:rounded-none lg:border-0 lg:bg-transparent">
           <span class="ms text-outline shrink-0 text-xl pl-3 pointer-events-none lg:absolute lg:left-0 lg:top-1/2 lg:-translate-y-1/2 lg:pl-0 lg:text-lg">search</span>
-          <input type="text" id="srch" placeholder="搜尋日期、客戶、品名或 P/N…" oninput="onSrchInput()" onkeydown="if(event.key==='Enter')doSearch()" class="min-w-0 flex-1 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-base leading-snug text-on-surface placeholder:text-outline-variant/55 py-3 pl-2 pr-11 rounded-md lg:block lg:flex-none lg:w-full lg:rounded-none lg:py-2.5 lg:pl-9 lg:pr-10 lg:text-sm lg:border-0 lg:border-b-2 lg:border-outline-variant/30 lg:focus:border-primary transition-colors"/>
+          <input type="text" id="srch" placeholder="搜尋日期、客戶、單號、案號、目的、品名或 P/N…" oninput="onSrchInput()" onkeydown="if(event.key==='Enter')doSearch()" class="min-w-0 flex-1 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-base leading-snug text-on-surface placeholder:text-outline-variant/55 py-3 pl-2 pr-11 rounded-md lg:block lg:flex-none lg:w-full lg:rounded-none lg:py-2.5 lg:pl-9 lg:pr-10 lg:text-sm lg:border-0 lg:border-b-2 lg:border-outline-variant/30 lg:focus:border-primary transition-colors"/>
           <button type="button" class="q-clear absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-md text-outline-variant hover:text-primary hover:bg-surface-container-low/80 transition-colors lg:right-0 lg:p-1 lg:rounded-full" id="srchClear" onclick="clearSearch()" aria-label="清除搜尋">
             <span class="ms text-lg leading-none">close</span>
           </button>
@@ -506,6 +518,44 @@ const CFG = {
   GAS_URL:  "https://script.google.com/macros/s/AKfycbxTR9pQ2N6SngQqJxbTZiZZg_2pTWqN4ZcISPLBgNGSoLVPabpZyg9mp5v4c_JQ3a8g/exec",
 };
 
+/** 目的下拉選單（順序固定，勿改字） */
+const PURPOSE_OPTIONS = [
+  "+入庫(PO)",
+  "+入庫(拆料)",
+  "+換回",
+  "+退租歸還",
+  "+維修返回/退修",
+  "+借出歸還",
+  "+借入",
+  "-出庫(訂單)",
+  "-出庫(組料)",
+  "-換出",
+  "-出租",
+  "-維修送出",
+  "-借出",
+  "-借入歸還"
+];
+
+function fillPurposeSelect(el, selectedVal) {
+  if (!el) return;
+  const sel = (selectedVal != null) ? String(selectedVal) : "";
+  let html = `<option value="">請選擇目的</option>`;
+  PURPOSE_OPTIONS.forEach(opt => {
+    html += `<option value="${h(opt)}"${sel === opt ? " selected" : ""}>${esc(opt)}</option>`;
+  });
+  el.innerHTML = html;
+}
+
+/** 詳情編輯用：含 id 與表單樣式 class */
+function buildPurposeSelectField(id, selectedVal) {
+  const sel = (selectedVal != null) ? String(selectedVal) : "";
+  let inner = `<option value="">請選擇目的</option>`;
+  PURPOSE_OPTIONS.forEach(opt => {
+    inner += `<option value="${h(opt)}"${sel === opt ? " selected" : ""}>${esc(opt)}</option>`;
+  });
+  return `<select id="${id}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20">${inner}</select>`;
+}
+
 // ──────────────────────────────────────────
 //  STATE
 // ──────────────────────────────────────────
@@ -526,6 +576,7 @@ const partStatus = {};
 // ──────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("fDate").value = today();
+  fillPurposeSelect(document.getElementById("fPurpose"), "");
   (function initQueryDefaultToday(){
     const from=document.getElementById("qDateFrom"), to=document.getElementById("qDateTo");
     if(!from||!to) return;
@@ -647,36 +698,19 @@ function addPart(data={}) {
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">PN</label>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">P/N</label>
           <input type="text" data-f="pn" value="${h(data.pn)}" placeholder="PN-XXXX"
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">SN</label>
+          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">S/N</label>
           <input type="text" data-f="sn" value="${h(data.sn)}" placeholder="SN-XXXXXXXX"
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 items-start">
-        <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">Model</label>
-          <input type="text" data-f="model" value="${h(data.model)}" placeholder="Model No"
-            class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量 (PCS)</label>
-          <div class="flex items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-1">
-            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
-            <input type="number" data-f="qty" value="${data.qty||1}" min="1" id="qty_${id}" inputmode="numeric"
-              class="w-12 bg-transparent text-center text-base font-bold text-primary border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
-            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-container text-on-primary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',1)">＋</button>
-          </div>
-        </div>
-      </div>
-
       <div>
-        <label class="block text-[11px] font-bold text-secondary uppercase tracking-[0.08em] mb-2">檢驗狀態</label>
+        <label class="block text-[11px] font-bold text-secondary uppercase tracking-[0.08em] mb-2">狀態</label>
         <div class="grid grid-cols-4 gap-2" id="chips_${id}">
           <button type="button" data-chip="pass" class="${insChClass(id,'pass')}" onclick="selChip('${id}','pass')"><span class="ms fi ins-ch-mark">check</span><span>PASS</span></button>
           <button type="button" data-chip="fail" class="${insChClass(id,'fail')}" onclick="selChip('${id}','fail')"><span class="ms fi ins-ch-mark">check</span><span>FAIL</span></button>
@@ -686,21 +720,38 @@ function addPart(data={}) {
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">儲位 (BIN)</label>
-        <input type="text" data-f="bin" value="${h(data.bin)}" placeholder="B2-04-A"
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量</label>
+        <div class="flex items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-1 max-w-xs">
+          <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
+          <input type="number" data-f="qty" value="${data.qty!=null?data.qty:1}" min="1" id="qty_${id}" inputmode="numeric"
+            class="w-12 bg-transparent text-center text-base font-bold text-primary border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
+          <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-container text-on-primary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',1)">＋</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">櫃位</label>
+        <input type="text" data-f="bin" value="${h(data.bin)}" placeholder="A090401"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">進貨驗證完成日</label>
+        <input type="date" data-f="verifyInDate" value="${h(data.verifyInDate)}"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
+        <p class="text-[10px] text-outline mt-1 leading-snug">提示：買進/退租(一週內)</p>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">出貨包裝完成日</label>
+        <input type="date" data-f="shipPackDate" value="${h(data.shipPackDate)}"
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">用途</label>
-        <input type="text" data-f="purpose" value="${h(data.purpose)}" placeholder="出貨 / 維修 / 備料"
-          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
-      </div>
-
-      <div>
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">備註</label>
-        <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="PE03710拆下"
-          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
+        <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="順豐單號/其他"
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
 
     </div>
@@ -722,6 +773,14 @@ function reindexPartBadges(){
 
 function h(s){ return s ? String(s).replace(/"/g,'&quot;') : ''; }
 function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/** 將 Sheets／API 日期字串正規成 yyyy-MM-dd，供 input[type=date] */
+function toDateInputVal(v){
+  if (v == null || v === "") return "";
+  const s = String(v).trim();
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : "";
+}
 
 function updLbl(id,v){ document.getElementById("lbl_"+id).textContent = v||"ITEM NAME"; }
 function togPart(id){
@@ -766,6 +825,9 @@ function collect(){
     date:        g("fDate"),
     source:      g("fSource"),
     customer:    g("fCustomer"),
+    orderNo:     g("fOrderNo"),
+    projectNo:   g("fProjectNo"),
+    purpose:     g("fPurpose"),
     submittedBy: profile?.displayName||"Unknown",
     lineUserId:  profile?.userId||"",
     groupId:     new URLSearchParams(window.location.search).get("groupId")||"",
@@ -776,9 +838,12 @@ function collect(){
     const pid = c.id;
     parts.push({
       itemName: f("itemName"), pn: f("pn"), sn: f("sn"),
-      model: f("model"), qty: f("qty")||"1",
+      qty: f("qty")||"1",
       status: COND_MAP[partStatus[pid]||"unkn"],
-      bin: f("bin"), purpose: f("purpose"), remark: f("remark"),
+      bin: f("bin"),
+      verifyInDate: f("verifyInDate"),
+      shipPackDate: f("shipPackDate"),
+      remark: f("remark"),
     });
   });
   return { basic, parts };
@@ -795,7 +860,7 @@ function showBanner(recordId, opts){
   const titleEl = document.getElementById("sbTitle");
   if(titleEl) titleEl.textContent = opts.title || "登錄成功 · 資料已儲存";
   const sub = document.getElementById("sbSub");
-  if(sub) sub.textContent = recordId ? ("單號：" + recordId) : "";
+  if(sub) sub.textContent = recordId ? ("紀錄編號：" + recordId) : "";
   document.getElementById("successBanner").classList.add("sh");
   clearTimeout(_bannerTimer);
   _bannerTimer = setTimeout(hideBanner, 5000);
@@ -846,7 +911,8 @@ async function notifyOpen(groupId) {
 // ──────────────────────────────────────────
 function confirmSubmit(){
   const { basic, parts } = collect();
-  if (!basic.customer) return showToast("請填寫 Customer","err");
+  if (!basic.customer) return showToast("請填寫客戶","err");
+  if (!basic.purpose)  return showToast("請選擇目的","err");
   if (!parts.length)   return showToast("請新增至少一項零件","err");
   const badIdx = firstEmptyItemNameIndex(parts);
   if (badIdx >= 0){
@@ -873,7 +939,12 @@ async function doSubmit(){
   const { basic, parts } = collect();
   if (!basic.customer) {
     closeCfm();
-    showToast("請填寫 Customer", "err");
+    showToast("請填寫客戶", "err");
+    return;
+  }
+  if (!basic.purpose) {
+    closeCfm();
+    showToast("請選擇目的", "err");
     return;
   }
   if (!parts.length) {
@@ -926,8 +997,12 @@ async function doSubmit(){
 }
 
 function resetForm(){
-  ["fSource","fCustomer"].forEach(id=>document.getElementById(id).value="");
+  ["fSource","fCustomer","fOrderNo","fProjectNo"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
   document.getElementById("fDate").value=today();
+  fillPurposeSelect(document.getElementById("fPurpose"), "");
   document.getElementById("partsList").innerHTML="";
   Object.keys(partStatus).forEach(k=>delete partStatus[k]);
   pcnt=0; addPart();
@@ -1131,6 +1206,8 @@ function renderRecs(rs){
     const dt = esc(formatQueryCardSheetDate(r) || "—");
     const cust = esc(r.customer) || "";
     const src = esc(r.source) || "";
+    const ord = esc(r.orderNo != null ? r.orderNo : "") || "";
+    const purp = esc(r.purpose != null ? r.purpose : "") || "";
     const byHtml = formatQueryCardSubmittedBy(r);
     return `
     <div class="q-rec-card-v2 group" onclick="showDetail('${r.recordId}')">
@@ -1154,6 +1231,14 @@ function renderRecs(rs){
           <div class="min-w-0">
             <div class="q-rec-v2-k">來源</div>
             <div class="q-rec-v2-v">${src || "—"}</div>
+          </div>
+          <div class="min-w-0">
+            <div class="q-rec-v2-k">單號</div>
+            <div class="q-rec-v2-v">${ord || "—"}</div>
+          </div>
+          <div class="min-w-0">
+            <div class="q-rec-v2-k">目的</div>
+            <div class="q-rec-v2-v">${purp || "—"}</div>
           </div>
         </div>
         <span class="ms text-outline-variant group-hover:text-primary transition-colors text-xl shrink-0">chevron_right</span>
@@ -1234,7 +1319,10 @@ function buildLineShareText(r){
   lines.push(`日期 : ${formatShareDate(r.date)}`);
   lines.push(`來源 : ${shareField(r.source)}`);
   lines.push(`客戶 : ${shareField(r.customer)}`);
-  lines.push(`單號 : ${shareField(r.recordId)}`);
+  lines.push(`紀錄編號 : ${shareField(r.recordId)}`);
+  lines.push(`單號 : ${shareField(r.orderNo)}`);
+  lines.push(`訂單案號 : ${shareField(r.projectNo)}`);
+  lines.push(`目的 : ${shareField(r.purpose)}`);
   lines.push("");
   lines.push("──────────");
   lines.push("");
@@ -1249,8 +1337,8 @@ function buildLineShareText(r){
       const t=nmLines[j].trim();
       if(t) lines.push(t);
     }
-    lines.push(`PN : ${shareField(p.pn)}`);
-    lines.push(`SN : ${shareField(p.sn)}`);
+    lines.push(`P/N : ${shareField(p.pn)}`);
+    lines.push(`S/N : ${shareField(p.sn)}`);
     const remRaw=shareField(p.remark);
     if(remRaw){
       remRaw.split("\n").forEach(seg=>{
@@ -1261,8 +1349,11 @@ function buildLineShareText(r){
     const bin=shareField(p.bin);
     if(bin) lines.push(`櫃位 : ${bin}`);
     const st=shareField(p.status);
-    lines.push(`📌 狀態 : ${st?st.toLowerCase():""}`);
-    lines.push(`🎯 目的 : ${shareField(p.purpose)}`);
+    lines.push(`狀態 : ${st?st.toLowerCase():""}`);
+    const vin = shareField(p.verifyInDate);
+    const spk = shareField(p.shipPackDate);
+    if(vin) lines.push(`進貨驗證完成日 : ${vin}`);
+    if(spk) lines.push(`出貨包裝完成日 : ${spk}`);
   });
   return lines.join("\n");
 }
@@ -1560,6 +1651,8 @@ function refreshDetailModal(){
   if(!detailEditMode){
     const partsHtml = (r.parts||[]).map((p, idx)=>{
     const binStr = (p.bin!=null && String(p.bin).trim()!=="") ? esc(String(p.bin).trim()) : "";
+    const vinStr = (p.verifyInDate!=null && String(p.verifyInDate).trim()!=="") ? esc(String(p.verifyInDate).trim()) : "";
+    const spkStr = (p.shipPackDate!=null && String(p.shipPackDate).trim()!=="") ? esc(String(p.shipPackDate).trim()) : "";
     const seq = idx + 1;
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
@@ -1567,10 +1660,6 @@ function refreshDetailModal(){
         <div class="det-seq-badge" aria-hidden="true">${seq}</div>
         <p class="det-item-val-title flex-1 min-w-0">${esc(p.itemName)||"—"}</p>
         <span class="det-stat m-part-status ${statusCls(p.status)} shrink-0">${esc(p.status)||"—"}</span>
-      </div>
-      <div class="mb-4">
-        <p class="det-item-lbl mb-1">型號 (Model)</p>
-        <p class="det-item-val-mono">${esc(p.model)||"—"}</p>
       </div>
       <div class="det-pnsn-wrap mb-4">
         <div class="det-pnsn-inner">
@@ -1587,17 +1676,28 @@ function refreshDetailModal(){
       <div class="det-qty-bin-wrap mb-4">
         <div class="det-qty-bin-inner">
         <div class="min-w-0">
-          <p class="det-item-lbl mb-1">Quantity</p>
+          <p class="det-item-lbl mb-1">數量</p>
           <p class="det-item-val-qty">${esc(p.qty)||"1"}</p>
         </div>
         <div class="min-w-0">
-          <p class="det-item-lbl mb-1">Storage Bin</p>
+          <p class="det-item-lbl mb-1">櫃位</p>
           <p class="det-item-val-mono">${binStr||"—"}</p>
         </div>
         </div>
       </div>
-      ${p.purpose?`<div class="mt-4 pt-3 border-t border-outline-variant/12"><p class="det-item-lbl mb-1.5">目的 (Purpose)</p><p class="det-item-val-body">${esc(p.purpose)}</p></div>`:""}
-      ${p.remark?`<div class="${p.purpose?"mt-3":"mt-4 pt-3 border-t border-outline-variant/12"}"><p class="det-item-lbl mb-1.5">備註</p><p class="det-item-val-body">${esc(p.remark)}</p></div>`:""}
+      <div class="rounded-xl bg-surface-container-low/80 border border-outline-variant/15 mb-4 px-3 py-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="min-w-0">
+            <p class="det-item-lbl mb-1">進貨驗證完成日</p>
+            <p class="det-item-val-mono">${vinStr||"—"}</p>
+          </div>
+          <div class="min-w-0">
+            <p class="det-item-lbl mb-1">出貨包裝完成日</p>
+            <p class="det-item-val-mono">${spkStr||"—"}</p>
+          </div>
+        </div>
+      </div>
+      ${p.remark?`<div class="mt-2 pt-3 border-t border-outline-variant/12"><p class="det-item-lbl mb-1.5">備註</p><p class="det-item-val-body">${esc(p.remark)}</p></div>`:""}
     </div>
   `;
   }).join("");
@@ -1611,8 +1711,11 @@ function refreshDetailModal(){
       <div class="rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
         <div class="pt-1 det-basic-kv">
         ${detailKvRow("日期",r.date)}
-        ${detailKvRow("客戶",r.customer)}
         ${detailKvRow("來源",r.source)}
+        ${detailKvRow("客戶",r.customer)}
+        ${detailKvRow("單號",r.orderNo)}
+        ${detailKvRow("訂單案號",r.projectNo)}
+        ${detailKvRow("目的",r.purpose)}
         ${detailKvRow("登記人",r.submittedBy)}
         ${detailKvRow("登記時間",formatRegDateTimeFull(r.createdAt,r.date),{blankEmpty:true})}
         </div>
@@ -1650,6 +1753,8 @@ function refreshDetailModal(){
     const st = p.status && ["PASS","FAIL","待驗","UNKNOW"].includes(p.status) ? p.status : "UNKNOW";
     const opts = ["PASS","FAIL","待驗","UNKNOW"];
     const optHtml = opts.map(o=>`<option value="${esc(o)}"${o===st?" selected":""}>${o==="待驗"?"待驗":esc(o)}</option>`).join("");
+    const vin = h(toDateInputVal(p.verifyInDate));
+    const spk = h(toDateInputVal(p.shipPackDate));
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 border border-outline-variant/15">
       <div class="det-edit-part-hd flex items-center gap-3 mb-3 pb-3 border-b border-outline-variant/15">
@@ -1660,14 +1765,10 @@ function refreshDetailModal(){
         </div>
       </div>
       <div class="mb-3">
-        <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">檢驗狀態</label>
+        <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">狀態</label>
         <select id="det-p-${i}-status" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg py-2 px-2 focus:border-primary focus:ring-1 focus:ring-primary/20">${optHtml}</select>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div class="col-span-2">
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">型號 (Model)</label>
-          <input type="text" id="det-p-${i}-model" value="${h(p.model)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
-        </div>
         <div>
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">P/N</label>
           <input type="text" id="det-p-${i}-pn" value="${h(p.pn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
@@ -1681,16 +1782,21 @@ function refreshDetailModal(){
           <input type="number" min="1" id="det-p-${i}-qty" value="${h(String(p.qty||"1"))}" class="w-full text-sm font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
         <div>
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">儲位 (BIN)</label>
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">櫃位</label>
           <input type="text" id="det-p-${i}-bin" value="${h(p.bin)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
         <div class="col-span-2">
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">目的</label>
-          <input type="text" id="det-p-${i}-purpose" value="${h(p.purpose)}" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">進貨驗證完成日</label>
+          <input type="date" id="det-p-${i}-vin" value="${vin}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <p class="text-[10px] text-outline mt-1">提示：買進/退租(一週內)</p>
+        </div>
+        <div class="col-span-2">
+          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">出貨包裝完成日</label>
+          <input type="date" id="det-p-${i}-spk" value="${spk}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
         <div class="col-span-2">
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">備註</label>
-          <input type="text" id="det-p-${i}-remark" value="${h(p.remark)}" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <input type="text" id="det-p-${i}-remark" value="${h(p.remark)}" placeholder="順豐單號/其他" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
         </div>
       </div>
     </div>
@@ -1709,12 +1815,24 @@ function refreshDetailModal(){
           <input type="date" id="det-date" value="${h(r.date)}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
         <div>
-          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">客戶</label>
-          <input type="text" id="det-customer" value="${h(r.customer)}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">來源</label>
+          <input type="text" id="det-source" value="${h(r.source)}" placeholder="機拆/庫存/廠商名稱" class="w-full text-sm bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
         </div>
         <div>
-          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">來源</label>
-          <input type="text" id="det-source" value="${h(r.source)}" class="w-full text-sm bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">客戶</label>
+          <input type="text" id="det-customer" value="${h(r.customer)}" placeholder="UMC" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">單號</label>
+          <input type="text" id="det-order-no" value="${h(r.orderNo)}" placeholder="KH-260414D01/PK-26xxx00" class="w-full text-sm font-mono bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">訂單案號</label>
+          <input type="text" id="det-project-no" value="${h(r.projectNo)}" placeholder="26078-xxx" class="w-full text-sm font-mono bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">目的</label>
+          ${buildPurposeSelectField("det-purpose", r.purpose)}
         </div>
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">登記人（唯讀）</label>
@@ -1788,22 +1906,26 @@ async function saveDetailEdit(){
     date:        gv("det-date"),
     source:      gv("det-source"),
     customer:    gv("det-customer"),
+    orderNo:     gv("det-order-no"),
+    projectNo:   gv("det-project-no"),
+    purpose:     gv("det-purpose"),
     submittedBy: r.submittedBy || profile?.displayName || "Unknown",
     lineUserId:  profile?.userId || "",
     groupId:     new URLSearchParams(window.location.search).get("groupId") || "",
   };
   if(!basic.customer) return showToast("請填寫客戶","err");
+  if(!basic.purpose) return showToast("請選擇目的","err");
   const parts = [];
   (r.parts||[]).forEach((_,i)=>{
     parts.push({
       itemName: gv("det-p-"+i+"-name"),
       pn:       gv("det-p-"+i+"-pn"),
       sn:       gv("det-p-"+i+"-sn"),
-      model:    gv("det-p-"+i+"-model"),
       qty:      gv("det-p-"+i+"-qty") || "1",
       status:   gv("det-p-"+i+"-status") || "UNKNOW",
       bin:      gv("det-p-"+i+"-bin"),
-      purpose:  gv("det-p-"+i+"-purpose"),
+      verifyInDate: gv("det-p-"+i+"-vin"),
+      shipPackDate: gv("det-p-"+i+"-spk"),
       remark:   gv("det-p-"+i+"-remark"),
     });
   });
@@ -1857,6 +1979,9 @@ function copyToForm(rid){
   set("fDate",    r.date);
   set("fSource",  r.source);
   set("fCustomer",r.customer);
+  set("fOrderNo", r.orderNo || "");
+  set("fProjectNo", r.projectNo || "");
+  fillPurposeSelect(document.getElementById("fPurpose"), r.purpose || "");
 
   // Rebuild parts
   document.getElementById("partsList").innerHTML="";
@@ -1869,11 +1994,11 @@ function copyToForm(rid){
       itemName: p.itemName,
       pn:       p.pn,
       sn:       p.sn,
-      model:    p.model,
       qty:      p.qty||"1",
       status:   REV[p.status]||"unkn",
       bin:      p.bin,
-      purpose:  p.purpose||"",
+      verifyInDate: p.verifyInDate || "",
+      shipPackDate: p.shipPackDate || "",
       remark:   p.remark,
     });
     selChip("p"+pcnt, partStatus["p"+pcnt] || "unkn");
@@ -1885,7 +2010,7 @@ function copyToForm(rid){
 //  DELETE
 // ──────────────────────────────────────────
 async function deleteRecord(rid){
-  if(!confirm("確定要刪除單號 "+rid+" 的記錄？此操作無法復原。")) return;
+  if(!confirm("確定要刪除紀錄 "+rid+" ？此操作無法復原。")) return;
   closeDetailModal();
   try {
     const res = await gas({ action:"delete", recordId:rid });
