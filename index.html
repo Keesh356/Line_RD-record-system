@@ -205,6 +205,19 @@ button,input,select,textarea{font:inherit}
 /* 新增頁 SECTION 02：零件卡頂列（序號語彙與詳情對齊，限 #pg-form） */
 #pg-form .part-card-hd{border-bottom:1px solid rgba(191,200,204,.22)}
 #pg-form .seq-idx-badge{width:2rem;height:2rem;border-radius:0.5rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,#004253,#005b71);box-shadow:0 2px 8px -2px rgba(0,66,83,.25)}
+/* SECTION 02 / 詳情編輯 · 備註多行（白底圓角；高度由 JS 依內容調整） */
+.remark-ta{
+  min-height:5.5rem;
+  max-height:none;
+  resize:none;
+  overflow-y:hidden;
+  overflow-x:hidden;
+  line-height:1.5;
+  box-sizing:border-box;
+  word-break:break-word;
+  white-space:pre-wrap;
+  vertical-align:top;
+}
 .toast.err{background:#ba1a1a}
 .md-head{position:relative;box-shadow:none!important}
 header.topbar{box-shadow:none!important}
@@ -750,13 +763,19 @@ function addPart(data={}) {
 
       <div>
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">備註</label>
-        <input type="text" data-f="remark" value="${h(data.remark)}" placeholder="順豐單號/其他"
-          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+        <textarea data-f="remark" rows="1" placeholder="順豐單號/其他" autocomplete="off"
+          class="remark-ta w-full bg-white text-on-surface rounded-xl border border-outline-variant/18 px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/18 focus:border-primary/25 placeholder:text-outline-variant/55"
+          oninput="autoResizeTextarea(this)"></textarea>
       </div>
 
     </div>
   `;
   document.getElementById("partsList").appendChild(div);
+  const rTa = div.querySelector('[data-f="remark"]');
+  if (rTa) {
+    rTa.value = data.remark != null ? String(data.remark) : "";
+    autoResizeTextarea(rTa);
+  }
   updCount();
   reindexPartBadges();
 }
@@ -773,6 +792,24 @@ function reindexPartBadges(){
 
 function h(s){ return s ? String(s).replace(/"/g,'&quot;') : ''; }
 function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/** 寫入 textarea 元素內文時跳脫 & <>，避免破壞 HTML */
+function escTextarea(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** 備註多行：依內容增高／刪字後縮回（配合 .remark-ta min-height） */
+function autoResizeTextarea(el){
+  if (!el || el.tagName !== "TEXTAREA") return;
+  const cs = window.getComputedStyle(el);
+  const minH = parseFloat(cs.minHeight) || 0;
+  el.style.height = "auto";
+  const next = Math.max(el.scrollHeight, minH);
+  el.style.height = next + "px";
+}
 
 /** 將 Sheets／API 日期字串正規成 yyyy-MM-dd，供 input[type=date] */
 function toDateInputVal(v){
@@ -1796,7 +1833,9 @@ function refreshDetailModal(){
         </div>
         <div class="col-span-2">
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">備註</label>
-          <input type="text" id="det-p-${i}-remark" value="${h(p.remark)}" placeholder="順豐單號/其他" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
+          <textarea id="det-p-${i}-remark" rows="1" placeholder="順豐單號/其他" autocomplete="off"
+            class="remark-ta w-full bg-white text-on-surface rounded-xl border border-outline-variant/18 px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/18 focus:border-primary/25 placeholder:text-outline-variant/55"
+            oninput="autoResizeTextarea(this)">${escTextarea(p.remark)}</textarea>
         </div>
       </div>
     </div>
@@ -1860,6 +1899,9 @@ function refreshDetailModal(){
     </button>
   </div>
   `;
+  requestAnimationFrame(() => {
+    document.querySelectorAll("#mBody textarea.remark-ta").forEach(autoResizeTextarea);
+  });
 }
 
 function showDetail(rid){
