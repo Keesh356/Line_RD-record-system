@@ -129,7 +129,7 @@ button,input,select,textarea{font:inherit}
 .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em}
 .q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;min-width:0;width:100%;box-sizing:border-box}
 .q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25;text-align:right}
-.q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.1rem;padding:7px 16px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
+.q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.5rem;padding:7px 14px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
 .q-rec-v2-sep{height:1px;background:rgba(191,200,204,.35);margin:0 0 10px}
 .q-rec-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .q-rec-v2-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-width:0}
@@ -187,6 +187,28 @@ button,input,select,textarea{font:inherit}
 .det-pnsn-col:first-child{border-right:none!important}
 .det-qty-bin-wrap{border-radius:0.75rem;background:rgba(229,232,238,.45);border:1px solid rgba(191,200,204,.22)}
 .det-qty-bin-inner{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem 1rem;min-width:0;padding:0.65rem 0.85rem}
+/* 詳情唯讀 · 數量/櫃位：白底區塊，與他欄一致 */
+.det-qty-bin-plain{background:transparent!important;border:none!important;box-shadow:none!important;border-radius:0}
+.det-qty-bin-plain .det-qty-bin-inner{background:transparent!important;border:none!important;padding:0.2rem 0 0;gap:0.75rem 1rem}
+/* 目的 · 卡片式選擇器 */
+.purpose-pick-bd{display:none;position:fixed;inset:0;z-index:620;align-items:flex-end;justify-content:center;padding:0;background:rgba(24,28,32,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.purpose-pick-bd.op{display:flex!important}
+@media(min-width:720px){.purpose-pick-bd.op{align-items:center;padding:20px 16px}}
+.purpose-pick-dialog{width:100%;max-width:28rem;max-height:min(88dvh,640px);background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 40px -8px rgba(24,28,32,.2);overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:720px){.purpose-pick-dialog{border-radius:16px;max-height:min(82dvh,560px)}}
+.purpose-pick-hd{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid rgba(191,200,204,.35)}
+.purpose-pick-hd h3{margin:0;font-size:1.05rem;font-weight:800;color:#004253;letter-spacing:-.02em}
+.purpose-pick-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 18px 20px}
+.purpose-pick-sec-ttl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#70787d;margin-bottom:10px}
+.purpose-opt{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:12px;font-size:15px;font-weight:600;color:#181c20;border:1px solid rgba(191,200,204,.35);background:#f7f9ff;margin-bottom:8px;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,box-shadow .15s}
+.purpose-opt:last-child{margin-bottom:0}
+.purpose-opt:active{transform:scale(.99)}
+.purpose-opt--sel{background:rgba(0,66,83,.1);border-color:rgba(0,66,83,.45);box-shadow:0 0 0 2px rgba(0,66,83,.12)}
+.purpose-picker-trigger{min-height:2.5rem}
+/* 查詢卡 · 頂列：日期與登記人底線對齊 */
+.q-rec-v2-head{display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;min-width:0}
+.q-rec-v2-head .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em;flex-shrink:0}
+.q-rec-v2-head .q-rec-v2-head-right{display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-end;gap:10px;min-width:0;flex:1}
 .m-part-bd{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
 .m-part-row{display:flex;flex-direction:column;gap:2px}
 .m-part-row.full{grid-column:1/-1}
@@ -330,7 +352,8 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       </div>
       <div>
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
-        <select id="fPurpose" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-2 text-sm rounded-none focus:border-primary focus:ring-0"></select>
+        <input type="hidden" id="fPurpose" value=""/>
+        <button type="button" id="fPurposeBtn" class="purpose-picker-trigger w-full text-left bg-transparent border-0 border-b-2 border-outline-variant/30 py-2 text-sm rounded-none text-outline-variant focus:border-primary focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
       </div>
     </div>
   </section>
@@ -444,6 +467,18 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
   </div>
 </div>
 
+<div class="purpose-pick-bd" id="purposePickBd" onclick="onPurposePickBackdrop(event)">
+  <div class="purpose-pick-dialog" role="dialog" aria-modal="true" aria-labelledby="purposePickTitle" onclick="event.stopPropagation()">
+    <div class="purpose-pick-hd">
+      <h3 id="purposePickTitle">選擇目的</h3>
+      <button type="button" class="w-9 h-9 flex items-center justify-center rounded-full text-outline hover:bg-surface-container-low active:bg-surface-container-high" aria-label="關閉" onclick="closePurposePicker()">
+        <span class="ms text-xl">close</span>
+      </button>
+    </div>
+    <div class="purpose-pick-body" id="purposePickBody"></div>
+  </div>
+</div>
+
 </div>
 </div>
 
@@ -549,24 +584,71 @@ const PURPOSE_OPTIONS = [
   "-借入歸還"
 ];
 
-function fillPurposeSelect(el, selectedVal) {
-  if (!el) return;
-  const sel = (selectedVal != null) ? String(selectedVal) : "";
-  let html = `<option value="">請選擇目的</option>`;
-  PURPOSE_OPTIONS.forEach(opt => {
-    html += `<option value="${h(opt)}"${sel === opt ? " selected" : ""}>${esc(opt)}</option>`;
-  });
-  el.innerHTML = html;
+/** 詳情編輯：hidden + 觸發鈕（與新增頁同一套卡片選擇器） */
+function buildPurposePickerTrigger(hiddenId, btnId, selectedVal) {
+  const v = (selectedVal != null) ? String(selectedVal) : "";
+  const label = v ? esc(v) : "請選擇目的";
+  const cls = v ? "text-on-surface" : "text-outline-variant";
+  return `<input type="hidden" id="${hiddenId}" value="${h(v)}"/>
+<button type="button" id="${btnId}" class="purpose-picker-trigger w-full text-left text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary/20 ${cls}" onclick="openPurposePicker('${hiddenId}','${btnId}')">${label}</button>`;
 }
 
-/** 詳情編輯用：含 id 與表單樣式 class */
-function buildPurposeSelectField(id, selectedVal) {
-  const sel = (selectedVal != null) ? String(selectedVal) : "";
-  let inner = `<option value="">請選擇目的</option>`;
-  PURPOSE_OPTIONS.forEach(opt => {
-    inner += `<option value="${h(opt)}"${sel === opt ? " selected" : ""}>${esc(opt)}</option>`;
+let _purposeCtx = null;
+
+function buildPurposePickerSectionsHtml() {
+  const plus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "+"; });
+  const minus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "-"; });
+  function section(title, opts) {
+    const btns = opts.map(function (o) {
+      return `<button type="button" class="purpose-opt" data-value="${h(o)}">${esc(o)}</button>`;
+    }).join("");
+    return `<div class="purpose-pick-sec mb-5 last:mb-0"><div class="purpose-pick-sec-ttl">${title}</div><div class="purpose-pick-opts">${btns}</div></div>`;
+  }
+  return section("+ 入庫 / 回收", plus) + section("- 出庫 / 借出", minus);
+}
+
+function ensurePurposePickerBody() {
+  const body = document.getElementById("purposePickBody");
+  if (!body || body.dataset.built === "1") return;
+  body.innerHTML = buildPurposePickerSectionsHtml();
+  body.dataset.built = "1";
+}
+
+function syncPurposePickerButton(btnId, val) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  const v = (val != null) ? String(val) : "";
+  btn.textContent = v ? v : "請選擇目的";
+  btn.classList.toggle("text-on-surface", !!v);
+  btn.classList.toggle("text-outline-variant", !v);
+}
+
+function openPurposePicker(hiddenId, btnId) {
+  ensurePurposePickerBody();
+  _purposeCtx = { hiddenId: hiddenId, btnId: btnId };
+  const cur = document.getElementById(hiddenId) ? String(document.getElementById(hiddenId).value || "") : "";
+  document.querySelectorAll("#purposePickBody .purpose-opt").forEach(function (el) {
+    el.classList.toggle("purpose-opt--sel", el.getAttribute("data-value") === cur);
   });
-  return `<select id="${id}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20">${inner}</select>`;
+  document.getElementById("purposePickBd").classList.add("op");
+}
+
+function closePurposePicker() {
+  document.getElementById("purposePickBd").classList.remove("op");
+  _purposeCtx = null;
+}
+
+function onPurposePickBackdrop(ev) {
+  if (ev.target === document.getElementById("purposePickBd")) closePurposePicker();
+}
+
+function pickPurposeValue(val) {
+  if (!_purposeCtx || val == null) return;
+  const hid = document.getElementById(_purposeCtx.hiddenId);
+  const btnId = _purposeCtx.btnId;
+  if (hid) hid.value = val;
+  syncPurposePickerButton(btnId, val);
+  closePurposePicker();
 }
 
 // ──────────────────────────────────────────
@@ -589,7 +671,13 @@ const partStatus = {};
 // ──────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("fDate").value = today();
-  fillPurposeSelect(document.getElementById("fPurpose"), "");
+  ensurePurposePickerBody();
+  document.getElementById("purposePickBody").addEventListener("click", function (e) {
+    const b = e.target.closest(".purpose-opt");
+    if (!b) return;
+    pickPurposeValue(b.getAttribute("data-value"));
+  });
+  syncPurposePickerButton("fPurposeBtn", document.getElementById("fPurpose").value);
   (function initQueryDefaultToday(){
     const from=document.getElementById("qDateFrom"), to=document.getElementById("qDateTo");
     if(!from||!to) return;
@@ -656,6 +744,7 @@ function setRole(role) {
 // ──────────────────────────────────────────
 function goPage(pg) {
   closeQDateModal(false);
+  closePurposePicker();
   document.querySelectorAll(".page").forEach(p => p.classList.remove("act"));
   document.getElementById("pg-"+pg).classList.add("act");
   ["form","query"].forEach(id => {
@@ -732,13 +821,15 @@ function addPart(data={}) {
         </div>
       </div>
 
-      <div>
+      <div class="w-full">
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量</label>
-        <div class="flex items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-1 max-w-xs">
-          <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
-          <input type="number" data-f="qty" value="${data.qty!=null?data.qty:1}" min="1" id="qty_${id}" inputmode="numeric"
-            class="w-12 bg-transparent text-center text-base font-bold text-primary border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
-          <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-container text-on-primary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',1)">＋</button>
+        <div class="w-full border-b-2 border-outline-variant/30 pb-1.5">
+          <div class="flex w-full items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-2">
+            <button type="button" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
+            <input type="number" data-f="qty" value="${data.qty!=null&&data.qty!==""?data.qty:0}" min="0" id="qty_${id}" inputmode="numeric"
+              class="min-w-0 flex-1 bg-transparent text-center text-base font-bold text-primary border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
+            <button type="button" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-primary-container text-on-primary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',1)">＋</button>
+          </div>
         </div>
       </div>
 
@@ -850,7 +941,7 @@ function selChip(partId, val){
 function adjQty(id, delta){
   const inp = document.getElementById("qty_"+id);
   if(!inp) return;
-  inp.value = Math.max(1,(parseInt(inp.value)||1)+delta);
+  inp.value = Math.max(0,(parseInt(inp.value,10)||0)+delta);
 }
 
 // ──────────────────────────────────────────
@@ -875,7 +966,7 @@ function collect(){
     const pid = c.id;
     parts.push({
       itemName: f("itemName"), pn: f("pn"), sn: f("sn"),
-      qty: f("qty")||"1",
+      qty: (function(){ const q=f("qty"); return (q===""||q==null)?"0":q; })(),
       status: COND_MAP[partStatus[pid]||"unkn"],
       bin: f("bin"),
       verifyInDate: f("verifyInDate"),
@@ -1039,7 +1130,9 @@ function resetForm(){
     if (el) el.value = "";
   });
   document.getElementById("fDate").value=today();
-  fillPurposeSelect(document.getElementById("fPurpose"), "");
+  const fp = document.getElementById("fPurpose");
+  if (fp) fp.value = "";
+  syncPurposePickerButton("fPurposeBtn", "");
   document.getElementById("partsList").innerHTML="";
   Object.keys(partStatus).forEach(k=>delete partStatus[k]);
   pcnt=0; addPart();
@@ -1248,14 +1341,11 @@ function renderRecs(rs){
     const byHtml = formatQueryCardSubmittedBy(r);
     return `
     <div class="q-rec-card-v2 group" onclick="showDetail('${r.recordId}')">
-      <div class="q-rec-v2-row1">
-        <div class="q-rec-v2-dateblk">
-          <div class="q-rec-v2-dtlbl">Date</div>
-          <div class="q-rec-v2-dtval">${dt}</div>
-        </div>
-        <div class="q-rec-v2-mid">
+      <div class="q-rec-v2-head">
+        <div class="q-rec-v2-dtval">${dt}</div>
+        <div class="q-rec-v2-head-right">
           <span class="q-rec-v2-by">${byHtml}</span>
-          <span class="q-rec-v2-badge" aria-hidden="true">${pc}項</span>
+          <span class="q-rec-v2-badge" aria-hidden="true">${pc} 項</span>
         </div>
       </div>
       <div class="q-rec-v2-sep"></div>
@@ -1710,11 +1800,11 @@ function refreshDetailModal(){
           </div>
         </div>
       </div>
-      <div class="det-qty-bin-wrap mb-4">
+      <div class="det-qty-bin-plain det-qty-bin-wrap mb-4">
         <div class="det-qty-bin-inner">
         <div class="min-w-0">
           <p class="det-item-lbl mb-1">數量</p>
-          <p class="det-item-val-qty">${esc(p.qty)||"1"}</p>
+          <p class="det-item-val-qty">${(p.qty!=null&&String(p.qty).trim()!=="")?esc(String(p.qty)):"—"}</p>
         </div>
         <div class="min-w-0">
           <p class="det-item-lbl mb-1">櫃位</p>
@@ -1816,7 +1906,7 @@ function refreshDetailModal(){
         </div>
         <div>
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">數量</label>
-          <input type="number" min="1" id="det-p-${i}-qty" value="${h(String(p.qty||"1"))}" class="w-full text-sm font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <input type="number" min="0" id="det-p-${i}-qty" value="${h(String(p.qty!=null&&p.qty!==""?p.qty:0))}" class="w-full text-sm font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
         <div>
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">櫃位</label>
@@ -1871,7 +1961,7 @@ function refreshDetailModal(){
         </div>
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">目的</label>
-          ${buildPurposeSelectField("det-purpose", r.purpose)}
+          ${buildPurposePickerTrigger("det-purpose", "det-purpose-btn", r.purpose)}
         </div>
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">登記人（唯讀）</label>
@@ -1963,7 +2053,7 @@ async function saveDetailEdit(){
       itemName: gv("det-p-"+i+"-name"),
       pn:       gv("det-p-"+i+"-pn"),
       sn:       gv("det-p-"+i+"-sn"),
-      qty:      gv("det-p-"+i+"-qty") || "1",
+      qty:      (function(){ const q=gv("det-p-"+i+"-qty"); return (q===""||q==null)?"0":q; })(),
       status:   gv("det-p-"+i+"-status") || "UNKNOW",
       bin:      gv("det-p-"+i+"-bin"),
       verifyInDate: gv("det-p-"+i+"-vin"),
@@ -2023,7 +2113,8 @@ function copyToForm(rid){
   set("fCustomer",r.customer);
   set("fOrderNo", r.orderNo || "");
   set("fProjectNo", r.projectNo || "");
-  fillPurposeSelect(document.getElementById("fPurpose"), r.purpose || "");
+  document.getElementById("fPurpose").value = r.purpose || "";
+  syncPurposePickerButton("fPurposeBtn", r.purpose || "");
 
   // Rebuild parts
   document.getElementById("partsList").innerHTML="";
@@ -2036,7 +2127,7 @@ function copyToForm(rid){
       itemName: p.itemName,
       pn:       p.pn,
       sn:       p.sn,
-      qty:      p.qty||"1",
+      qty:      (p.qty!=null&&p.qty!=="")?p.qty:0,
       status:   REV[p.status]||"unkn",
       bin:      p.bin,
       verifyInDate: p.verifyInDate || "",
