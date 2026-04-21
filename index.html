@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>RD Record · 出貨登錄</title>
+<title>RD Record · System</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
@@ -190,7 +190,7 @@ button,input,select,textarea{font:inherit}
 /* 詳情唯讀 · 數量/櫃位：白底區塊，與他欄一致 */
 .det-qty-bin-plain{background:transparent!important;border:none!important;box-shadow:none!important;border-radius:0}
 .det-qty-bin-plain .det-qty-bin-inner{background:transparent!important;border:none!important;padding:0.2rem 0 0;gap:0.75rem 1rem}
-/* 目的 · 卡片式選擇器 */
+/* 目的 · 卡片式選擇器（分類 tab + 單欄選項） */
 .purpose-pick-bd{display:none;position:fixed;inset:0;z-index:620;align-items:flex-end;justify-content:center;padding:0;background:rgba(24,28,32,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .purpose-pick-bd.op{display:flex!important}
 @media(min-width:720px){.purpose-pick-bd.op{align-items:center;padding:20px 16px}}
@@ -198,12 +198,26 @@ button,input,select,textarea{font:inherit}
 @media(min-width:720px){.purpose-pick-dialog{border-radius:16px;max-height:min(82dvh,560px)}}
 .purpose-pick-hd{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid rgba(191,200,204,.35)}
 .purpose-pick-hd h3{margin:0;font-size:1.05rem;font-weight:800;color:#004253;letter-spacing:-.02em}
-.purpose-pick-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 18px 20px}
-.purpose-pick-sec-ttl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#70787d;margin-bottom:10px}
-.purpose-opt{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:12px;font-size:15px;font-weight:600;color:#181c20;border:1px solid rgba(191,200,204,.35);background:#f7f9ff;margin-bottom:8px;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,box-shadow .15s}
-.purpose-opt:last-child{margin-bottom:0}
-.purpose-opt:active{transform:scale(.99)}
-.purpose-opt--sel{background:rgba(0,66,83,.1);border-color:rgba(0,66,83,.45);box-shadow:0 0 0 2px rgba(0,66,83,.12)}
+.purpose-pick-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.purpose-pick-ly{display:flex;flex-direction:column;flex:1;min-height:0}
+.purpose-pick-tabs{flex-shrink:0;display:flex;gap:8px;padding:12px 14px 10px;background:#fff;border-bottom:1px solid rgba(191,200,204,.35)}
+.purpose-pick-tab{flex:1;min-width:0;border-radius:14px;padding:12px 10px;font-size:13px;font-weight:800;line-height:1.25;text-align:center;border:2px solid transparent;background:rgba(229,232,238,.55);color:#40484c;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.purpose-pick-tab:active{transform:scale(.985)}
+.purpose-pick-tab--plus.purpose-pick-tab--on{background:linear-gradient(180deg,rgba(224,247,242,.95),rgba(200,230,220,.75));border-color:rgba(0,109,90,.45);color:#004d40;box-shadow:0 0 0 1px rgba(0,109,90,.12)}
+.purpose-pick-tab--minus.purpose-pick-tab--on{background:linear-gradient(180deg,rgba(255,243,224,.98),rgba(255,224,192,.82));border-color:rgba(200,90,20,.42);color:#8b4510;box-shadow:0 0 0 1px rgba(200,90,20,.1)}
+.purpose-pick-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 18px;background:#fafbfc}
+.purpose-pick-panel{display:flex;flex-direction:column;gap:8px}
+.purpose-opt{display:flex;width:100%;text-align:left;padding:0;border-radius:14px;font-size:15px;font-weight:700;color:#181c20;border:1.5px solid rgba(191,200,204,.45);background:#fff;margin:0;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,box-shadow .15s;min-height:3.25rem;box-shadow:0 1px 2px rgba(24,28,32,.04)}
+.purpose-opt:active{transform:scale(.992)}
+.purpose-opt--plus{border-color:rgba(0,109,90,.22);background:linear-gradient(180deg,#fff,rgba(232,245,241,.5))}
+.purpose-opt--minus{border-color:rgba(210,120,40,.22);background:linear-gradient(180deg,#fff,rgba(255,248,240,.55))}
+.purpose-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px 14px 14px 16px;min-height:3.25rem;box-sizing:border-box}
+.purpose-opt-txt{flex:1;min-width:0;word-break:break-word;line-height:1.35}
+.purpose-opt-check{flex-shrink:0;font-size:22px;line-height:1;opacity:0;transform:scale(.88);transition:opacity .15s,transform .15s;color:#006d39}
+.purpose-opt--minus .purpose-opt-check{color:#c2410c}
+.purpose-opt--sel .purpose-opt-check{opacity:1;transform:scale(1)}
+.purpose-opt--plus.purpose-opt--sel{background:linear-gradient(180deg,rgba(224,247,242,.95),rgba(200,230,220,.65));border-color:rgba(0,109,90,.55);box-shadow:0 0 0 2px rgba(0,109,90,.14),0 2px 8px rgba(0,77,64,.08)}
+.purpose-opt--minus.purpose-opt--sel{background:linear-gradient(180deg,rgba(255,237,213,.95),rgba(255,220,180,.72));border-color:rgba(217,119,6,.55);box-shadow:0 0 0 2px rgba(217,119,6,.16),0 2px 8px rgba(180,80,20,.1)}
 .purpose-picker-trigger{min-height:2.5rem}
 /* 查詢卡 · 頂列：日期與登記人底線對齊 */
 .q-rec-v2-head{display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;min-width:0}
@@ -598,13 +612,43 @@ let _purposeCtx = null;
 function buildPurposePickerSectionsHtml() {
   const plus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "+"; });
   const minus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "-"; });
-  function section(title, opts) {
-    const btns = opts.map(function (o) {
-      return `<button type="button" class="purpose-opt" data-value="${h(o)}">${esc(o)}</button>`;
+  function optsHtml(opts, kind) {
+    return opts.map(function (o) {
+      return `<button type="button" class="purpose-opt purpose-opt--${kind}" data-value="${h(o)}"><span class="purpose-opt-row"><span class="purpose-opt-txt">${esc(o)}</span><span class="ms purpose-opt-check" aria-hidden="true">check</span></span></button>`;
     }).join("");
-    return `<div class="purpose-pick-sec mb-5 last:mb-0"><div class="purpose-pick-sec-ttl">${title}</div><div class="purpose-pick-opts">${btns}</div></div>`;
   }
-  return section("+ 入庫 / 回收", plus) + section("- 出庫 / 借出", minus);
+  return (
+    '<div class="purpose-pick-ly">' +
+    '<div class="purpose-pick-tabs" role="tablist" aria-label="目的分類">' +
+    '<button type="button" role="tab" id="purposeTabPlus" class="purpose-pick-tab purpose-pick-tab--plus purpose-pick-tab--on" data-purpose-tab="plus" aria-selected="true" aria-controls="purposePanelPlus">+ 入庫 / 回收</button>' +
+    '<button type="button" role="tab" id="purposeTabMinus" class="purpose-pick-tab purpose-pick-tab--minus" data-purpose-tab="minus" aria-selected="false" aria-controls="purposePanelMinus">- 出庫 / 借出</button>' +
+    "</div>" +
+    '<div class="purpose-pick-scroll">' +
+    '<div role="tabpanel" id="purposePanelPlus" class="purpose-pick-panel" data-purpose-panel="plus" aria-labelledby="purposeTabPlus" aria-hidden="false">' +
+    optsHtml(plus, "plus") +
+    "</div>" +
+    '<div role="tabpanel" id="purposePanelMinus" class="purpose-pick-panel hidden" data-purpose-panel="minus" aria-labelledby="purposeTabMinus" aria-hidden="true">' +
+    optsHtml(minus, "minus") +
+    "</div></div></div>"
+  );
+}
+
+/** 切換 + / - 分類（不關閉 modal、不改值） */
+function setPurposePickTab(kind) {
+  const isPlus = kind === "plus";
+  const tp = document.getElementById("purposeTabPlus");
+  const tm = document.getElementById("purposeTabMinus");
+  const pp = document.getElementById("purposePanelPlus");
+  const pm = document.getElementById("purposePanelMinus");
+  if (!tp || !tm || !pp || !pm) return;
+  tp.setAttribute("aria-selected", isPlus ? "true" : "false");
+  tm.setAttribute("aria-selected", isPlus ? "false" : "true");
+  tp.classList.toggle("purpose-pick-tab--on", isPlus);
+  tm.classList.toggle("purpose-pick-tab--on", !isPlus);
+  pp.classList.toggle("hidden", !isPlus);
+  pm.classList.toggle("hidden", isPlus);
+  pp.setAttribute("aria-hidden", isPlus ? "false" : "true");
+  pm.setAttribute("aria-hidden", isPlus ? "true" : "false");
 }
 
 function ensurePurposePickerBody() {
@@ -630,6 +674,7 @@ function openPurposePicker(hiddenId, btnId) {
   document.querySelectorAll("#purposePickBody .purpose-opt").forEach(function (el) {
     el.classList.toggle("purpose-opt--sel", el.getAttribute("data-value") === cur);
   });
+  setPurposePickTab(cur.charAt(0) === "-" ? "minus" : "plus");
   document.getElementById("purposePickBd").classList.add("op");
 }
 
@@ -673,6 +718,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("fDate").value = today();
   ensurePurposePickerBody();
   document.getElementById("purposePickBody").addEventListener("click", function (e) {
+    const tab = e.target.closest("[data-purpose-tab]");
+    if (tab) {
+      const k = tab.getAttribute("data-purpose-tab");
+      if (k === "plus" || k === "minus") setPurposePickTab(k);
+      return;
+    }
     const b = e.target.closest(".purpose-opt");
     if (!b) return;
     pickPurposeValue(b.getAttribute("data-value"));
@@ -823,7 +874,7 @@ function addPart(data={}) {
 
       <div class="w-full">
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量</label>
-        <div class="w-full border-b-2 border-outline-variant/30 pb-1.5">
+        <div class="w-full">
           <div class="flex w-full items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-2">
             <button type="button" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
             <input type="number" data-f="qty" value="${data.qty!=null&&data.qty!==""?data.qty:0}" min="0" id="qty_${id}" inputmode="numeric"
