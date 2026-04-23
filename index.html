@@ -265,6 +265,8 @@ button,input,select,textarea{font:inherit}
 .m-part-val{font-size:.82rem;color:#40484c;font-family:JetBrains Mono,monospace}
 .cfm-bd{position:fixed;inset:0;z-index:600;background:rgba(24,28,32,.4);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px}
 .cfm-bd.op{display:flex!important}
+/* 送出成功後：LINE 分享需由「第二次點擊」觸發 shareTargetPicker（避免 await 網路後脫離 user gesture） */
+.post-share-bd{z-index:610}
 .cfm-a4-box{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 8px 32px -4px rgba(24,28,32,.06),0 0 0 1px rgba(255,255,255,.25)}
 /* 確認送出 modal：資訊區主底 #F3F3F3 + 與新增頁一致的序號語彙 */
 .cfm-sum-card{background:#F3F3F3;border-radius:0.875rem;padding:1rem;border:1px solid rgba(191,200,204,.35)}
@@ -580,6 +582,28 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       <button type="button" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm shadow-md flex items-center justify-center gap-2" id="cfmOk" onclick="doSubmit()">
         <span class="ms fi" style="font-size:18px">check</span>確認
       </button>
+    </div>
+  </div>
+</div>
+
+<div class="cfm-bd post-share-bd" id="postSubmitShareModal" role="dialog" aria-modal="true" aria-labelledby="postSubmitShareTitle">
+  <div class="cfm-a4-box w-full max-w-md rounded-[1.5rem] p-8 flex flex-col gap-6 mx-auto max-h-[min(92vh,calc(100dvh-32px))] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex flex-col items-center text-center gap-3">
+      <div class="w-16 h-16 rounded-full bg-tertiary/12 flex items-center justify-center shrink-0">
+        <span class="ms fi text-4xl text-tertiary">share</span>
+      </div>
+      <h2 id="postSubmitShareTitle" class="font-headline text-xl font-bold text-on-surface tracking-tight">資料已儲存至 Google Sheets</h2>
+      <p class="text-sm text-on-surface-variant leading-relaxed px-1">請點下方<strong class="text-on-surface font-semibold">「分享到 LINE」</strong>，以開啟選擇好友或群組畫面並傳送 Flex 卡片。</p>
+      <div class="cfm-sum-card w-full text-left py-3 px-4">
+        <span class="text-[11px] font-bold tracking-widest uppercase text-secondary">紀錄編號 Record ID</span>
+        <span id="postSubmitShareRecordId" class="font-headline text-base font-semibold text-primary block mt-1 font-mono break-all">—</span>
+      </div>
+    </div>
+    <div class="flex flex-col gap-3 w-full shrink-0">
+      <button type="button" id="postSubmitShareLineBtn" class="w-full px-6 py-3.5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm shadow-md flex items-center justify-center gap-2 active:scale-[0.98]" onclick="onPostSubmitShareLineTap(event)">
+        <span class="ms fi" style="font-size:18px">send</span>分享到 LINE
+      </button>
+      <button type="button" id="postSubmitShareSkipBtn" class="w-full px-6 py-3 rounded-xl border border-outline-variant/50 text-on-surface-variant font-bold text-sm bg-transparent hover:bg-surface-container-low/90 transition-colors" onclick="onPostSubmitShareSkipTap()">稍後再說，不分享</button>
     </div>
   </div>
 </div>
@@ -1364,9 +1388,123 @@ async function submitToGoogleSheets(basic, parts){
   }
 }
 
-/** Sheets 已成功後才呼叫；回傳 shared | cancelled */
+/** Sheets 已成功後才呼叫；回傳 shared | cancelled（詳情選單等非「先 await 再分享」場景可用） */
 async function openLineShareFlow(shareRecord){
   return await shareRecordToLineCore(shareRecord, { suppressToasts: true });
+}
+
+/**
+ * 表單送出成功後：LINE shareTargetPicker 須在使用者點擊的同步脈絡內啟動，
+ * 不可緊接在 await gas(submit) 之後呼叫，否則 LIFF 內建瀏覽器不會開啟選人畫面。
+ */
+let postSubmitSharePayload = null;
+
+function closePostSubmitShareModal(){
+  const el = document.getElementById("postSubmitShareModal");
+  if (el) el.classList.remove("op");
+}
+
+function openPostSubmitSharePrompt(basic, parts, recordId){
+  const shareRec = buildShareRecordFromSubmit(basic, parts, recordId);
+  const flexMsg = buildLineFlexMessage(shareRec);
+  const textFb = buildLineShareText(shareRec);
+  postSubmitSharePayload = {
+    recordId: String(recordId || "").trim(),
+    shareRec: shareRec,
+    flexMsg: flexMsg,
+    textFb: textFb,
+  };
+  const ridEl = document.getElementById("postSubmitShareRecordId");
+  if (ridEl) ridEl.textContent = postSubmitSharePayload.recordId || "—";
+  const lineBtn = document.getElementById("postSubmitShareLineBtn");
+  const skipBtn = document.getElementById("postSubmitShareSkipBtn");
+  if (lineBtn) lineBtn.disabled = false;
+  if (skipBtn) skipBtn.disabled = false;
+  const el = document.getElementById("postSubmitShareModal");
+  if (el) el.classList.add("op");
+}
+
+function finalizePostSubmitShareFlow(recordId, outcome){
+  closePostSubmitShareModal();
+  postSubmitSharePayload = null;
+  const o = outcome === "shared" ? "shared" : "cancelled";
+  showFinalStatus(recordId, o);
+  setTimeout(resetForm, 1600);
+}
+
+function onPostSubmitShareSkipTap(){
+  const p = postSubmitSharePayload;
+  const rid = p && p.recordId ? p.recordId : "";
+  if (!rid) {
+    closePostSubmitShareModal();
+    postSubmitSharePayload = null;
+    return;
+  }
+  finalizePostSubmitShareFlow(rid, "cancelled");
+}
+
+function onPostSubmitShareLineTap(ev){
+  if (ev && ev.preventDefault) ev.preventDefault();
+  const p = postSubmitSharePayload;
+  if (!p) return;
+
+  const recordId = p.recordId;
+  const textFb = p.textFb;
+  const flexMsg = p.flexMsg;
+
+  const canPicker =
+    typeof liff !== "undefined" &&
+    liff.isInClient &&
+    liff.isInClient() &&
+    typeof liff.shareTargetPicker === "function" &&
+    (!liff.isApiAvailable || liff.isApiAvailable("shareTargetPicker"));
+
+  if (!canPicker || !flexMsg) {
+    shareRecordToLineCore(p.shareRec, { suppressToasts: true })
+      .then(function (out) {
+        finalizePostSubmitShareFlow(recordId, out);
+      })
+      .catch(function () {
+        finalizePostSubmitShareFlow(recordId, "cancelled");
+      });
+    return;
+  }
+
+  closePostSubmitShareModal();
+
+  var handled = false;
+  function done(outcome){
+    if (handled) return;
+    handled = true;
+    finalizePostSubmitShareFlow(recordId, outcome);
+  }
+
+  try {
+    var prom = liff.shareTargetPicker([flexMsg]);
+    prom
+      .then(function (ok) {
+        done(ok ? "shared" : "cancelled");
+      })
+      .catch(function (e1) {
+        console.warn("shareTargetPicker flex:", e1);
+        try {
+          var prom2 = liff.shareTargetPicker([{ type: "text", text: textFb }]);
+          prom2
+            .then(function (ok2) {
+              done(ok2 ? "shared" : "cancelled");
+            })
+            .catch(function (e2) {
+              console.warn("shareTargetPicker text:", e2);
+              done("cancelled");
+            });
+        } catch (e3) {
+          done("cancelled");
+        }
+      });
+  } catch (syncErr) {
+    console.warn("shareTargetPicker:", syncErr);
+    done("cancelled");
+  }
 }
 
 function handleShareSuccess(recordId){
@@ -1428,17 +1566,7 @@ async function doSubmit(){
     }
     submitFlow.saveSuccess = true;
     closeCfm();
-
-    const shareRec = buildShareRecordFromSubmit(basic, parts, save.recordId);
-    let shareOutcome = "cancelled";
-    try {
-      shareOutcome = await openLineShareFlow(shareRec);
-    } catch (shareErr) {
-      console.warn("openLineShareFlow:", shareErr);
-      shareOutcome = "cancelled";
-    }
-    showFinalStatus(save.recordId, shareOutcome);
-    setTimeout(resetForm, 1600);
+    openPostSubmitSharePrompt(basic, parts, save.recordId);
   } catch (e) {
     const hint =
       e && e.responseSnippet
