@@ -80,6 +80,28 @@ button,input,select,textarea{font:inherit}
 .mbd,.cfm-bd{display:none}.mbd.op,.cfm-bd.op{display:flex}
 .success-banner{transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1)}
 .success-banner.sh{transform:translateY(0)}
+/* 成功橫幅：綠色完成 vs 琥珀提醒（已存檔但未分享） */
+.success-banner--success{
+  background:linear-gradient(135deg,#004444,#005d5d);
+  box-shadow:0 4px 24px rgba(0,68,68,0.35);
+  color:#fff;
+}
+.success-banner--success .sb-icon-wrap{background:rgba(255,255,255,0.2)}
+.success-banner--success .sb-icon-wrap .ms{color:#fff}
+.success-banner--success #sbSub{opacity:0.9}
+.success-banner--success .sb-close{background:rgba(255,255,255,0.15)}
+.success-banner--success .sb-close .ms{color:#fff}
+.success-banner--warn{
+  background:linear-gradient(135deg,#fde68a,#f59e0b);
+  box-shadow:0 4px 24px rgba(180,120,24,0.38);
+  color:#78350f;
+}
+.success-banner--warn .sb-icon-wrap{background:rgba(120,53,15,0.2)}
+.success-banner--warn .sb-icon-wrap .ms{color:#b45309}
+.success-banner--warn #sbTitle{color:#78350f}
+.success-banner--warn #sbSub{color:#92400e;opacity:1}
+.success-banner--warn .sb-close{background:rgba(120,53,15,0.18)}
+.success-banner--warn .sb-close .ms{color:#78350f}
 .error-banner{transform:translateY(-110%);transition:transform .38s cubic-bezier(.34,1.3,.64,1)}
 .error-banner.sh{transform:translateY(0)}
 /* 新增登錄 · 零件卡「檢驗狀態」四鍵：未選弱化 / 已選強化 */
@@ -593,7 +615,10 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <span class="ms fi text-4xl text-tertiary">share</span>
       </div>
       <h2 id="postSubmitShareTitle" class="font-headline text-xl font-bold text-on-surface tracking-tight">資料已儲存至 Google Sheets</h2>
-      <p class="text-sm text-on-surface-variant leading-relaxed px-1">請點下方<strong class="text-on-surface font-semibold">「分享到 LINE」</strong>，以開啟選擇好友或群組畫面並傳送 Flex 卡片。</p>
+      <div class="flex flex-col items-center text-center gap-2 px-1 w-full">
+        <p class="text-sm text-on-surface-variant leading-relaxed m-0">請點下方<strong class="text-on-surface font-semibold">「分享到 LINE」</strong></p>
+        <p class="text-sm text-on-surface-variant leading-relaxed m-0">以開啟選擇好友或群組畫面並傳送 Flex 卡片。</p>
+      </div>
       <div class="cfm-sum-card w-full text-left py-3 px-4">
         <span class="text-[11px] font-bold tracking-widest uppercase text-secondary">紀錄編號 Record ID</span>
         <span id="postSubmitShareRecordId" class="font-headline text-base font-semibold text-primary block mt-1 font-mono break-all">—</span>
@@ -640,15 +665,15 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
   </div>
 </div>
 
-<div class="success-banner fixed top-0 left-0 right-0 z-[9999] flex items-center gap-3 px-4 py-3 min-h-[70px] text-white" style="background:linear-gradient(135deg,#004444,#005d5d);box-shadow:0 4px 24px rgba(0,68,68,0.35)" id="successBanner">
-  <div class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-    <span class="ms fi text-2xl text-white">check_circle</span>
+<div class="success-banner success-banner--success fixed top-0 left-0 right-0 z-[9999] flex items-center gap-3 px-4 py-3 min-h-[70px]" id="successBanner">
+  <div class="sb-icon-wrap w-11 h-11 rounded-full flex items-center justify-center shrink-0">
+    <span class="ms fi text-2xl" id="sbIcon">check_circle</span>
   </div>
   <div class="flex-1 min-w-0">
     <div class="font-headline font-bold text-base" id="sbTitle">登錄成功 · 資料已儲存</div>
-    <div class="text-xs opacity-90 mt-0.5 font-mono tracking-wide" id="sbSub"></div>
+    <div class="text-xs mt-0.5 font-mono tracking-wide" id="sbSub"></div>
   </div>
-  <button type="button" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center shrink-0" onclick="hideBanner()"><span class="ms text-white">close</span></button>
+  <button type="button" class="sb-close w-9 h-9 rounded-full flex items-center justify-center shrink-0" onclick="hideBanner()"><span class="ms">close</span></button>
 </div>
 
 <div class="error-banner fixed top-0 left-0 right-0 z-[10000] flex items-center gap-3 px-4 py-3 min-h-[70px] text-white" style="background:linear-gradient(135deg,#8b1538,#ba1a1a);box-shadow:0 4px 24px rgba(120,20,40,0.4)" id="errorBanner">
@@ -1194,10 +1219,18 @@ function collect(){
 //  SUCCESS BANNER
 // ──────────────────────────────────────────
 let _bannerTimer = null;
-/** @param {string} recordId @param {{title?:string}} [opts] opts.title：編輯成功等覆寫主標（預設為新增登錄文案） */
+/** @param {string} recordId @param {{title?:string,variant?:"success"|"warning"}} [opts] variant: warning＝已存檔但未分享（琥珀提醒） */
 function showBanner(recordId, opts){
   opts = opts || {};
   hideErrorBanner();
+  const isWarn = opts.variant === "warning";
+  const ban = document.getElementById("successBanner");
+  if (ban) {
+    ban.classList.toggle("success-banner--success", !isWarn);
+    ban.classList.toggle("success-banner--warn", isWarn);
+  }
+  const iconEl = document.getElementById("sbIcon");
+  if (iconEl) iconEl.textContent = isWarn ? "warning" : "check_circle";
   const titleEl = document.getElementById("sbTitle");
   if(titleEl) titleEl.textContent = opts.title || "登錄成功 · 資料已儲存";
   const sub = document.getElementById("sbSub");
@@ -1513,7 +1546,7 @@ function handleShareSuccess(recordId){
 }
 
 function handleShareCancel(recordId){
-  showBanner(recordId, { title: "資料已儲存，未進行分享" });
+  showBanner(recordId, { title: "資料已儲存，未進行分享", variant: "warning" });
   showToast("資料已儲存，未進行分享", "");
 }
 
@@ -1556,7 +1589,7 @@ async function doSubmit(){
   submitFlow.submitResult = null;
   setFormSubmitLocked(true);
   btn.disabled = true;
-  btn.innerHTML = `<span class="spin"></span> 送出中… 請稍候`;
+  btn.innerHTML = `<span class="spin"></span> 送出中...`;
 
   try {
     const save = await submitToGoogleSheets(basic, parts);
