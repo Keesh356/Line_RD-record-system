@@ -215,17 +215,17 @@ button,input,select,textarea{font:inherit}
 .purpose-pick-div{height:1px;background:#eef2f2;margin:0 22px;flex-shrink:0}
 .purpose-pick-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;background:#fff}
 .purpose-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.purpose-grid-item{border:none;border-radius:14px;padding:10px 10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:80px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.purpose-grid-item{border:none;border-radius:14px;padding:10px 10px 8px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:0;min-height:80px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 .purpose-grid-item:active{transform:scale(.97)}
 .purpose-grid-item--plus{background:#f4fdfb;border-color:#c4e8e2}
 .purpose-grid-item--plus:hover{background:#eaf8f4;border-color:#8dd4c8}
 .purpose-grid-item--minus{background:#fff9f4;border-color:#f0d8c0}
 .purpose-grid-item--minus:hover{background:#fff2e8;border-color:#e0b890}
-.purpose-cell-meta{display:flex;align-items:center;justify-content:flex-end;width:100%}
+.purpose-cell-meta{position:absolute;top:8px;right:10px;z-index:1;display:flex;align-items:center;justify-content:flex-end;pointer-events:none}
 .purpose-cell-num{font-size:9px;font-weight:600;letter-spacing:.05em;opacity:.45;font-variant-numeric:tabular-nums}
 .purpose-grid-item--plus .purpose-cell-num{color:#1a8a78}
 .purpose-grid-item--minus .purpose-cell-num{color:#c06020}
-.purpose-cell-label{font-size:14px;font-weight:700;line-height:1.3;word-break:break-word;margin-top:auto;padding-top:1px;letter-spacing:.01em}
+.purpose-cell-label{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:700;line-height:1.3;word-break:break-word;margin:0;padding:16px 10px 8px;letter-spacing:.01em;min-height:0}
 .purpose-grid-item--plus .purpose-cell-label{color:#1a5a52}
 .purpose-grid-item--minus .purpose-cell-label{color:#8a3a10}
 .purpose-grid-item--plus.purpose-grid-item--sel{background:#eaf8f4;border-color:#1a8a78;box-shadow:0 0 0 2px rgba(26,138,120,.2),0 8px 22px rgba(0,100,85,.1)}
