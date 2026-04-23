@@ -255,6 +255,25 @@ button,input,select,textarea{font:inherit}
 .cfm-sum-card{background:#F3F3F3;border-radius:0.875rem;padding:1rem;border:1px solid rgba(191,200,204,.35)}
 .cfm-sum-card .cfm-cust-block{padding-bottom:0.85rem;margin-bottom:0;border-bottom:1px solid rgba(24,28,32,.06)}
 .cfm-sum-card .cfm-parts-count-block{padding-top:0.5rem}
+/* 刪除確認 dialog（對齊 ui/delete_confirm_dialog.html） */
+.del-cfm-bd{position:fixed;inset:0;z-index:650;display:none;align-items:center;justify-content:center;padding:24px 16px;background:rgba(15,40,38,.35);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.del-cfm-bd.op{display:flex!important}
+.del-cfm-card{width:100%;max-width:min(360px,calc(100vw - 32px));border-radius:24px;background:#fff;border:.5px solid #c8dbd8;overflow:hidden;animation:delCfmPop .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes delCfmPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.del-cfm-icon-wrap{width:64px;height:64px;border-radius:50%;background:#ddecea;display:flex;align-items:center;justify-content:center;margin:28px auto 18px}
+.del-cfm-title{font-size:18px;font-weight:700;text-align:center;color:#0f3f3a;margin:0 24px 20px;line-height:1.4;font-family:inherit}
+.del-cfm-info{margin:0 20px 20px;border-radius:14px;border:.5px solid #c8dbd8;background:#f4faf9;overflow:hidden}
+.del-cfm-info-row{padding:12px 16px}
+.del-cfm-info-row+.del-cfm-info-row{border-top:.5px solid #dcecea}
+.del-cfm-info-lbl{font-size:10px;font-weight:600;letter-spacing:1.5px;color:#5a8a84;text-transform:uppercase;margin-bottom:4px}
+.del-cfm-info-val{font-size:15px;font-weight:500;color:#0f3f3a}
+.del-cfm-info-val.mono{font-family:JetBrains Mono,SF Mono,Menlo,monospace;font-size:13px;color:#1a5f58;word-break:break-all}
+.del-cfm-info-val.warn{font-size:13px;color:#8a4a10}
+.del-cfm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 22px}
+.del-cfm-btn{border-radius:14px;padding:13px 8px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.del-cfm-btn:active{transform:scale(.97);opacity:.9}
+.del-cfm-btn-cancel{background:#f0f4f4;color:#4a7a74;border:.5px solid #c8dbd8}
+.del-cfm-btn-confirm{background:#1a5f58;color:#fff}
 /* 詳情 Modal 唯讀品項：頂列序號 + 品名（僅 #modal 內） */
 #modal .det-readonly-part-hd{display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(191,200,204,.22)}
 #modal .det-seq-badge{width:2rem;height:2rem;border-radius:0.5rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,#004253,#005b71);box-shadow:0 2px 8px -2px rgba(0,66,83,.25)}
@@ -541,6 +560,38 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       <button type="button" class="flex-1 px-6 py-3 rounded-xl border border-outline-variant/50 text-on-surface-variant font-bold text-sm bg-transparent hover:bg-surface-container-low/90 transition-colors" onclick="closeCfm()">取消</button>
       <button type="button" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm shadow-md flex items-center justify-center gap-2" id="cfmOk" onclick="doSubmit()">
         <span class="ms fi" style="font-size:18px">check</span>確認
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="del-cfm-bd" id="delConfirmModal" onclick="onDelConfirmBackdrop(event)">
+  <div class="del-cfm-card" role="dialog" aria-modal="true" aria-labelledby="delConfirmTitle" onclick="event.stopPropagation()">
+    <div class="del-cfm-icon-wrap" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" focusable="false">
+        <path d="M9 4h10M6 7h16M7.5 7l1 14.5a2 2 0 002 1.5h7a2 2 0 002-1.5L20.5 7" stroke="#1a5f58" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="11.5" y1="12" x2="11.5" y2="18" stroke="#1a5f58" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="16.5" y1="12" x2="16.5" y2="18" stroke="#1a5f58" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h2 class="del-cfm-title" id="delConfirmTitle">確定要刪除此紀錄？</h2>
+    <div class="del-cfm-info">
+      <div class="del-cfm-info-row">
+        <div class="del-cfm-info-lbl">紀錄編號 Record ID</div>
+        <div class="del-cfm-info-val mono" id="delConfirmRecordId"></div>
+      </div>
+      <div class="del-cfm-info-row">
+        <div class="del-cfm-info-lbl">警告 Warning</div>
+        <div class="del-cfm-info-val warn">此操作無法復原</div>
+      </div>
+    </div>
+    <div class="del-cfm-btns">
+      <button type="button" class="del-cfm-btn del-cfm-btn-cancel" onclick="closeDeleteConfirm()">取消</button>
+      <button type="button" class="del-cfm-btn del-cfm-btn-confirm" id="delConfirmOkBtn" onclick="confirmDeleteRecord()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">
+          <polyline points="2.5,7 5.5,10 11.5,4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        確定刪除
       </button>
     </div>
   </div>
@@ -1495,6 +1546,7 @@ function statusCls(s){
 
 function closeDetailModal(){
   closeDetShareMenu();
+  closeDeleteConfirm();
   document.getElementById("modal").classList.remove("op");
   detailEditMode = false;
   detailOpenRid = null;
@@ -2250,8 +2302,32 @@ function copyToForm(rid){
 // ──────────────────────────────────────────
 //  DELETE
 // ──────────────────────────────────────────
-async function deleteRecord(rid){
-  if(!confirm("確定要刪除紀錄 "+rid+" ？此操作無法復原。")) return;
+let _delConfirmRid = null;
+
+function openDeleteConfirm(rid){
+  _delConfirmRid = typeof rid === "string" ? rid : (rid != null ? String(rid) : "");
+  const idEl = document.getElementById("delConfirmRecordId");
+  if(idEl) idEl.textContent = _delConfirmRid;
+  document.getElementById("delConfirmModal")?.classList.add("op");
+}
+
+function closeDeleteConfirm(){
+  _delConfirmRid = null;
+  document.getElementById("delConfirmModal")?.classList.remove("op");
+}
+
+function onDelConfirmBackdrop(e){
+  if(e.target && e.target.id === "delConfirmModal") closeDeleteConfirm();
+}
+
+function deleteRecord(rid){
+  openDeleteConfirm(rid);
+}
+
+async function confirmDeleteRecord(){
+  const rid = _delConfirmRid;
+  closeDeleteConfirm();
+  if(!rid) return;
   closeDetailModal();
   try {
     const res = await gas({ action:"delete", recordId:rid });
