@@ -235,6 +235,21 @@ button,input,select,textarea{font:inherit}
 .purpose-sec01-row{display:flex;align-items:flex-end;gap:2px;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s}
 .purpose-sec01-row:focus-within{border-bottom-color:rgba(0,66,83,.55)}
 .purpose-sec01-btn{flex:1;min-width:0}
+/* 新增表單「目的」已選值：與選擇器網格 .purpose-cell-label 一致（僅 #fPurposeBtn） */
+#pg-form #fPurposeBtn.purpose-sec01-purpose-filled--plus{
+  font-size:14px;
+  font-weight:700;
+  line-height:1.3;
+  letter-spacing:.01em;
+  color:#1a5a52;
+}
+#pg-form #fPurposeBtn.purpose-sec01-purpose-filled--minus{
+  font-size:14px;
+  font-weight:700;
+  line-height:1.3;
+  letter-spacing:.01em;
+  color:#8a3a10;
+}
 .purpose-sec01-chevron{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin-bottom:2px;border-radius:50%;color:rgba(112,120,125,.72);background:transparent;border:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .purpose-sec01-chevron:hover{background:rgba(229,232,238,.45)}
 .purpose-sec01-chevron:active{background:rgba(229,232,238,.65)}
@@ -771,6 +786,17 @@ function syncPurposePickerButton(btnId, val) {
   if (!btn) return;
   const v = (val != null) ? String(val) : "";
   btn.textContent = v ? purposeModalCardLabel(v) : "請選擇目的";
+  if (btnId === "fPurposeBtn") {
+    btn.classList.remove("purpose-sec01-purpose-filled--plus", "purpose-sec01-purpose-filled--minus");
+    if (v) {
+      btn.classList.add(v.charAt(0) === "-" ? "purpose-sec01-purpose-filled--minus" : "purpose-sec01-purpose-filled--plus");
+      btn.classList.remove("text-on-surface", "text-outline-variant");
+    } else {
+      btn.classList.remove("text-on-surface");
+      btn.classList.add("text-outline-variant");
+    }
+    return;
+  }
   btn.classList.toggle("text-on-surface", !!v);
   btn.classList.toggle("text-outline-variant", !v);
 }
@@ -1124,10 +1150,10 @@ function collect(){
     const f = k => (c.querySelector(`[data-f="${k}"]`)?.value||"").trim();
     const pid = c.id;
     parts.push({
-      itemName: f("itemName"), pn: f("pn"), sn: f("sn"),
+      itemName: String(f("itemName")), pn: String(f("pn")), sn: String(f("sn")),
       qty: (function(){ const q=f("qty"); return (q===""||q==null)?"0":q; })(),
       status: COND_MAP[partStatus[pid]||"unkn"],
-      bin: f("bin"),
+      bin: String(f("bin")),
       verifyInDate: f("verifyInDate"),
       shipPackDate: f("shipPackDate"),
       remark: f("remark"),
@@ -2210,12 +2236,12 @@ async function saveDetailEdit(){
   const parts = [];
   (r.parts||[]).forEach((_,i)=>{
     parts.push({
-      itemName: gv("det-p-"+i+"-name"),
-      pn:       gv("det-p-"+i+"-pn"),
-      sn:       gv("det-p-"+i+"-sn"),
+      itemName: String(gv("det-p-"+i+"-name")),
+      pn:       String(gv("det-p-"+i+"-pn")),
+      sn:       String(gv("det-p-"+i+"-sn")),
       qty:      (function(){ const q=gv("det-p-"+i+"-qty"); return (q===""||q==null)?"0":q; })(),
       status:   gv("det-p-"+i+"-status") || "UNKNOW",
-      bin:      gv("det-p-"+i+"-bin"),
+      bin:      String(gv("det-p-"+i+"-bin")),
       verifyInDate: gv("det-p-"+i+"-vin"),
       shipPackDate: gv("det-p-"+i+"-spk"),
       remark:   gv("det-p-"+i+"-remark"),
@@ -2284,12 +2310,12 @@ function copyToForm(rid){
   const REV={"PASS":"pass","FAIL":"fail","待驗":"wait","UNKNOW":"unkn"};
   (r.parts||[]).forEach(p=>{
     addPart({
-      itemName: p.itemName,
-      pn:       p.pn,
-      sn:       p.sn,
+      itemName: p.itemName!=null?String(p.itemName):"",
+      pn:       p.pn!=null?String(p.pn):"",
+      sn:       p.sn!=null?String(p.sn):"",
       qty:      (p.qty!=null&&p.qty!=="")?p.qty:0,
       status:   REV[p.status]||"unkn",
-      bin:      p.bin,
+      bin:      p.bin!=null?String(p.bin):"",
       verifyInDate: p.verifyInDate || "",
       shipPackDate: p.shipPackDate || "",
       remark:   p.remark,
