@@ -215,20 +215,17 @@ button,input,select,textarea{font:inherit}
 .purpose-pick-div{height:1px;background:#eef2f2;margin:0 22px;flex-shrink:0}
 .purpose-pick-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;background:#fff}
 .purpose-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.purpose-grid-item{border:none;border-radius:14px;padding:16px 12px 14px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:102px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.purpose-grid-item{border:none;border-radius:14px;padding:10px 10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:80px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 .purpose-grid-item:active{transform:scale(.97)}
 .purpose-grid-item--plus{background:#f4fdfb;border-color:#c4e8e2}
 .purpose-grid-item--plus:hover{background:#eaf8f4;border-color:#8dd4c8}
 .purpose-grid-item--minus{background:#fff9f4;border-color:#f0d8c0}
 .purpose-grid-item--minus:hover{background:#fff2e8;border-color:#e0b890}
-.purpose-cell-meta{display:flex;align-items:center;justify-content:space-between;width:100%}
-.purpose-cell-sign{font-size:22px;font-weight:700;line-height:1;opacity:.35}
-.purpose-grid-item--plus .purpose-cell-sign{color:#1a8a78}
-.purpose-grid-item--minus .purpose-cell-sign{color:#c06020}
-.purpose-cell-num{font-size:10px;font-weight:600;letter-spacing:.06em;opacity:.35;font-variant-numeric:tabular-nums}
+.purpose-cell-meta{display:flex;align-items:center;justify-content:flex-end;width:100%}
+.purpose-cell-num{font-size:9px;font-weight:600;letter-spacing:.05em;opacity:.45;font-variant-numeric:tabular-nums}
 .purpose-grid-item--plus .purpose-cell-num{color:#1a8a78}
 .purpose-grid-item--minus .purpose-cell-num{color:#c06020}
-.purpose-cell-label{font-size:16px;font-weight:700;line-height:1.38;word-break:break-word;margin-top:auto;padding-top:2px;letter-spacing:.01em}
+.purpose-cell-label{font-size:14px;font-weight:700;line-height:1.3;word-break:break-word;margin-top:auto;padding-top:1px;letter-spacing:.01em}
 .purpose-grid-item--plus .purpose-cell-label{color:#1a5a52}
 .purpose-grid-item--minus .purpose-cell-label{color:#8a3a10}
 .purpose-grid-item--plus.purpose-grid-item--sel{background:#eaf8f4;border-color:#1a8a78;box-shadow:0 0 0 2px rgba(26,138,120,.2),0 8px 22px rgba(0,100,85,.1)}
@@ -606,30 +603,30 @@ const CFG = {
   GAS_URL:  "https://script.google.com/macros/s/AKfycbxTR9pQ2N6SngQqJxbTZiZZg_2pTWqN4ZcISPLBgNGSoLVPabpZyg9mp5v4c_JQ3a8g/exec",
 };
 
-/** 目的選項（寫入 Sheets / payload 的 value，順序與字元勿改） */
+/**
+ * 目的選項：寫入 Sheets / GAS 的實際字串，首字 + / - 用於分類 tab。
+ * 圖 3 的顯示用語由 purposeModalCardLabel 去掉首字，卡片上不顯示 + / -。
+ */
 const PURPOSE_OPTIONS = [
-  "+入庫(PO)",
-  "+入庫(拆料)",
-  "+換回",
+  "+PO入庫",
+  "+拆料入庫",
+  "+客戶資產",
+  "+壞品換回",
   "+退租歸還",
   "+維修返回/退修",
   "+借出歸還",
   "+借入",
-  "-出庫(訂單)",
-  "-出庫(組料)",
-  "-換出",
+  "-訂單出庫",
+  "-組料出庫",
+  "-交換換出",
   "-出租",
-  "-維修送出",
+  "-維修送出/返修",
+  "-客戶資產歸還",
   "-借出",
   "-借入歸還"
 ];
 
-/** UI 顯示文案覆寫（儲存值仍用 PURPOSE_OPTIONS 原字串） */
-const PURPOSE_DISPLAY_OVERRIDES = {
-  "+退租歸還": "+退租返回",
-  "+借出歸還": "+借出返回",
-  "-借入歸還": "-借入返回",
-};
+const PURPOSE_DISPLAY_OVERRIDES = {};
 
 function purposeDisplayLabel(stored) {
   const s = stored == null ? "" : String(stored);
@@ -647,7 +644,7 @@ function purposeModalCardLabel(stored) {
 /** 詳情編輯：hidden + 觸發鈕（與新增頁同一套卡片選擇器） */
 function buildPurposePickerTrigger(hiddenId, btnId, selectedVal) {
   const v = (selectedVal != null) ? String(selectedVal) : "";
-  const label = v ? esc(purposeDisplayLabel(v)) : "請選擇目的";
+  const label = v ? esc(purposeModalCardLabel(v)) : "請選擇目的";
   const cls = v ? "text-on-surface" : "text-outline-variant";
   return `<input type="hidden" id="${hiddenId}" value="${h(v)}"/>
 <button type="button" id="${btnId}" class="purpose-picker-trigger w-full text-left text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary/20 ${cls}" onclick="openPurposePicker('${hiddenId}','${btnId}')">${label}</button>`;
@@ -659,7 +656,6 @@ function buildPurposePickerSectionsHtml() {
   const plus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "+"; });
   const minus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "-"; });
   function optsHtml(opts, kind) {
-    const sign = kind === "plus" ? "+" : "−";
     return opts
       .map(function (o, i) {
         const num = String(i + 1).padStart(2, "0");
@@ -668,9 +664,7 @@ function buildPurposePickerSectionsHtml() {
           kind +
           '" data-value="' +
           h(o) +
-          '"><span class="purpose-cell-meta"><span class="purpose-cell-sign">' +
-          sign +
-          '</span><span class="purpose-cell-num">' +
+          '"><span class="purpose-cell-meta"><span class="purpose-cell-num">' +
           num +
           '</span></span><span class="purpose-cell-label">' +
           esc(purposeModalCardLabel(o)) +
@@ -716,16 +710,16 @@ function setPurposePickTab(kind) {
 
 function ensurePurposePickerBody() {
   const body = document.getElementById("purposePickBody");
-  if (!body || body.dataset.purposeUi === "grid-v3") return;
+  if (!body || body.dataset.purposeUi === "grid-v4") return;
   body.innerHTML = buildPurposePickerSectionsHtml();
-  body.dataset.purposeUi = "grid-v3";
+  body.dataset.purposeUi = "grid-v4";
 }
 
 function syncPurposePickerButton(btnId, val) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
   const v = (val != null) ? String(val) : "";
-  btn.textContent = v ? purposeDisplayLabel(v) : "請選擇目的";
+  btn.textContent = v ? purposeModalCardLabel(v) : "請選擇目的";
   btn.classList.toggle("text-on-surface", !!v);
   btn.classList.toggle("text-outline-variant", !v);
 }
