@@ -570,9 +570,13 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <span class="text-[11px] font-bold tracking-widest uppercase text-secondary">零件數量 PARTS COUNT</span>
         <span id="cfmPartsCountVal" class="font-headline text-lg font-semibold text-on-surface block mt-1">0 項</span>
       </div>
+      <div class="cfm-purpose-block mt-3">
+        <span class="text-[11px] font-bold tracking-widest uppercase text-secondary">目的 Purpose</span>
+        <span id="cfmPurposeVal" class="font-headline text-base font-semibold text-on-surface block mt-1 break-words">—</span>
+      </div>
     </div>
     <div class="flex gap-4 w-full pt-0 shrink-0">
-      <button type="button" class="flex-1 px-6 py-3 rounded-xl border border-outline-variant/50 text-on-surface-variant font-bold text-sm bg-transparent hover:bg-surface-container-low/90 transition-colors" onclick="closeCfm()">取消</button>
+      <button type="button" id="cfmCancel" class="flex-1 px-6 py-3 rounded-xl border border-outline-variant/50 text-on-surface-variant font-bold text-sm bg-transparent hover:bg-surface-container-low/90 transition-colors" onclick="closeCfm()">取消</button>
       <button type="button" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm shadow-md flex items-center justify-center gap-2" id="cfmOk" onclick="doSubmit()">
         <span class="ms fi" style="font-size:18px">check</span>確認
       </button>
@@ -1220,67 +1224,122 @@ async function notifyOpen(groupId) {
 }
 
 // ──────────────────────────────────────────
-//  CONFIRM + SUBMIT
+//  SUBMIT FLOW（驗證 → 確認 → Sheets → LINE 分享 → 結果）
 // ──────────────────────────────────────────
-function confirmSubmit(){
+const submitFlow = {
+  isSubmitting: false,
+  isConfirmDialogOpen: false,
+  submitResult: null,
+  shareStatus: null,
+  saveSuccess: false,
+};
+
+/** 送出成功後組出與查詢紀錄相同结构的物件，供 buildLineShareText / Flex 沿用 */
+function buildShareRecordFromSubmit(basic, parts, recordId){
+  return {
+    recordId: String(recordId || "").trim(),
+    date: basic.date || "",
+    source: basic.source || "",
+    customer: basic.customer || "",
+    orderNo: basic.orderNo || "",
+    projectNo: basic.projectNo || "",
+    purpose: basic.purpose || "",
+    submittedBy: basic.submittedBy || "",
+    status: "已登錄",
+    parts: (parts || []).map(function (p){
+      return {
+        itemName: p.itemName || "",
+        pn: p.pn || "",
+        sn: p.sn != null ? String(p.sn) : "",
+        status: p.status || "",
+        qty: p.qty != null ? String(p.qty) : "",
+        bin: p.bin || "",
+        verifyInDate: p.verifyInDate || "",
+        shipPackDate: p.shipPackDate || "",
+        remark: p.remark || "",
+      };
+    }),
+  };
+}
+
+function applyValidationErrors(v){
+  if (v.toast) showToast(v.toast[0], v.toast[1] || "err");
+  if (v.banner) showErrorBanner(v.banner[0], v.banner[1] || "");
+}
+
+/**
+ * 表單驗證（與送出前既有規則一致）
+ * @returns {{ok:true,basic:object,parts:Array}|{ok:false,toast?:[string,string],banner?:[string,string]}}
+ */
+function validateForm(){
   const { basic, parts } = collect();
-  if (!basic.customer) return showToast("請填寫客戶","err");
-  if (!basic.purpose)  return showToast("請選擇目的","err");
-  if (!parts.length)   return showToast("請新增至少一項零件","err");
+  if (!basic.customer) return { ok: false, toast: ["請填寫客戶", "err"] };
+  if (!basic.purpose) return { ok: false, toast: ["請選擇目的", "err"] };
+  if (!parts.length) return { ok: false, toast: ["請新增至少一項零件", "err"] };
   const badIdx = firstEmptyItemNameIndex(parts);
-  if (badIdx >= 0){
-    showErrorBanner(
-      "送出失敗：第 " + (badIdx + 1) + " 項零件尚未填寫品名",
-      "請先填寫所有零件的品名後再送出"
-    );
+  if (badIdx >= 0) {
+    return {
+      ok: false,
+      banner: [
+        "送出失敗：第 " + (badIdx + 1) + " 項零件尚未填寫品名",
+        "請先填寫所有零件的品名後再送出",
+      ],
+    };
+  }
+  return { ok: true, basic: basic, parts: parts };
+}
+
+function openSubmitConfirmDialog(){
+  if (submitFlow.isSubmitting) return;
+  const v = validateForm();
+  if (!v.ok) {
+    applyValidationErrors(v);
     return;
   }
-
+  const basic = v.basic;
+  const parts = v.parts;
   document.getElementById("cfmCustomerVal").textContent = basic.customer || "—";
+  const purposeEl = document.getElementById("cfmPurposeVal");
+  if (purposeEl) {
+    const pu = basic.purpose || "";
+    purposeEl.textContent = (typeof purposeDisplayLabel === "function" ? purposeDisplayLabel(pu) : pu) || "—";
+  }
   const n = parts.length;
   const cntEl = document.getElementById("cfmPartsCountVal");
   if (cntEl) cntEl.textContent = n + " 項";
+  submitFlow.isConfirmDialogOpen = true;
   document.getElementById("cfmModal").classList.add("op");
 }
+
+function confirmSubmit(){
+  openSubmitConfirmDialog();
+}
+
 function closeCfm(){
   document.getElementById("cfmModal").classList.remove("op");
+  submitFlow.isConfirmDialogOpen = false;
 }
+
+function setFormSubmitLocked(locked){
+  const sub = document.getElementById("btnSub");
+  const cfmOk = document.getElementById("cfmOk");
+  const cfmCancel = document.getElementById("cfmCancel");
+  if (sub) {
+    sub.disabled = !!locked;
+    sub.classList.toggle("opacity-50", !!locked);
+    sub.classList.toggle("pointer-events-none", !!locked);
+    sub.setAttribute("aria-busy", locked ? "true" : "false");
+  }
+  if (cfmOk) cfmOk.disabled = !!locked;
+  if (cfmCancel) cfmCancel.disabled = !!locked;
+}
+
 const CFM_OK_BTN_HTML = `<span class="ms fi" style="font-size:18px">check</span>確認`;
 const DET_SAVE_BTN_LABEL = "儲存";
 
-async function doSubmit(){
-  const { basic, parts } = collect();
-  if (!basic.customer) {
-    closeCfm();
-    showToast("請填寫客戶", "err");
-    return;
-  }
-  if (!basic.purpose) {
-    closeCfm();
-    showToast("請選擇目的", "err");
-    return;
-  }
-  if (!parts.length) {
-    closeCfm();
-    showToast("請新增至少一項零件", "err");
-    return;
-  }
-  const badIdx = firstEmptyItemNameIndex(parts);
-  if (badIdx >= 0){
-    closeCfm();
-    showErrorBanner(
-      "送出失敗：第 " + (badIdx + 1) + " 項零件尚未填寫品名",
-      "請先填寫所有零件的品名後再送出"
-    );
-    return;
-  }
-
-  const btn = document.getElementById("cfmOk");
-  btn.disabled = true;
-  btn.innerHTML = `<span class="spin"></span> 送出中…`;
-
+async function submitToGoogleSheets(basic, parts){
   try {
-    const res = await gas({ action:"submit", basic, parts });
+    const res = await gas({ action: "submit", basic: basic, parts: parts });
     const ok =
       res &&
       res.success === true &&
@@ -1288,22 +1347,109 @@ async function doSubmit(){
       res.recordId.trim().length > 0;
     if (!ok) {
       const msg =
-        (res && typeof res.message === "string" && res.message.trim())
+        res && typeof res.message === "string" && res.message.trim()
           ? res.message.trim()
           : "資料尚未成功寫入 Google Sheets";
-      showErrorBanner("送出失敗", msg);
-      showToast("送出失敗：" + msg, "err");
+      return { ok: false, message: msg };
+    }
+    return { ok: true, recordId: res.recordId.trim(), res: res };
+  } catch (e) {
+    const hint =
+      e && e.responseSnippet
+        ? e.responseSnippet
+        : e && e.message
+          ? String(e.message)
+          : "請稍後再試";
+    return { ok: false, message: "無法完成寫入：" + hint };
+  }
+}
+
+/** Sheets 已成功後才呼叫；回傳 shared | cancelled */
+async function openLineShareFlow(shareRecord){
+  return await shareRecordToLineCore(shareRecord, { suppressToasts: true });
+}
+
+function handleShareSuccess(recordId){
+  showBanner(recordId, { title: "資料已儲存並完成分享" });
+  showToast("資料已儲存並完成分享", "");
+}
+
+function handleShareCancel(recordId){
+  showBanner(recordId, { title: "資料已儲存，未進行分享" });
+  showToast("資料已儲存，未進行分享", "");
+}
+
+function showFinalStatus(recordId, shareOutcome){
+  if (shareOutcome === "shared") {
+    submitFlow.shareStatus = "shared";
+    submitFlow.submitResult = "saved_shared";
+    handleShareSuccess(recordId);
+  } else {
+    submitFlow.shareStatus = "cancelled";
+    submitFlow.submitResult = "saved_no_share";
+    handleShareCancel(recordId);
+  }
+}
+
+function showSubmitSaveFailure(message){
+  submitFlow.saveSuccess = false;
+  submitFlow.submitResult = "error";
+  const sub = message || "";
+  showErrorBanner("送出失敗，資料尚未儲存", sub);
+  showToast("送出失敗，資料尚未儲存", "err");
+}
+
+async function doSubmit(){
+  if (submitFlow.isSubmitting) return;
+
+  const v = validateForm();
+  if (!v.ok) {
+    applyValidationErrors(v);
+    closeCfm();
+    return;
+  }
+  const basic = v.basic;
+  const parts = v.parts;
+
+  const btn = document.getElementById("cfmOk");
+  submitFlow.isSubmitting = true;
+  submitFlow.saveSuccess = false;
+  submitFlow.shareStatus = null;
+  submitFlow.submitResult = null;
+  setFormSubmitLocked(true);
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spin"></span> 送出中… 請稍候`;
+
+  try {
+    const save = await submitToGoogleSheets(basic, parts);
+    if (!save.ok) {
+      showSubmitSaveFailure(save.message || "");
       return;
     }
+    submitFlow.saveSuccess = true;
     closeCfm();
-    showBanner(res.recordId);
+
+    const shareRec = buildShareRecordFromSubmit(basic, parts, save.recordId);
+    let shareOutcome = "cancelled";
+    try {
+      shareOutcome = await openLineShareFlow(shareRec);
+    } catch (shareErr) {
+      console.warn("openLineShareFlow:", shareErr);
+      shareOutcome = "cancelled";
+    }
+    showFinalStatus(save.recordId, shareOutcome);
     setTimeout(resetForm, 1600);
   } catch (e) {
     const hint =
-      (e && e.responseSnippet) ? e.responseSnippet : (e && e.message ? String(e.message) : "請稍後再試");
-    showErrorBanner("送出失敗", "無法完成寫入：" + hint);
-    showToast("送出失敗，請稍後再試", "err");
+      e && e.responseSnippet
+        ? e.responseSnippet
+        : e && e.message
+          ? String(e.message)
+          : "請稍後再試";
+    showSubmitSaveFailure("無法完成寫入：" + hint);
   } finally {
+    submitFlow.isSubmitting = false;
+    setFormSubmitLocked(false);
     btn.disabled = false;
     btn.innerHTML = CFM_OK_BTN_HTML;
   }
@@ -1836,31 +1982,45 @@ function buildLineFlexMessage(r){
   };
 }
 
-/** 分享到 LINE：優先 Flex → 失敗則純文字 → 再失敗則系統分享 / 剪貼簿 */
-async function shareRecordToLine(r){
-  if (!r) { showToast("無法取得紀錄", "err"); return; }
+/**
+ * LINE 分享核心：優先 Flex → 純文字 → 系統分享 / 剪貼簿
+ * @param {{suppressToasts?:boolean}} opts suppressToasts：表單送出流程由外層顯示最終提示時使用
+ * @returns {Promise<'shared'|'cancelled'>}
+ */
+async function shareRecordToLineCore(r, opts){
+  opts = opts || {};
+  const suppress = opts.suppressToasts === true;
+  if (!r) {
+    if (!suppress) showToast("無法取得紀錄", "err");
+    return "cancelled";
+  }
   const textFb = buildLineShareText(r);
   const flexMsg = buildLineFlexMessage(r);
 
-  const canPicker = typeof liff !== "undefined" && liff.isInClient && liff.isInClient() &&
+  const canPicker =
+    typeof liff !== "undefined" &&
+    liff.isInClient &&
+    liff.isInClient() &&
     typeof liff.shareTargetPicker === "function" &&
     (!liff.isApiAvailable || liff.isApiAvailable("shareTargetPicker"));
 
   if (canPicker && flexMsg) {
     try {
       const ok = await liff.shareTargetPicker([flexMsg]);
-      closeDetShareMenu();
-      if (ok) showToast("已開啟 LINE 分享", "");
-      else showToast("已取消分享", "");
-      return;
+      if (!suppress) {
+        if (ok) showToast("已開啟 LINE 分享", "");
+        else showToast("已取消分享", "");
+      }
+      return ok ? "shared" : "cancelled";
     } catch (e1) {
       console.warn("shareTargetPicker flex:", e1);
       try {
         const ok2 = await liff.shareTargetPicker([{ type: "text", text: textFb }]);
-        closeDetShareMenu();
-        if (ok2) showToast("Flex 卡片分享失敗，已改用文字分享", "");
-        else showToast("已取消分享", "");
-        return;
+        if (!suppress) {
+          if (ok2) showToast("Flex 卡片分享失敗，已改用文字分享", "");
+          else showToast("已取消分享", "");
+        }
+        return ok2 ? "shared" : "cancelled";
       } catch (e2) {
         console.warn("shareTargetPicker text:", e2);
       }
@@ -1870,15 +2030,26 @@ async function shareRecordToLine(r){
   try {
     if (navigator.share) {
       await navigator.share({ text: textFb, title: "【RD Record 零件出貨紀錄】" });
-      closeDetShareMenu();
-      showToast("已開啟系統分享", "");
-      return;
+      if (!suppress) showToast("已開啟系統分享", "");
+      return "shared";
     }
-  } catch (e) { console.warn("navigator.share:", e); }
+  } catch (e) {
+    console.warn("navigator.share:", e);
+    if (!suppress) showToast("已取消分享", "");
+    return "cancelled";
+  }
 
   const ok = await copyShareTextToClipboard(textFb);
+  if (!suppress) {
+    showToast(ok ? "無法直接分享，已為你複製分享內容" : "分享失敗，請稍後再試", ok ? "" : "err");
+  }
+  return ok ? "shared" : "cancelled";
+}
+
+/** 詳情選單：分享到 LINE（維持既有 toast；關閉選單） */
+async function shareRecordToLine(r){
+  await shareRecordToLineCore(r, { suppressToasts: false });
   closeDetShareMenu();
-  showToast(ok ? "無法直接分享，已為你複製分享內容" : "分享失敗，請稍後再試", ok ? "" : "err");
 }
 
 async function copyShareTextToClipboard(text){
