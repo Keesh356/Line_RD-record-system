@@ -190,35 +190,56 @@ button,input,select,textarea{font:inherit}
 /* 詳情唯讀 · 數量/櫃位：白底區塊，與他欄一致 */
 .det-qty-bin-plain{background:transparent!important;border:none!important;box-shadow:none!important;border-radius:0}
 .det-qty-bin-plain .det-qty-bin-inner{background:transparent!important;border:none!important;padding:0.2rem 0 0;gap:0.75rem 1rem}
-/* 目的 · 卡片式選擇器（分類 tab + 單欄選項） */
+/* 目的 · v2 選擇器（參考 ui/purpose_selector_v2.html：分類 tab + 雙欄網格卡片） */
 .purpose-pick-bd{display:none;position:fixed;inset:0;z-index:620;align-items:flex-end;justify-content:center;padding:0;background:rgba(24,28,32,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .purpose-pick-bd.op{display:flex!important}
 @media(min-width:720px){.purpose-pick-bd.op{align-items:center;padding:20px 16px}}
 .purpose-pick-dialog{width:100%;max-width:28rem;max-height:min(88dvh,640px);background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 40px -8px rgba(24,28,32,.2);overflow:hidden;display:flex;flex-direction:column}
-@media(min-width:720px){.purpose-pick-dialog{border-radius:16px;max-height:min(82dvh,560px)}}
-.purpose-pick-hd{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid rgba(191,200,204,.35)}
-.purpose-pick-hd h3{margin:0;font-size:1.05rem;font-weight:800;color:#004253;letter-spacing:-.02em}
+@media(min-width:720px){.purpose-pick-dialog{border-radius:20px;max-height:min(82dvh,600px);box-shadow:0 24px 72px rgba(24,28,32,.22)}}
+.purpose-pick-hd{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:22px 22px 16px;background:#fff}
+.purpose-pick-hd h3{margin:0;font-size:1.125rem;font-weight:800;color:#1a3a3a;letter-spacing:.06em}
+.purpose-pick-close{width:36px;height:36px;border-radius:50%;border:none;background:#f0f5f5;color:#6a9a9a;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:background .2s,color .2s}
+.purpose-pick-close:hover{background:#d8edec;color:#1a6a60}
+.purpose-pick-close:active{transform:scale(.96)}
+.purpose-pick-close .ms{font-size:20px}
 .purpose-pick-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
 .purpose-pick-ly{display:flex;flex-direction:column;flex:1;min-height:0}
-.purpose-pick-tabs{flex-shrink:0;display:flex;gap:8px;padding:12px 14px 10px;background:#fff;border-bottom:1px solid rgba(191,200,204,.35)}
-.purpose-pick-tab{flex:1;min-width:0;border-radius:14px;padding:12px 10px;font-size:13px;font-weight:800;line-height:1.25;text-align:center;border:2px solid transparent;background:rgba(229,232,238,.55);color:#40484c;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.purpose-pick-tabs{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 22px 14px;background:#fff}
+.purpose-pick-tab{border:none;border-radius:14px;padding:13px 8px;font-size:14px;font-weight:700;line-height:1.25;text-align:center;letter-spacing:.02em;cursor:pointer;touch-action:manipulation;font-family:inherit;transition:all .2s}
+.purpose-pick-tab:not(.purpose-pick-tab--on){background:#f3f4f6;color:#b0b8c0;box-shadow:none}
+.purpose-pick-tab--plus.purpose-pick-tab--on{background:#d8f0ec;color:#1a6a60;box-shadow:0 3px 10px rgba(0,160,130,.18)}
+.purpose-pick-tab--minus.purpose-pick-tab--on{background:#fce8d4;color:#a04010;box-shadow:0 3px 10px rgba(200,100,30,.18)}
 .purpose-pick-tab:active{transform:scale(.985)}
-.purpose-pick-tab--plus.purpose-pick-tab--on{background:linear-gradient(180deg,rgba(224,247,242,.95),rgba(200,230,220,.75));border-color:rgba(0,109,90,.45);color:#004d40;box-shadow:0 0 0 1px rgba(0,109,90,.12)}
-.purpose-pick-tab--minus.purpose-pick-tab--on{background:linear-gradient(180deg,rgba(255,243,224,.98),rgba(255,224,192,.82));border-color:rgba(200,90,20,.42);color:#8b4510;box-shadow:0 0 0 1px rgba(200,90,20,.1)}
-.purpose-pick-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 18px;background:#fafbfc}
-.purpose-pick-panel{display:flex;flex-direction:column;gap:8px}
-.purpose-opt{display:flex;width:100%;text-align:left;padding:0;border-radius:14px;font-size:15px;font-weight:700;color:#181c20;border:1.5px solid rgba(191,200,204,.45);background:#fff;margin:0;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,box-shadow .15s;min-height:3.25rem;box-shadow:0 1px 2px rgba(24,28,32,.04)}
-.purpose-opt:active{transform:scale(.992)}
-.purpose-opt--plus{border-color:rgba(0,109,90,.22);background:linear-gradient(180deg,#fff,rgba(232,245,241,.5))}
-.purpose-opt--minus{border-color:rgba(210,120,40,.22);background:linear-gradient(180deg,#fff,rgba(255,248,240,.55))}
-.purpose-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px 14px 14px 16px;min-height:3.25rem;box-sizing:border-box}
-.purpose-opt-txt{flex:1;min-width:0;word-break:break-word;line-height:1.35}
-.purpose-opt-check{flex-shrink:0;font-size:22px;line-height:1;opacity:0;transform:scale(.88);transition:opacity .15s,transform .15s;color:#006d39}
-.purpose-opt--minus .purpose-opt-check{color:#c2410c}
-.purpose-opt--sel .purpose-opt-check{opacity:1;transform:scale(1)}
-.purpose-opt--plus.purpose-opt--sel{background:linear-gradient(180deg,rgba(224,247,242,.95),rgba(200,230,220,.65));border-color:rgba(0,109,90,.55);box-shadow:0 0 0 2px rgba(0,109,90,.14),0 2px 8px rgba(0,77,64,.08)}
-.purpose-opt--minus.purpose-opt--sel{background:linear-gradient(180deg,rgba(255,237,213,.95),rgba(255,220,180,.72));border-color:rgba(217,119,6,.55);box-shadow:0 0 0 2px rgba(217,119,6,.16),0 2px 8px rgba(180,80,20,.1)}
+.purpose-pick-div{height:1px;background:#eef2f2;margin:0 22px;flex-shrink:0}
+.purpose-pick-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;background:#fff}
+.purpose-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.purpose-grid-item{border:none;border-radius:14px;padding:14px 12px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:92px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.purpose-grid-item:active{transform:scale(.97)}
+.purpose-grid-item--plus{background:#f4fdfb;border-color:#c4e8e2}
+.purpose-grid-item--plus:hover{background:#eaf8f4;border-color:#8dd4c8}
+.purpose-grid-item--minus{background:#fff9f4;border-color:#f0d8c0}
+.purpose-grid-item--minus:hover{background:#fff2e8;border-color:#e0b890}
+.purpose-cell-meta{display:flex;align-items:center;justify-content:space-between;width:100%}
+.purpose-cell-sign{font-size:22px;font-weight:700;line-height:1;opacity:.35}
+.purpose-grid-item--plus .purpose-cell-sign{color:#1a8a78}
+.purpose-grid-item--minus .purpose-cell-sign{color:#c06020}
+.purpose-cell-num{font-size:10px;font-weight:600;letter-spacing:.06em;opacity:.35;font-variant-numeric:tabular-nums}
+.purpose-grid-item--plus .purpose-cell-num{color:#1a8a78}
+.purpose-grid-item--minus .purpose-cell-num{color:#c06020}
+.purpose-cell-label{font-size:13px;font-weight:600;line-height:1.35;word-break:break-word;margin-top:auto}
+.purpose-grid-item--plus .purpose-cell-label{color:#1a5a52}
+.purpose-grid-item--minus .purpose-cell-label{color:#8a3a10}
+.purpose-grid-item--plus.purpose-grid-item--sel{background:#eaf8f4;border-color:#1a8a78;box-shadow:0 0 0 2px rgba(26,138,120,.2),0 8px 22px rgba(0,100,85,.1)}
+.purpose-grid-item--minus.purpose-grid-item--sel{background:#fff2e8;border-color:#c06020;box-shadow:0 0 0 2px rgba(192,96,32,.22),0 8px 22px rgba(180,80,20,.1)}
 .purpose-picker-trigger{min-height:2.5rem}
+/* SECTION 01 · 目的列 + 右側箭頭 */
+.purpose-sec01-row{display:flex;align-items:flex-end;gap:2px;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s}
+.purpose-sec01-row:focus-within{border-bottom-color:rgba(0,66,83,.55)}
+.purpose-sec01-btn{flex:1;min-width:0}
+.purpose-sec01-chevron{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin-bottom:2px;border-radius:50%;color:rgba(112,120,125,.72);background:transparent;border:none;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.purpose-sec01-chevron:hover{background:rgba(229,232,238,.45)}
+.purpose-sec01-chevron:active{background:rgba(229,232,238,.65)}
+.purpose-sec01-chevron .ms{font-size:22px}
 /* 查詢卡 · 頂列：日期與登記人底線對齊 */
 .q-rec-v2-head{display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;min-width:0}
 .q-rec-v2-head .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em;flex-shrink:0}
@@ -366,8 +387,11 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       </div>
       <div>
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
-        <input type="hidden" id="fPurpose" value=""/>
-        <button type="button" id="fPurposeBtn" class="purpose-picker-trigger w-full text-left bg-transparent border-0 border-b-2 border-outline-variant/30 py-2 text-sm rounded-none text-outline-variant focus:border-primary focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
+        <div class="purpose-sec01-row">
+          <input type="hidden" id="fPurpose" value=""/>
+          <button type="button" id="fPurposeBtn" class="purpose-picker-trigger purpose-sec01-btn text-left bg-transparent border-0 py-2 pr-1 text-sm rounded-none text-outline-variant focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
+          <button type="button" class="purpose-sec01-chevron" aria-label="選擇目的" onclick="openPurposePicker('fPurpose','fPurposeBtn')"><span class="ms">expand_more</span></button>
+        </div>
       </div>
     </div>
   </section>
@@ -485,8 +509,8 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
   <div class="purpose-pick-dialog" role="dialog" aria-modal="true" aria-labelledby="purposePickTitle" onclick="event.stopPropagation()">
     <div class="purpose-pick-hd">
       <h3 id="purposePickTitle">選擇目的</h3>
-      <button type="button" class="w-9 h-9 flex items-center justify-center rounded-full text-outline hover:bg-surface-container-low active:bg-surface-container-high" aria-label="關閉" onclick="closePurposePicker()">
-        <span class="ms text-xl">close</span>
+      <button type="button" class="purpose-pick-close" aria-label="關閉" onclick="closePurposePicker()">
+        <span class="ms">close</span>
       </button>
     </div>
     <div class="purpose-pick-body" id="purposePickBody"></div>
@@ -580,7 +604,7 @@ const CFG = {
   GAS_URL:  "https://script.google.com/macros/s/AKfycbxTR9pQ2N6SngQqJxbTZiZZg_2pTWqN4ZcISPLBgNGSoLVPabpZyg9mp5v4c_JQ3a8g/exec",
 };
 
-/** 目的下拉選單（順序固定，勿改字） */
+/** 目的選項（寫入 Sheets / payload 的 value，順序與字元勿改） */
 const PURPOSE_OPTIONS = [
   "+入庫(PO)",
   "+入庫(拆料)",
@@ -598,10 +622,22 @@ const PURPOSE_OPTIONS = [
   "-借入歸還"
 ];
 
+/** UI 顯示文案覆寫（儲存值仍用 PURPOSE_OPTIONS 原字串） */
+const PURPOSE_DISPLAY_OVERRIDES = {
+  "+退租歸還": "+退租返回",
+  "+借出歸還": "+借出返回",
+  "-借入歸還": "-借入返回",
+};
+
+function purposeDisplayLabel(stored) {
+  const s = stored == null ? "" : String(stored);
+  return PURPOSE_DISPLAY_OVERRIDES[s] || s;
+}
+
 /** 詳情編輯：hidden + 觸發鈕（與新增頁同一套卡片選擇器） */
 function buildPurposePickerTrigger(hiddenId, btnId, selectedVal) {
   const v = (selectedVal != null) ? String(selectedVal) : "";
-  const label = v ? esc(v) : "請選擇目的";
+  const label = v ? esc(purposeDisplayLabel(v)) : "請選擇目的";
   const cls = v ? "text-on-surface" : "text-outline-variant";
   return `<input type="hidden" id="${hiddenId}" value="${h(v)}"/>
 <button type="button" id="${btnId}" class="purpose-picker-trigger w-full text-left text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary/20 ${cls}" onclick="openPurposePicker('${hiddenId}','${btnId}')">${label}</button>`;
@@ -613,21 +649,39 @@ function buildPurposePickerSectionsHtml() {
   const plus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "+"; });
   const minus = PURPOSE_OPTIONS.filter(function (o) { return o.charAt(0) === "-"; });
   function optsHtml(opts, kind) {
-    return opts.map(function (o) {
-      return `<button type="button" class="purpose-opt purpose-opt--${kind}" data-value="${h(o)}"><span class="purpose-opt-row"><span class="purpose-opt-txt">${esc(o)}</span><span class="ms purpose-opt-check" aria-hidden="true">check</span></span></button>`;
-    }).join("");
+    const sign = kind === "plus" ? "+" : "−";
+    return opts
+      .map(function (o, i) {
+        const num = String(i + 1).padStart(2, "0");
+        const show = purposeDisplayLabel(o);
+        return (
+          '<button type="button" class="purpose-grid-item purpose-grid-item--' +
+          kind +
+          '" data-value="' +
+          h(o) +
+          '"><span class="purpose-cell-meta"><span class="purpose-cell-sign">' +
+          sign +
+          '</span><span class="purpose-cell-num">' +
+          num +
+          '</span></span><span class="purpose-cell-label">' +
+          esc(show) +
+          "</span></button>"
+        );
+      })
+      .join("");
   }
   return (
     '<div class="purpose-pick-ly">' +
     '<div class="purpose-pick-tabs" role="tablist" aria-label="目的分類">' +
-    '<button type="button" role="tab" id="purposeTabPlus" class="purpose-pick-tab purpose-pick-tab--plus purpose-pick-tab--on" data-purpose-tab="plus" aria-selected="true" aria-controls="purposePanelPlus">+ 入庫 / 回收</button>' +
+    '<button type="button" role="tab" id="purposeTabPlus" class="purpose-pick-tab purpose-pick-tab--plus purpose-pick-tab--on" data-purpose-tab="plus" aria-selected="true" aria-controls="purposePanelPlus">+ 入庫 / 返回</button>' +
     '<button type="button" role="tab" id="purposeTabMinus" class="purpose-pick-tab purpose-pick-tab--minus" data-purpose-tab="minus" aria-selected="false" aria-controls="purposePanelMinus">- 出庫 / 借出</button>' +
     "</div>" +
+    '<div class="purpose-pick-div" aria-hidden="true"></div>' +
     '<div class="purpose-pick-scroll">' +
-    '<div role="tabpanel" id="purposePanelPlus" class="purpose-pick-panel" data-purpose-panel="plus" aria-labelledby="purposeTabPlus" aria-hidden="false">' +
+    '<div role="tabpanel" id="purposePanelPlus" class="purpose-item-grid" data-purpose-panel="plus" aria-labelledby="purposeTabPlus" aria-hidden="false">' +
     optsHtml(plus, "plus") +
     "</div>" +
-    '<div role="tabpanel" id="purposePanelMinus" class="purpose-pick-panel hidden" data-purpose-panel="minus" aria-labelledby="purposeTabMinus" aria-hidden="true">' +
+    '<div role="tabpanel" id="purposePanelMinus" class="purpose-item-grid hidden" data-purpose-panel="minus" aria-labelledby="purposeTabMinus" aria-hidden="true">' +
     optsHtml(minus, "minus") +
     "</div></div></div>"
   );
@@ -653,16 +707,16 @@ function setPurposePickTab(kind) {
 
 function ensurePurposePickerBody() {
   const body = document.getElementById("purposePickBody");
-  if (!body || body.dataset.built === "1") return;
+  if (!body || body.dataset.purposeUi === "grid-v2") return;
   body.innerHTML = buildPurposePickerSectionsHtml();
-  body.dataset.built = "1";
+  body.dataset.purposeUi = "grid-v2";
 }
 
 function syncPurposePickerButton(btnId, val) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
   const v = (val != null) ? String(val) : "";
-  btn.textContent = v ? v : "請選擇目的";
+  btn.textContent = v ? purposeDisplayLabel(v) : "請選擇目的";
   btn.classList.toggle("text-on-surface", !!v);
   btn.classList.toggle("text-outline-variant", !v);
 }
@@ -671,8 +725,8 @@ function openPurposePicker(hiddenId, btnId) {
   ensurePurposePickerBody();
   _purposeCtx = { hiddenId: hiddenId, btnId: btnId };
   const cur = document.getElementById(hiddenId) ? String(document.getElementById(hiddenId).value || "") : "";
-  document.querySelectorAll("#purposePickBody .purpose-opt").forEach(function (el) {
-    el.classList.toggle("purpose-opt--sel", el.getAttribute("data-value") === cur);
+  document.querySelectorAll("#purposePickBody .purpose-grid-item").forEach(function (el) {
+    el.classList.toggle("purpose-grid-item--sel", el.getAttribute("data-value") === cur);
   });
   setPurposePickTab(cur.charAt(0) === "-" ? "minus" : "plus");
   document.getElementById("purposePickBd").classList.add("op");
@@ -724,7 +778,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (k === "plus" || k === "minus") setPurposePickTab(k);
       return;
     }
-    const b = e.target.closest(".purpose-opt");
+    const b = e.target.closest(".purpose-grid-item");
     if (!b) return;
     pickPurposeValue(b.getAttribute("data-value"));
   });
