@@ -1150,10 +1150,10 @@ function collect(){
     const f = k => (c.querySelector(`[data-f="${k}"]`)?.value||"").trim();
     const pid = c.id;
     parts.push({
-      itemName: String(f("itemName")), pn: String(f("pn")), sn: String(f("sn")),
+      itemName: f("itemName"), pn: f("pn"), sn: String(f("sn")),
       qty: (function(){ const q=f("qty"); return (q===""||q==null)?"0":q; })(),
       status: COND_MAP[partStatus[pid]||"unkn"],
-      bin: String(f("bin")),
+      bin: f("bin"),
       verifyInDate: f("verifyInDate"),
       shipPackDate: f("shipPackDate"),
       remark: f("remark"),
@@ -2236,12 +2236,12 @@ async function saveDetailEdit(){
   const parts = [];
   (r.parts||[]).forEach((_,i)=>{
     parts.push({
-      itemName: String(gv("det-p-"+i+"-name")),
-      pn:       String(gv("det-p-"+i+"-pn")),
+      itemName: gv("det-p-"+i+"-name"),
+      pn:       gv("det-p-"+i+"-pn"),
       sn:       String(gv("det-p-"+i+"-sn")),
       qty:      (function(){ const q=gv("det-p-"+i+"-qty"); return (q===""||q==null)?"0":q; })(),
       status:   gv("det-p-"+i+"-status") || "UNKNOW",
-      bin:      String(gv("det-p-"+i+"-bin")),
+      bin:      gv("det-p-"+i+"-bin"),
       verifyInDate: gv("det-p-"+i+"-vin"),
       shipPackDate: gv("det-p-"+i+"-spk"),
       remark:   gv("det-p-"+i+"-remark"),
@@ -2310,12 +2310,12 @@ function copyToForm(rid){
   const REV={"PASS":"pass","FAIL":"fail","待驗":"wait","UNKNOW":"unkn"};
   (r.parts||[]).forEach(p=>{
     addPart({
-      itemName: p.itemName!=null?String(p.itemName):"",
-      pn:       p.pn!=null?String(p.pn):"",
+      itemName: p.itemName,
+      pn:       p.pn,
       sn:       p.sn!=null?String(p.sn):"",
       qty:      (p.qty!=null&&p.qty!=="")?p.qty:0,
       status:   REV[p.status]||"unkn",
-      bin:      p.bin!=null?String(p.bin):"",
+      bin:      p.bin,
       verifyInDate: p.verifyInDate || "",
       shipPackDate: p.shipPackDate || "",
       remark:   p.remark,
