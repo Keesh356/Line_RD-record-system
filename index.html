@@ -1933,8 +1933,9 @@ function buildLineShareText(r){
   const parts=r.parts||[];
   const n=parts.length;
   const lines=[];
-  lines.push("【RD Record 零件出貨紀錄】");
-  lines.push(`共 ${n} 項，請確認以下出貨內容`);
+  lines.push("【RD Record 】");
+  lines.push("");
+  lines.push(`共 ${n} 項．請確認以下出貨內容`);
   lines.push("");
   lines.push(`日期 : ${formatShareDate(r.date)}`);
   lines.push(`來源 : ${shareField(r.source)}`);
@@ -2190,7 +2191,7 @@ async function shareRecordToLineCore(r, opts){
 
   try {
     if (navigator.share) {
-      await navigator.share({ text: textFb, title: "【RD Record 零件出貨紀錄】" });
+      await navigator.share({ text: textFb, title: "【RD Record 】" });
       if (!suppress) showToast("已開啟系統分享", "");
       return "shared";
     }
