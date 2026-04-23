@@ -180,6 +180,8 @@ button,input,select,textarea{font:inherit}
 .det-item-val-mono{font-size:14px;font-weight:700;color:#181c20;line-height:1.4;margin:0;font-family:JetBrains Mono,monospace;word-break:break-all}
 .det-item-val-qty{font-size:1.25rem;font-weight:800;color:#004253;line-height:1.2;margin:0;font-family:Manrope,Noto Sans TC,sans-serif}
 .det-item-val-body{font-size:14px;font-weight:600;color:#242a2f;line-height:1.55;margin:0;word-break:break-word}
+/* 詳情唯讀 · 品項備註：保留 \n / \r\n（僅加在詳情品項卡片備註上） */
+.det-item-val-remark{white-space:pre-wrap}
 /* 詳情唯讀品項：PN/SN 與 QTY/BIN 背景對調；PN/SN 無中線 */
 .det-pnsn-wrap{border-radius:0.75rem;background:transparent;border:none}
 .det-pnsn-inner{display:grid;grid-template-columns:1fr 1fr;gap:0 0.75rem;min-width:0}
@@ -213,7 +215,7 @@ button,input,select,textarea{font:inherit}
 .purpose-pick-div{height:1px;background:#eef2f2;margin:0 22px;flex-shrink:0}
 .purpose-pick-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;background:#fff}
 .purpose-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.purpose-grid-item{border:none;border-radius:14px;padding:14px 12px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:92px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.purpose-grid-item{border:none;border-radius:14px;padding:16px 12px 14px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:102px;position:relative;overflow:hidden;border:1.5px solid transparent;touch-action:manipulation;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 .purpose-grid-item:active{transform:scale(.97)}
 .purpose-grid-item--plus{background:#f4fdfb;border-color:#c4e8e2}
 .purpose-grid-item--plus:hover{background:#eaf8f4;border-color:#8dd4c8}
@@ -226,7 +228,7 @@ button,input,select,textarea{font:inherit}
 .purpose-cell-num{font-size:10px;font-weight:600;letter-spacing:.06em;opacity:.35;font-variant-numeric:tabular-nums}
 .purpose-grid-item--plus .purpose-cell-num{color:#1a8a78}
 .purpose-grid-item--minus .purpose-cell-num{color:#c06020}
-.purpose-cell-label{font-size:13px;font-weight:600;line-height:1.35;word-break:break-word;margin-top:auto}
+.purpose-cell-label{font-size:16px;font-weight:700;line-height:1.38;word-break:break-word;margin-top:auto;padding-top:2px;letter-spacing:.01em}
 .purpose-grid-item--plus .purpose-cell-label{color:#1a5a52}
 .purpose-grid-item--minus .purpose-cell-label{color:#8a3a10}
 .purpose-grid-item--plus.purpose-grid-item--sel{background:#eaf8f4;border-color:#1a8a78;box-shadow:0 0 0 2px rgba(26,138,120,.2),0 8px 22px rgba(0,100,85,.1)}
@@ -634,6 +636,14 @@ function purposeDisplayLabel(stored) {
   return PURPOSE_DISPLAY_OVERRIDES[s] || s;
 }
 
+/** 僅供「選擇目的」modal 卡片主文字：先套用顯示覆寫，再移除開頭 + / -（不影響 data-value 與表單按鈕文案） */
+function purposeModalCardLabel(stored) {
+  let s = purposeDisplayLabel(stored);
+  const c0 = s.charAt(0);
+  if (c0 === "+" || c0 === "-") s = s.slice(1);
+  return s;
+}
+
 /** 詳情編輯：hidden + 觸發鈕（與新增頁同一套卡片選擇器） */
 function buildPurposePickerTrigger(hiddenId, btnId, selectedVal) {
   const v = (selectedVal != null) ? String(selectedVal) : "";
@@ -653,7 +663,6 @@ function buildPurposePickerSectionsHtml() {
     return opts
       .map(function (o, i) {
         const num = String(i + 1).padStart(2, "0");
-        const show = purposeDisplayLabel(o);
         return (
           '<button type="button" class="purpose-grid-item purpose-grid-item--' +
           kind +
@@ -664,7 +673,7 @@ function buildPurposePickerSectionsHtml() {
           '</span><span class="purpose-cell-num">' +
           num +
           '</span></span><span class="purpose-cell-label">' +
-          esc(show) +
+          esc(purposeModalCardLabel(o)) +
           "</span></button>"
         );
       })
@@ -707,9 +716,9 @@ function setPurposePickTab(kind) {
 
 function ensurePurposePickerBody() {
   const body = document.getElementById("purposePickBody");
-  if (!body || body.dataset.purposeUi === "grid-v2") return;
+  if (!body || body.dataset.purposeUi === "grid-v3") return;
   body.innerHTML = buildPurposePickerSectionsHtml();
-  body.dataset.purposeUi = "grid-v2";
+  body.dataset.purposeUi = "grid-v3";
 }
 
 function syncPurposePickerButton(btnId, val) {
@@ -1917,8 +1926,8 @@ function refreshDetailModal(){
         </div>
         </div>
       </div>
-      <div class="rounded-xl bg-surface-container-low/80 border border-outline-variant/15 mb-4 px-3 py-3">
-        <div class="grid grid-cols-2 gap-3">
+      <div class="det-qty-bin-plain det-qty-bin-wrap mb-4">
+        <div class="det-qty-bin-inner">
           <div class="min-w-0">
             <p class="det-item-lbl mb-1">進貨驗證完成日</p>
             <p class="det-item-val-mono">${vinStr||"—"}</p>
@@ -1929,7 +1938,7 @@ function refreshDetailModal(){
           </div>
         </div>
       </div>
-      ${p.remark?`<div class="mt-2 pt-3 border-t border-outline-variant/12"><p class="det-item-lbl mb-1.5">備註</p><p class="det-item-val-body">${esc(p.remark)}</p></div>`:""}
+      ${p.remark?`<div class="mt-2 pt-3 border-t border-outline-variant/12"><p class="det-item-lbl mb-1.5">備註</p><p class="det-item-val-body det-item-val-remark">${esc(p.remark)}</p></div>`:""}
     </div>
   `;
   }).join("");
