@@ -1905,44 +1905,111 @@ function shareField(v){
   return s;
 }
 
-// ── LINE 分享文字：全形對齊／換行縮排／狀態 emoji（可調常數）──
+// ── LINE 分享文字：全形對齊 / 狀態 emoji / 隱藏空欄（僅影響分享文字，不寫入 Sheets）──
 var SHARE_FW_SPACE = "\u3000";
 var SHARE_FW_COLON = "\uFF1A";
 /** 數值欄換行寬度（約半行，依手機閱讀調整） */
 var SHARE_VALUE_WRAP_CHARS = 22;
-/** 與冒號對齊的欄位名（最長者決定欄寬，勿用半形空白對齊） */
-var SHARE_KV_LABELS = [
-  "紀錄編號", "日期", "來源", "客戶", "單號", "訂單案號", "目的",
-  "登記", "登記時間",
-  "品名", "P/N", "S/N", "狀態", "數量", "櫃位", "進貨驗證日", "出貨完成日", "備註",
+/** 用於全區冒號垂直對齊的標籤（以 display width 取 max） */
+var SHARE_ALIGNED_LABELS = [
+  "紀錄編號", "日期", "來源", "客戶", "單號", "訂單案號", "目的", "登記", "登記時間",
 ];
 var SHARE_SEP_LINE = "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
 
-/** @returns {number} Unicode 字元數（含 emoji 一碼一計） */
-function shareLabelCodePointCount(s){
-  return [...String(s)].length;
+/**
+ * 字串顯示寬度（中英混排）：CJK/全形/日韓/多數 emoji 為 2，英文數字與半形符號為 1
+ * @param {string} str
+ * @returns {number}
+ */
+function getDisplayWidth(str){
+  if (str == null) return 0;
+  var s = String(str);
+  var w = 0;
+  for (var i = 0; i < s.length; ) {
+    var c = s.codePointAt(i);
+    i += c > 0xffff ? 2 : 1;
+    w += getDisplayWidthCodePoint(c);
+  }
+  return w;
 }
 
-function shareKvColumnWidth(){
+/** @param {number} cp 單一 Unicode 碼點 */
+function getDisplayWidthCodePoint(cp){
+  if (cp <= 0x007f) return 1; // ASCII
+  if (0xff61 <= cp && cp <= 0xff9f) return 1; // 半形片假名
+  if (0x4e00 <= cp && cp <= 0x9fff) return 2; // CJK
+  if (0x3400 <= cp && cp <= 0x4dbf) return 2; // 擴展 A
+  if (0x20000 <= cp && cp <= 0x2a6df) return 2; // 擴展 B 等
+  if (0x2a700 <= cp && cp <= 0x2b73f) return 2;
+  if (0x2b740 <= cp && cp <= 0x2b81f) return 2;
+  if (0x2b820 <= cp && cp <= 0x2ceaf) return 2;
+  if (0x2ceb0 <= cp && cp <= 0x2ebef) return 2;
+  if (0x30000 <= cp && cp <= 0x3134f) return 2;
+  if (0x3000 <= cp && cp <= 0x303f) return 2; // CJK 符號
+  if (0x3040 <= cp && cp <= 0x30ff) return 2; // 平假名、片假名
+  if (0x31f0 <= cp && cp <= 0x31ff) return 2;
+  if (0xff00 <= cp && cp <= 0xffef) return 2; // 全形
+  if (0xac00 <= cp && cp <= 0xd7a3) return 2; // 韓文音節
+  if (0x1100 <= cp && cp <= 0x11ff) return 2; // 韓文 Jamo
+  if (0x3130 <= cp && cp <= 0x318f) return 2; // 韓文兼容
+  if (0xf900 <= cp && cp <= 0xfaff) return 2; // 兼容
+  if (0xfe10 <= cp && cp <= 0xfe6f) return 2; // 小形
+  if (0x1f200 <= cp && cp <= 0x1faff) return 2; // 圍繞、emoji
+  if (0x1f000 <= cp && cp <= 0x1f2ff) return 2;
+  if (0x2329 <= cp && cp <= 0x232a) return 2;
+  return 1;
+}
+
+/**
+ * 以全形空白 U+3000 在右側補寬，使與同欄最寬 label 的 display width 一致
+ * @param {string} label
+ * @param {number} maxWidth
+ */
+function padLabel(label, maxWidth){
+  var s = String(label);
+  while (getDisplayWidth(s) < maxWidth) s += SHARE_FW_SPACE;
+  return s;
+}
+
+/**
+ * @param {Array<[string, string]>} rows
+ * @param {number} [maxWidth] 已算好的欄寬；省略則由 rows 內 label 自行取 max
+ * @returns {string}
+ */
+function formatAlignedRows(rows, maxWidth){
+  var list = rows && rows.length ? rows : [];
+  var maxW = maxWidth;
+  if (maxW == null || maxW === undefined || isNaN(maxW)) {
+    maxW = 0;
+    for (var i = 0; i < list.length; i++) {
+      var lw = getDisplayWidth(String(list[i][0]));
+      if (lw > maxW) maxW = lw;
+    }
+  }
+  var out = [];
+  for (var j = 0; j < list.length; j++) {
+    out.push(padLabel(String(list[j][0]), maxW) + SHARE_FW_COLON + String(list[j][1]));
+  }
+  return out.join("\n");
+}
+
+function shareLineAlignedBlockMaxWidth(){
   var m = 0;
-  for (var i = 0; i < SHARE_KV_LABELS.length; i++) {
-    var c = shareLabelCodePointCount(SHARE_KV_LABELS[i]);
-    if (c > m) m = c;
+  for (var k = 0; k < SHARE_ALIGNED_LABELS.length; k++) {
+    var w = getDisplayWidth(SHARE_ALIGNED_LABELS[k]);
+    if (w > m) m = w;
   }
   return m;
 }
 
-/** 右側補全形空白，使冒號垂直對齊 */
-function sharePadLabel(label, width){
-  var s = String(label);
-  var n = shareLabelCodePointCount(s);
-  if (n >= width) return s;
-  return s + SHARE_FW_SPACE.repeat(width - n);
-}
-
-/** 單行 key：value（全形冒號） */
-function shareKVLine(label, value, width){
-  return sharePadLabel(label, width) + SHARE_FW_COLON + String(value);
+/** 是否為空欄位（不顯示或不可當內容） */
+function isEmptyValue(value){
+  if (value == null) return true;
+  var s = String(value);
+  if (s.trim() === "") return true;
+  if (s === "-") return true;
+  if (s === "\uFF0D") return true; // －
+  return false;
 }
 
 /**
@@ -1974,41 +2041,38 @@ function shareWrapValueLines(text, maxCp){
 }
 
 /**
- * 第一行：補齊 label + 全形冒號 + 首段內容；續行：全形空白×欄寬 + 半形空白 + 內容
+ * items 區：半形 " : "，多行內容續行以半形空白縮排
  * @returns {string[]}
  */
-function shareFormatMultiline(label, text, labelWidth, wrapChars){
-  var display = text == null || String(text).trim() === "" ? "-" : String(text);
+function shareFormatItemFieldLines(label, text, wrapChars){
+  if (isEmptyValue(text)) return [];
+  var display = String(text).replace(/\r\n/g, "\n");
   var chunks = shareWrapValueLines(display, wrapChars);
+  if (!chunks || !chunks.length) return [];
   var out = [];
-  out.push(sharePadLabel(label, labelWidth) + SHARE_FW_COLON + (chunks[0] != null ? chunks[0] : "-"));
-  var contIndent = SHARE_FW_SPACE.repeat(labelWidth) + " ";
+  out.push(label + " : " + (chunks[0] != null ? chunks[0] : ""));
+  var indent = "      ";
   for (var k = 1; k < chunks.length; k++) {
-    out.push(contIndent + chunks[k]);
+    out.push(indent + chunks[k]);
   }
   return out;
 }
 
-/** 狀態 → emoji 顯示（僅影響分享文字，不寫回 Sheets） */
-var SHARE_STATUS_EMOJI = {
-  pass: "✅ PASS",
-  fail: "❌ FAIL",
-  unknow: "⚠️ UNKNOWN",
-  unknown: "⚠️ UNKNOWN",
-  unkn: "⚠️ UNKNOWN",
-  unknw: "⚠️ UNKNOWN",
-  "待驗": "⏳ 待驗",
-  wait: "⏳ 待驗",
-};
-
-function formatShareStatusDisplay(raw){
-  var t = shareField(raw);
-  if (!t) return "-";
+/**
+ * 狀態 → emoji 顯示（僅分享文字；不寫回 Sheets；空值搭配 isEmptyValue 不輸出欄位）
+ * @param {string} raw
+ * @returns {string}
+ */
+function formatStatus(raw){
+  if (isEmptyValue(raw)) return "";
+  var t = String(raw).trim();
+  if (t === "") return "";
   var lower = t.toLowerCase();
-  if (SHARE_STATUS_EMOJI[lower] != null) return SHARE_STATUS_EMOJI[lower];
-  if (SHARE_STATUS_EMOJI[t] != null) return SHARE_STATUS_EMOJI[t];
-  if (t === "待驗") return SHARE_STATUS_EMOJI["待驗"];
-  return t;
+  if (lower === "pass") return "\u2705 pass";
+  if (lower === "fail") return "\u274C fail";
+  if (lower === "unknow" || lower === "unknown") return "\u26A0\uFE0F unknow";
+  if (t === "\u5F85\u9A57") return "\u23F3 \u5F85\u9A57"; // 待驗
+  return "\u{1F50E} " + t;
 }
 
 /** 分享文字：空值顯示「-」，不裁切 S/N 前導 0 */
@@ -2051,60 +2115,96 @@ function partConditionSuffix(status){
   return "(used)";
 }
 
-/** 組裝詳情「分享到 LINE / 複製分享文字」— 全形對齊、品名／備註自動縮排、狀態 emoji */
+/** 單一零件可分享欄位是否全為空（用於顯示「無明細資料」） */
+function isPartAllFieldsEmpty(p){
+  if (!p) return true;
+  return (
+    isEmptyValue(p.itemName) &&
+    isEmptyValue(p.pn) &&
+    isEmptyValue(p.sn) &&
+    isEmptyValue(p.status) &&
+    isEmptyValue(p.qty) &&
+    isEmptyValue(p.bin) &&
+    isEmptyValue(p.verifyInDate) &&
+    isEmptyValue(p.shipPackDate) &&
+    isEmptyValue(p.remark)
+  );
+}
+
+/** 組裝「分享到 LINE / 複製分享文字」純文字：基本資料全形對齊、隱藏空欄、items 半形、狀態 emoji */
 function buildLineShareText(r){
   if (!r) return "";
   var parts = r.parts || [];
   var n = parts.length;
-  var W = shareKvColumnWidth();
+  var maxW = shareLineAlignedBlockMaxWidth();
   var wrap = SHARE_VALUE_WRAP_CHARS;
   var lines = [];
   lines.push("【RD Record 共 " + n + " 項】");
   lines.push("");
-  lines.push(SHARE_SEP_LINE);
-  lines.push("");
-  lines.push(shareKVLine("紀錄編號", shareDispDash(r.recordId), W));
+  lines.push(padLabel("紀錄編號", maxW) + SHARE_FW_COLON + shareDispDash(r.recordId));
   lines.push("");
   lines.push(SHARE_SEP_LINE);
   lines.push("");
-  lines.push(shareKVLine("日期", shareDateYMD(r.date), W));
-  lines.push(shareKVLine("來源", shareDispDash(r.source), W));
-  lines.push(shareKVLine("客戶", shareDispDash(r.customer), W));
-  lines.push(shareKVLine("單號", shareDispDash(r.orderNo), W));
-  lines.push(shareKVLine("訂單案號", shareDispDash(r.projectNo), W));
-  lines.push(shareKVLine("目的", shareDispDash(r.purpose), W));
+  var basicRows = [];
+  basicRows.push(["日期", shareDateYMD(r.date)]);
+  if (!isEmptyValue(r.source)) basicRows.push(["來源", String(r.source).trim()]);
+  if (!isEmptyValue(r.customer)) basicRows.push(["客戶", String(r.customer).trim()]);
+  if (!isEmptyValue(r.orderNo)) basicRows.push(["單號", String(r.orderNo).trim()]);
+  if (!isEmptyValue(r.projectNo)) basicRows.push(["訂單案號", String(r.projectNo).trim()]);
+  if (!isEmptyValue(r.purpose)) basicRows.push(["目的", String(r.purpose).trim()]);
+  lines.push(formatAlignedRows(basicRows, maxW));
   lines.push("");
-  lines.push(SHARE_SEP_LINE);
   lines.push("");
-  lines.push(shareKVLine("登記", shareDispDash(r.submittedBy), W));
-  lines.push(shareKVLine("登記時間", shareRegDateTimeForShare(r), W));
+  lines.push(
+    formatAlignedRows(
+      [
+        ["登記", shareDispDash(r.submittedBy)],
+        ["登記時間", shareRegDateTimeForShare(r)],
+      ],
+      maxW
+    )
+  );
   lines.push("");
   lines.push(SHARE_SEP_LINE);
   lines.push("");
   parts.forEach(function (p, idx){
-    if (idx > 0) lines.push("");
-    var nm = String(p.itemName != null ? p.itemName : "").replace(/\r\n/g, "\n");
-    var nmLines = nm.split("\n");
-    var sfx = partConditionSuffix(p.status);
-    var head = (nmLines[0] != null ? nmLines[0].trim() : "");
-    var firstNm = [head, sfx].filter(Boolean).join(" ");
-    var restNm = nmLines.slice(1).map(function (x){ return x.trim(); }).filter(Boolean).join("\n");
-    var nameBlock = restNm ? (firstNm ? firstNm + "\n" + restNm : restNm) : firstNm;
+    if (idx > 0) {
+      lines.push("");
+    }
     lines.push(String(idx + 1) + ".");
-    shareFormatMultiline("品名", nameBlock || "-", W, wrap).forEach(function (ln){ lines.push(ln); });
+    if (isPartAllFieldsEmpty(p)) {
+      lines.push("無明細資料");
+      return;
+    }
+    if (!isEmptyValue(p.itemName)) {
+      var nm = String(p.itemName).replace(/\r\n/g, "\n");
+      var nmLines = nm.split("\n");
+      var sfx = partConditionSuffix(p.status);
+      var head = (nmLines[0] != null ? nmLines[0].trim() : "");
+      var firstNm = [head, sfx].filter(Boolean).join(" ");
+      var restNm = nmLines.slice(1).map(function (x){ return x.trim(); }).filter(Boolean).join("\n");
+      var nameBlock = restNm ? (firstNm ? firstNm + "\n" + restNm : restNm) : firstNm;
+      shareFormatItemFieldLines("品名", nameBlock, wrap).forEach(function (ln){ lines.push(ln); });
+    }
+    if (!isEmptyValue(p.pn)) lines.push("P/N : " + String(p.pn).trim());
     var snRaw = p.sn != null ? String(p.sn) : "";
-    var snOut = snRaw.trim() === "" ? "-" : snRaw;
-    var qtyRaw = p.qty != null && p.qty !== "" ? String(p.qty) : "";
-    var qtyOut = qtyRaw.trim() === "" ? "-" : qtyRaw;
-    lines.push(shareKVLine("P/N", shareDispDash(p.pn), W));
-    lines.push(shareKVLine("S/N", snOut, W));
-    lines.push(shareKVLine("狀態", formatShareStatusDisplay(p.status), W));
-    lines.push(shareKVLine("數量", qtyOut, W));
-    lines.push(shareKVLine("櫃位", shareDispDash(p.bin), W));
-    lines.push(shareKVLine("進貨驗證日", shareDateYMD(p.verifyInDate), W));
-    lines.push(shareKVLine("出貨完成日", shareDateYMD(p.shipPackDate), W));
+    if (!isEmptyValue(snRaw)) lines.push("S/N : " + snRaw);
+    if (!isEmptyValue(p.status)) {
+      var st = formatStatus(p.status);
+      if (st) lines.push("狀態 : " + st);
+    }
+    if (!isEmptyValue(p.qty)) lines.push("數量 : " + String(p.qty).trim());
+    if (!isEmptyValue(p.bin)) lines.push("櫃位 : " + String(p.bin).trim());
+    if (!isEmptyValue(p.verifyInDate)) {
+      lines.push("進貨驗證完成日 : " + shareDateYMD(p.verifyInDate));
+    }
+    if (!isEmptyValue(p.shipPackDate)) {
+      lines.push("出貨包裝完成日 : " + shareDateYMD(p.shipPackDate));
+    }
     var remFull = p.remark == null ? "" : String(p.remark).replace(/\r\n/g, "\n").trim();
-    shareFormatMultiline("備註", remFull || "-", W, wrap).forEach(function (ln){ lines.push(ln); });
+    if (!isEmptyValue(remFull)) {
+      shareFormatItemFieldLines("備註", remFull, wrap).forEach(function (ln){ lines.push(ln); });
+    }
   });
   return lines.join("\n");
 }
