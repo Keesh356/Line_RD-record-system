@@ -1319,42 +1319,41 @@ function buildShareRecordFromSubmit(basic, parts, recordId){
   };
 }
 
-function applyValidationErrors(v){
-  if (v.toast) showToast(v.toast[0], v.toast[1] || "err");
-  if (v.banner) showErrorBanner(v.banner[0], v.banner[1] || "");
+/** 非阻擋：仍顯示 toast／紅色橫幅，但不中斷確認視窗與送出流程 */
+function applyNonBlockingValidationWarnings(warnings){
+  if (!warnings || !warnings.length) return;
+  warnings.forEach(function (w){
+    if (w.toast) showToast(w.toast[0], w.toast[1] || "err");
+    if (w.banner) showErrorBanner(w.banner[0], w.banner[1] || "");
+  });
 }
 
 /**
- * 表單驗證（與送出前既有規則一致）
- * @returns {{ok:true,basic:object,parts:Array}|{ok:false,toast?:[string,string],banner?:[string,string]}}
+ * 表單檢查：僅產出提醒，不阻擋送出（後端已允許空欄位寫入）
+ * @returns {{basic:object,parts:Array,warnings:Array<{toast?:[string,string],banner?:[string,string]}>}}
  */
 function validateForm(){
   const { basic, parts } = collect();
-  if (!basic.customer) return { ok: false, toast: ["請填寫客戶", "err"] };
-  if (!basic.purpose) return { ok: false, toast: ["請選擇目的", "err"] };
-  if (!parts.length) return { ok: false, toast: ["請新增至少一項零件", "err"] };
+  const warnings = [];
+  if (!basic.customer) warnings.push({ toast: ["請填寫客戶", "err"] });
+  if (!basic.purpose) warnings.push({ toast: ["請選擇目的", "err"] });
+  if (!parts.length) warnings.push({ toast: ["請新增至少一項零件", "err"] });
   const badIdx = firstEmptyItemNameIndex(parts);
   if (badIdx >= 0) {
-    return {
-      ok: false,
+    warnings.push({
       banner: [
-        "送出失敗：第 " + (badIdx + 1) + " 項零件尚未填寫品名",
-        "請先填寫所有零件的品名後再送出",
+        "送出提醒：第 " + (badIdx + 1) + " 項零件尚未填寫品名",
+        "資料仍會送出，建議補齊品名後以提高可讀性",
       ],
-    };
+    });
   }
-  return { ok: true, basic: basic, parts: parts };
+  return { basic: basic, parts: parts, warnings: warnings };
 }
 
 function openSubmitConfirmDialog(){
   if (submitFlow.isSubmitting) return;
-  const v = validateForm();
-  if (!v.ok) {
-    applyValidationErrors(v);
-    return;
-  }
-  const basic = v.basic;
-  const parts = v.parts;
+  const { basic, parts, warnings } = validateForm();
+  applyNonBlockingValidationWarnings(warnings);
   document.getElementById("cfmCustomerVal").textContent = basic.customer || "—";
   const purposeEl = document.getElementById("cfmPurposeVal");
   if (purposeEl) {
@@ -1573,14 +1572,8 @@ function showSubmitSaveFailure(message){
 async function doSubmit(){
   if (submitFlow.isSubmitting) return;
 
-  const v = validateForm();
-  if (!v.ok) {
-    applyValidationErrors(v);
-    closeCfm();
-    return;
-  }
-  const basic = v.basic;
-  const parts = v.parts;
+  const { basic, parts, warnings } = validateForm();
+  applyNonBlockingValidationWarnings(warnings);
 
   const btn = document.getElementById("cfmOk");
   submitFlow.isSubmitting = true;
@@ -1912,11 +1905,36 @@ function shareField(v){
   return s;
 }
 
-function formatShareDate(d){
-  const s=shareField(d);
-  if(!s) return "";
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s.replace(/-/g,"");
+/** 分享文字：空值顯示「-」，不裁切 S/N 前導 0 */
+function shareDispDash(v){
+  if (v == null) return "-";
+  const s = String(v);
+  if (!s.trim()) return "-";
   return s;
+}
+
+/** 分享文字：日期維持原字串（多為 YYYY-MM-DD），空則 - */
+function shareDateYMD(v){
+  if (v == null || v === "") return "-";
+  const s = String(v).trim();
+  return s || "-";
+}
+
+/** 登記時間：優先紀錄 createdAt，否則用目前時間（送出當下分享） */
+function shareRegDateTimeForShare(r){
+  const c = r && r.createdAt;
+  if (c != null && String(c).trim() !== "") {
+    const full = formatRegDateTimeFull(c, r.date);
+    if (full) return full;
+  }
+  const d = new Date();
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return y + "-" + mo + "-" + da + " " + hh + ":" + mm + ":" + ss;
 }
 
 /** 品名後括號：依檢驗狀態區分 (used) / (new) */
@@ -1927,54 +1945,64 @@ function partConditionSuffix(status){
   return "(used)";
 }
 
-/** 組裝詳情「分享到 LINE / 複製分享文字」共用內容（單一維護點） */
+/** 組裝詳情「分享到 LINE / 複製分享文字」— 結構化多行（\n），與 LINE 顯示一致 */
 function buildLineShareText(r){
-  if(!r) return "";
-  const parts=r.parts||[];
-  const n=parts.length;
-  const lines=[];
-  lines.push("【RD Record 】");
+  if (!r) return "";
+  const parts = r.parts || [];
+  const n = parts.length;
+  const SEP = "------------------------";
+  const lines = [];
+  lines.push("【RD Record 共 " + n + " 項】");
   lines.push("");
-  lines.push(`共 ${n} 項 請確認以下內容`);
+  lines.push(SEP);
   lines.push("");
-  lines.push(`日期 : ${formatShareDate(r.date)}`);
-  lines.push(`來源 : ${shareField(r.source)}`);
-  lines.push(`客戶 : ${shareField(r.customer)}`);
-  lines.push(`紀錄編號 : ${shareField(r.recordId)}`);
-  lines.push(`單號 : ${shareField(r.orderNo)}`);
-  lines.push(`訂單案號 : ${shareField(r.projectNo)}`);
-  lines.push(`目的 : ${shareField(r.purpose)}`);
+  lines.push("紀錄編號：");
+  lines.push(shareDispDash(r.recordId));
   lines.push("");
-  lines.push("──────────");
+  lines.push(SEP);
   lines.push("");
-  parts.forEach((p,idx)=>{
-    if(idx>0) lines.push("");
-    const nm=String(p.itemName!=null?p.itemName:"").replace(/\r\n/g,"\n");
-    const nmLines=nm.split("\n");
-    const sfx=partConditionSuffix(p.status);
-    const head=(nmLines[0]!=null?nmLines[0].trim():"");
-    lines.push(`${idx+1}. ${[head,sfx].filter(Boolean).join(" ")}`.trim());
-    for(let j=1;j<nmLines.length;j++){
-      const t=nmLines[j].trim();
-      if(t) lines.push(t);
+  lines.push("日期：" + shareDateYMD(r.date));
+  lines.push("來源：" + shareDispDash(r.source));
+  lines.push("客戶：" + shareDispDash(r.customer));
+  lines.push("單號：" + shareDispDash(r.orderNo));
+  lines.push("訂單案號：" + shareDispDash(r.projectNo));
+  lines.push("目的：" + shareDispDash(r.purpose));
+  lines.push("");
+  lines.push(SEP);
+  lines.push("");
+  lines.push("登記：" + shareDispDash(r.submittedBy));
+  lines.push("登記時間：" + shareRegDateTimeForShare(r));
+  lines.push("");
+  lines.push(SEP);
+  lines.push("");
+  parts.forEach(function (p, idx){
+    if (idx > 0) lines.push("");
+    const nm = String(p.itemName != null ? p.itemName : "").replace(/\r\n/g, "\n");
+    const nmLines = nm.split("\n");
+    const sfx = partConditionSuffix(p.status);
+    const head = (nmLines[0] != null ? nmLines[0].trim() : "");
+    const nameLine = [head, sfx].filter(Boolean).join(" ");
+    lines.push(String(idx + 1) + ".");
+    lines.push("品名：" + (nameLine || "-"));
+    for (let j = 1; j < nmLines.length; j++) {
+      const t = nmLines[j].trim();
+      if (t) lines.push(t);
     }
-    lines.push(`P/N : ${shareField(p.pn)}`);
-    lines.push(`S/N : ${shareField(p.sn)}`);
-    const remRaw=shareField(p.remark);
-    if(remRaw){
-      remRaw.split("\n").forEach(seg=>{
-        const t=seg.trim();
-        if(t) lines.push(t);
-      });
-    }
-    const bin=shareField(p.bin);
-    if(bin) lines.push(`櫃位 : ${bin}`);
-    const st=shareField(p.status);
-    lines.push(`狀態 : ${st?st.toLowerCase():""}`);
-    const vin = shareField(p.verifyInDate);
-    const spk = shareField(p.shipPackDate);
-    if(vin) lines.push(`進貨驗證完成日 : ${vin}`);
-    if(spk) lines.push(`出貨包裝完成日 : ${spk}`);
+    const snRaw = p.sn != null ? String(p.sn) : "";
+    const snOut = snRaw.trim() === "" ? "-" : snRaw;
+    const st = shareField(p.status);
+    const stOut = st ? st.toLowerCase() : "-";
+    const qtyRaw = p.qty != null && p.qty !== "" ? String(p.qty) : "";
+    const qtyOut = qtyRaw.trim() === "" ? "-" : qtyRaw;
+    lines.push("P/N：" + shareDispDash(p.pn));
+    lines.push("S/N：" + snOut);
+    lines.push("狀態：" + stOut);
+    lines.push("數量：" + qtyOut);
+    lines.push("櫃位：" + shareDispDash(p.bin));
+    lines.push("進貨驗證完成日：" + shareDateYMD(p.verifyInDate));
+    lines.push("出貨包裝完成日：" + shareDateYMD(p.shipPackDate));
+    const remFull = p.remark == null ? "" : String(p.remark).replace(/\r\n/g, "\n").trim();
+    lines.push("備註：" + (remFull || "-"));
   });
   return lines.join("\n");
 }
@@ -2191,7 +2219,10 @@ async function shareRecordToLineCore(r, opts){
 
   try {
     if (navigator.share) {
-      await navigator.share({ text: textFb, title: "【RD Record 】" });
+      await navigator.share({
+        text: textFb,
+        title: "【RD Record 共 " + (r.parts || []).length + " 項】",
+      });
       if (!suppress) showToast("已開啟系統分享", "");
       return "shared";
     }
