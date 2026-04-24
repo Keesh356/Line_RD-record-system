@@ -1905,10 +1905,116 @@ function shareField(v){
   return s;
 }
 
+// ── LINE 分享文字：全形對齊／換行縮排／狀態 emoji（可調常數）──
+var SHARE_FW_SPACE = "\u3000";
+var SHARE_FW_COLON = "\uFF1A";
+/** 數值欄換行寬度（約半行，依手機閱讀調整） */
+var SHARE_VALUE_WRAP_CHARS = 22;
+/** 與冒號對齊的欄位名（最長者決定欄寬，勿用半形空白對齊） */
+var SHARE_KV_LABELS = [
+  "紀錄編號", "日期", "來源", "客戶", "單號", "訂單案號", "目的",
+  "登記", "登記時間",
+  "品名", "P/N", "S/N", "狀態", "數量", "櫃位", "進貨驗證日", "出貨完成日", "備註",
+];
+var SHARE_SEP_LINE = "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
+
+/** @returns {number} Unicode 字元數（含 emoji 一碼一計） */
+function shareLabelCodePointCount(s){
+  return [...String(s)].length;
+}
+
+function shareKvColumnWidth(){
+  var m = 0;
+  for (var i = 0; i < SHARE_KV_LABELS.length; i++) {
+    var c = shareLabelCodePointCount(SHARE_KV_LABELS[i]);
+    if (c > m) m = c;
+  }
+  return m;
+}
+
+/** 右側補全形空白，使冒號垂直對齊 */
+function sharePadLabel(label, width){
+  var s = String(label);
+  var n = shareLabelCodePointCount(s);
+  if (n >= width) return s;
+  return s + SHARE_FW_SPACE.repeat(width - n);
+}
+
+/** 單行 key：value（全形冒號） */
+function shareKVLine(label, value, width){
+  return sharePadLabel(label, width) + SHARE_FW_COLON + String(value);
+}
+
+/**
+ * 將長文字切成多行（盡量在空白斷行），不修改原始資料
+ * @returns {string[]}
+ */
+function shareWrapValueLines(text, maxCp){
+  var s = String(text);
+  if (maxCp <= 0) return s ? [s] : [""];
+  var chars = [...s];
+  if (chars.length <= maxCp) return [s];
+  var lines = [];
+  var i = 0;
+  while (i < chars.length) {
+    var end = Math.min(i + maxCp, chars.length);
+    var chunk = chars.slice(i, end).join("");
+    if (end < chars.length && chunk.indexOf(" ") >= 0) {
+      var rel = chunk.lastIndexOf(" ");
+      if (rel > 0 && rel >= Math.floor(maxCp * 0.35)) {
+        chunk = chars.slice(i, i + rel).join("");
+        end = i + rel;
+      }
+    }
+    lines.push(chunk);
+    i = end;
+    while (i < chars.length && chars[i] === " ") i++;
+  }
+  return lines.length ? lines : [""];
+}
+
+/**
+ * 第一行：補齊 label + 全形冒號 + 首段內容；續行：全形空白×欄寬 + 半形空白 + 內容
+ * @returns {string[]}
+ */
+function shareFormatMultiline(label, text, labelWidth, wrapChars){
+  var display = text == null || String(text).trim() === "" ? "-" : String(text);
+  var chunks = shareWrapValueLines(display, wrapChars);
+  var out = [];
+  out.push(sharePadLabel(label, labelWidth) + SHARE_FW_COLON + (chunks[0] != null ? chunks[0] : "-"));
+  var contIndent = SHARE_FW_SPACE.repeat(labelWidth) + " ";
+  for (var k = 1; k < chunks.length; k++) {
+    out.push(contIndent + chunks[k]);
+  }
+  return out;
+}
+
+/** 狀態 → emoji 顯示（僅影響分享文字，不寫回 Sheets） */
+var SHARE_STATUS_EMOJI = {
+  pass: "✅ PASS",
+  fail: "❌ FAIL",
+  unknow: "⚠️ UNKNOWN",
+  unknown: "⚠️ UNKNOWN",
+  unkn: "⚠️ UNKNOWN",
+  unknw: "⚠️ UNKNOWN",
+  "待驗": "⏳ 待驗",
+  wait: "⏳ 待驗",
+};
+
+function formatShareStatusDisplay(raw){
+  var t = shareField(raw);
+  if (!t) return "-";
+  var lower = t.toLowerCase();
+  if (SHARE_STATUS_EMOJI[lower] != null) return SHARE_STATUS_EMOJI[lower];
+  if (SHARE_STATUS_EMOJI[t] != null) return SHARE_STATUS_EMOJI[t];
+  if (t === "待驗") return SHARE_STATUS_EMOJI["待驗"];
+  return t;
+}
+
 /** 分享文字：空值顯示「-」，不裁切 S/N 前導 0 */
 function shareDispDash(v){
   if (v == null) return "-";
-  const s = String(v);
+  var s = String(v);
   if (!s.trim()) return "-";
   return s;
 }
@@ -1916,7 +2022,7 @@ function shareDispDash(v){
 /** 分享文字：日期維持原字串（多為 YYYY-MM-DD），空則 - */
 function shareDateYMD(v){
   if (v == null || v === "") return "-";
-  const s = String(v).trim();
+  var s = String(v).trim();
   return s || "-";
 }
 
@@ -1945,64 +2051,60 @@ function partConditionSuffix(status){
   return "(used)";
 }
 
-/** 組裝詳情「分享到 LINE / 複製分享文字」— 結構化多行（\n），與 LINE 顯示一致 */
+/** 組裝詳情「分享到 LINE / 複製分享文字」— 全形對齊、品名／備註自動縮排、狀態 emoji */
 function buildLineShareText(r){
   if (!r) return "";
-  const parts = r.parts || [];
-  const n = parts.length;
-  const SEP = "------------------------";
-  const lines = [];
+  var parts = r.parts || [];
+  var n = parts.length;
+  var W = shareKvColumnWidth();
+  var wrap = SHARE_VALUE_WRAP_CHARS;
+  var lines = [];
   lines.push("【RD Record 共 " + n + " 項】");
   lines.push("");
-  lines.push(SEP);
+  lines.push(SHARE_SEP_LINE);
   lines.push("");
-  lines.push("紀錄編號：");
-  lines.push(shareDispDash(r.recordId));
+  lines.push(shareKVLine("紀錄編號", shareDispDash(r.recordId), W));
   lines.push("");
-  lines.push(SEP);
+  lines.push(SHARE_SEP_LINE);
   lines.push("");
-  lines.push("日期：" + shareDateYMD(r.date));
-  lines.push("來源：" + shareDispDash(r.source));
-  lines.push("客戶：" + shareDispDash(r.customer));
-  lines.push("單號：" + shareDispDash(r.orderNo));
-  lines.push("訂單案號：" + shareDispDash(r.projectNo));
-  lines.push("目的：" + shareDispDash(r.purpose));
+  lines.push(shareKVLine("日期", shareDateYMD(r.date), W));
+  lines.push(shareKVLine("來源", shareDispDash(r.source), W));
+  lines.push(shareKVLine("客戶", shareDispDash(r.customer), W));
+  lines.push(shareKVLine("單號", shareDispDash(r.orderNo), W));
+  lines.push(shareKVLine("訂單案號", shareDispDash(r.projectNo), W));
+  lines.push(shareKVLine("目的", shareDispDash(r.purpose), W));
   lines.push("");
-  lines.push(SEP);
+  lines.push(SHARE_SEP_LINE);
   lines.push("");
-  lines.push("登記：" + shareDispDash(r.submittedBy));
-  lines.push("登記時間：" + shareRegDateTimeForShare(r));
+  lines.push(shareKVLine("登記", shareDispDash(r.submittedBy), W));
+  lines.push(shareKVLine("登記時間", shareRegDateTimeForShare(r), W));
   lines.push("");
-  lines.push(SEP);
+  lines.push(SHARE_SEP_LINE);
   lines.push("");
   parts.forEach(function (p, idx){
     if (idx > 0) lines.push("");
-    const nm = String(p.itemName != null ? p.itemName : "").replace(/\r\n/g, "\n");
-    const nmLines = nm.split("\n");
-    const sfx = partConditionSuffix(p.status);
-    const head = (nmLines[0] != null ? nmLines[0].trim() : "");
-    const nameLine = [head, sfx].filter(Boolean).join(" ");
+    var nm = String(p.itemName != null ? p.itemName : "").replace(/\r\n/g, "\n");
+    var nmLines = nm.split("\n");
+    var sfx = partConditionSuffix(p.status);
+    var head = (nmLines[0] != null ? nmLines[0].trim() : "");
+    var firstNm = [head, sfx].filter(Boolean).join(" ");
+    var restNm = nmLines.slice(1).map(function (x){ return x.trim(); }).filter(Boolean).join("\n");
+    var nameBlock = restNm ? (firstNm ? firstNm + "\n" + restNm : restNm) : firstNm;
     lines.push(String(idx + 1) + ".");
-    lines.push("品名：" + (nameLine || "-"));
-    for (let j = 1; j < nmLines.length; j++) {
-      const t = nmLines[j].trim();
-      if (t) lines.push(t);
-    }
-    const snRaw = p.sn != null ? String(p.sn) : "";
-    const snOut = snRaw.trim() === "" ? "-" : snRaw;
-    const st = shareField(p.status);
-    const stOut = st ? st.toLowerCase() : "-";
-    const qtyRaw = p.qty != null && p.qty !== "" ? String(p.qty) : "";
-    const qtyOut = qtyRaw.trim() === "" ? "-" : qtyRaw;
-    lines.push("P/N：" + shareDispDash(p.pn));
-    lines.push("S/N：" + snOut);
-    lines.push("狀態：" + stOut);
-    lines.push("數量：" + qtyOut);
-    lines.push("櫃位：" + shareDispDash(p.bin));
-    lines.push("進貨驗證完成日：" + shareDateYMD(p.verifyInDate));
-    lines.push("出貨包裝完成日：" + shareDateYMD(p.shipPackDate));
-    const remFull = p.remark == null ? "" : String(p.remark).replace(/\r\n/g, "\n").trim();
-    lines.push("備註：" + (remFull || "-"));
+    shareFormatMultiline("品名", nameBlock || "-", W, wrap).forEach(function (ln){ lines.push(ln); });
+    var snRaw = p.sn != null ? String(p.sn) : "";
+    var snOut = snRaw.trim() === "" ? "-" : snRaw;
+    var qtyRaw = p.qty != null && p.qty !== "" ? String(p.qty) : "";
+    var qtyOut = qtyRaw.trim() === "" ? "-" : qtyRaw;
+    lines.push(shareKVLine("P/N", shareDispDash(p.pn), W));
+    lines.push(shareKVLine("S/N", snOut, W));
+    lines.push(shareKVLine("狀態", formatShareStatusDisplay(p.status), W));
+    lines.push(shareKVLine("數量", qtyOut, W));
+    lines.push(shareKVLine("櫃位", shareDispDash(p.bin), W));
+    lines.push(shareKVLine("進貨驗證日", shareDateYMD(p.verifyInDate), W));
+    lines.push(shareKVLine("出貨完成日", shareDateYMD(p.shipPackDate), W));
+    var remFull = p.remark == null ? "" : String(p.remark).replace(/\r\n/g, "\n").trim();
+    shareFormatMultiline("備註", remFull || "-", W, wrap).forEach(function (ln){ lines.push(ln); });
   });
   return lines.join("\n");
 }
