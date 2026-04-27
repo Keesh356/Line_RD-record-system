@@ -170,13 +170,13 @@ button,input,select,textarea{font:inherit}
 .bnav.act .bnav-chip{background:rgba(230,236,240,.95);box-shadow:inset 0 0 0 1px rgba(191,200,204,.35)}
 .bnav.act .ms{color:#004253;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
 @media(min-width:1024px){.btmbar{display:none!important}}
-.mbd{position:fixed;inset:0;z-index:500;background:rgba(24,28,32,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0;align-items:flex-end;justify-content:center}
+.mbd{position:fixed;inset:0;z-index:500;height:100dvh;max-height:100dvh;overflow:hidden;overscroll-behavior:none;touch-action:none;background:rgba(24,28,32,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0;align-items:flex-end;justify-content:center}
 .mbd.op{display:flex!important}
 @media(min-width:720px){.mbd.op{align-items:center;padding:24px}}
-.msh{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow:hidden;animation:shUp .28s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column}
-@media(min-width:720px){.msh{border-radius:16px;max-width:min(540px,100%);max-height:min(88dvh,920px)}}
+.msh{background:#fff;border-radius:20px 20px 0 0;width:100%;min-height:0;max-height:100dvh;overflow:hidden;animation:shUp .28s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;touch-action:auto}
+@media(min-width:720px){.msh{border-radius:16px;max-width:min(540px,100%);max-height:min(100dvh,920px)}}
 @keyframes shUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.m-body{padding:0;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.m-body{padding:0;flex:1;min-height:0;height:100%;max-height:100dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .m-actions{flex-shrink:0;padding:0}
 .m-section{margin-bottom:16px}
 .m-section-ttl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(64,72,76,.55);margin-bottom:8px;display:flex;align-items:center;gap:6px}
@@ -317,8 +317,8 @@ button,input,select,textarea{font:inherit}
 .del-cfm-btn-confirm{background:#1a5f58;color:#fff}
 /* 詳情 Modal 唯讀品項：頂列序號 + 品名（僅 #modal 內） */
 #modal .det-readonly-part-hd{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(191,200,204,.22)}
-/* 詳情唯讀 · 狀態四鍵（小尺寸、與表單 ins-ch 配色一致、唯讀） */
-.det-ins-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;align-self:flex-start;max-width:19rem}
+/* 詳情唯讀 · 狀態單一 chip（小尺寸、與表單 ins-ch 配色一致、唯讀；inline-flex 不撐滿整列） */
+.det-ins-row{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;align-self:flex-start;max-width:19rem;vertical-align:top}
 .det-ins{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border-radius:0.5rem;font-size:12px;line-height:1.15;font-weight:800;border:1px solid transparent;padding:0 7px;min-height:30px;max-height:34px;box-sizing:border-box;pointer-events:none;user-select:none;white-space:nowrap}
 .det-ins-on{box-shadow:0 2px 8px -2px rgba(24,28,32,.16)}
 .det-ins-off{opacity:.52}
@@ -907,6 +907,39 @@ let detailOpenRid   = null;
 let detailEditMode  = false;
 /** 上次成功 query 的篩選條件（供查詢頁 soft 重新整理） */
 let _lastQueryKey   = "";
+/** 詳情 Modal 開啟時鎖定 body 捲動；僅在首次開啟時 lock，避免重複 showDetail 疊加 */
+let _detailBodyLockScrollY = null;
+function lockBodyForDetail() {
+  if (_detailBodyLockScrollY !== null) return;
+  _detailBodyLockScrollY = window.scrollY;
+  const y = _detailBodyLockScrollY;
+  document.body.style.position = "fixed";
+  document.body.style.top = "-" + y + "px";
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  document.body.style.overflow = "hidden";
+}
+function unlockBodyForDetail() {
+  if (_detailBodyLockScrollY === null) return;
+  const y = Math.abs(parseInt(document.body.style.top || "0", 10));
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  document.body.style.overflow = "";
+  window.scrollTo(0, y);
+  _detailBodyLockScrollY = null;
+}
+/** 防止 overlay / 標題列 / 底欄的 touch 傳到背景捲動（#mBody 內不擋，維持可捲） */
+function onDetailModalTouchMove(e) {
+  const m = document.getElementById("modal");
+  if (!m || !m.classList.contains("op")) return;
+  const mb = document.getElementById("mBody");
+  if (mb && (mb === e.target || mb.contains(e.target))) return;
+  e.preventDefault();
+}
 
 // Parts-level status: key = partId, value = 'pass'|'fail'|'wait'|'unkn'
 const partStatus = {};
@@ -969,6 +1002,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(menu.contains(e.target)) return;
     closeDetShareMenu();
   });
+  const detModalEl = document.getElementById("modal");
+  if (detModalEl) {
+    detModalEl.addEventListener("touchmove", onDetailModalTouchMove, { passive: false });
+  }
 });
 
 async function fetchRole(uid) {
@@ -1154,26 +1191,23 @@ function itemSourceForDisplayHtml(p, r){
 }
 
 /**
- * 詳情唯讀：四狀態小按鈕列（配色同表單 ins-ch，不可點；標籤為 PASS / FAIL / 待驗 / UNKNOWN）
+ * 詳情唯讀：只顯示目前 item.status 一顆 chip（配色同表單；空值顯示 —，不顯示選項列）
  */
 function detailStatusChipsHtml(st) {
   const raw = st == null ? "" : String(st).trim();
+  if (raw === "") {
+    return "<span class=\"text-sm font-semibold text-on-surface\">—</span>";
+  }
   const u = raw.toUpperCase();
   var cur = "unkn";
-  if (u === "PASS") cur = "pass";
-  else if (u === "FAIL") cur = "fail";
-  else if (raw === "待驗") cur = "wait";
-  else if (u === "UNKNOW" || u === "UNKNOWN") cur = "unkn";
-  const items = [
-    { key: "pass", label: "PASS" },
-    { key: "fail", label: "FAIL" },
-    { key: "wait", label: "待驗" },
-    { key: "unkn", label: "UNKNOWN" }
-  ];
-  return items.map(function (it) {
-    const on = it.key === cur;
-    return "<span class=\"det-ins det-ins-" + it.key + (on ? " det-ins-on" : " det-ins-off") + "\">" + esc(it.label) + "</span>";
-  }).join("");
+  var label = "UNKNOWN";
+  if (u === "PASS") { cur = "pass"; label = "PASS"; }
+  else if (u === "FAIL") { cur = "fail"; label = "FAIL"; }
+  else if (raw === "待驗") { cur = "wait"; label = "待驗"; }
+  else if (u === "UNKNOW" || u === "UNKNOWN") { cur = "unkn"; label = "UNKNOWN"; }
+  return (
+    "<span class=\"det-ins det-ins-" + cur + " det-ins-on\">" + esc(label) + "</span>"
+  );
 }
 
 /** 寫入 textarea 元素內文時跳脫 & <>，避免破壞 HTML */
@@ -1923,6 +1957,7 @@ function closeDetailModal(){
   document.getElementById("modal").classList.remove("op");
   detailEditMode = false;
   detailOpenRid = null;
+  unlockBodyForDetail();
 }
 
 function getCurrentDetailRecord(){
@@ -2404,7 +2439,7 @@ function refreshDetailModal(){
       </div>
       <div class="mb-3">
         <p class="det-item-lbl mb-1.5">狀態</p>
-        <div class="det-ins-row" role="group" aria-label="檢驗狀態">${detailStatusChipsHtml(p.status)}</div>
+        <div class="det-ins-row" role="status" aria-label="檢驗狀態">${detailStatusChipsHtml(p.status)}</div>
       </div>
       <div class="det-qty-bin-plain det-qty-bin-wrap mb-4">
         <div class="det-qty-bin-inner">
@@ -2611,6 +2646,7 @@ function showDetail(rid){
   detailOpenRid = rid;
   detailEditMode = false;
   refreshDetailModal();
+  lockBodyForDetail();
   document.getElementById("modal").classList.add("op");
 }
 
