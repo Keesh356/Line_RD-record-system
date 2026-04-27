@@ -347,10 +347,10 @@ header.topbar{box-shadow:none!important}
 #qDateModalBd input,#qDateModalBd select,
 #modal input,#modal select,#modal textarea{font-size:16px!important}
 }
-/* 新增登錄 SECTION 01：日期 / 來源共用底線列（僅此列，不影響客戶欄） */
-.sec01-date-src-row .sec01-field-under{display:flex;align-items:flex-end;min-height:2.75rem;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s}
-.sec01-date-src-row .sec01-field-under:focus-within{border-bottom-color:rgba(0,66,83,.55)}
-.sec01-date-src-row .sec01-under-input{border-bottom-width:0!important;padding-top:0.25rem;padding-bottom:0.35rem;line-height:1.35}
+/* 新增登錄 SECTION 01：日期單欄底線 */
+.sec01-date-only-row .sec01-field-under{display:flex;align-items:flex-end;min-height:2.75rem;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s}
+.sec01-date-only-row .sec01-field-under:focus-within{border-bottom-color:rgba(0,66,83,.55)}
+.sec01-date-only-row .sec01-under-input{border-bottom-width:0!important;padding-top:0.25rem;padding-bottom:0.35rem;line-height:1.35}
 /* 圖 7：查詢頁頂區不要浮起陰影（僅查詢頁、僅搜尋列殼層） */
 @media(max-width:1023px){
   body:has(#pg-query.page.act) #qSearchShell{box-shadow:none!important;filter:none!important}
@@ -416,17 +416,11 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       <div class="h-px flex-1 bg-outline-variant/20"></div>
     </div>
     <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-ambient space-y-4">
-      <div class="grid grid-cols-2 gap-4 sec01-date-src-row">
+      <div class="sec01-date-only-row">
         <div>
           <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">日期</label>
           <div class="sec01-field-under">
             <input type="date" id="fDate" class="sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm text-on-surface rounded-none focus:border-primary focus:ring-0 font-mono"/>
-          </div>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">來源</label>
-          <div class="sec01-field-under">
-            <input type="text" id="fSource" placeholder="機拆/庫存/廠商名稱" class="sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
           </div>
         </div>
       </div>
@@ -1030,8 +1024,14 @@ function addPart(data={}) {
     <div class="px-4 pb-5 pt-2 space-y-4 bg-surface-container-low" id="bd_${id}">
 
       <div>
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">來源</label>
+        <input type="text" data-f="source" value="${h(data.source)}" placeholder=""
+          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
+      </div>
+
+      <div>
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">品名</label>
-        <input type="text" data-f="itemName" value="${h(data.itemName)}" placeholder="PCB X INTERFACE A1 (used)"
+        <input type="text" data-f="itemName" value="${h(data.itemName)}" placeholder=""
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"
           oninput="updLbl('${id}',this.value)"/>
       </div>
@@ -1039,12 +1039,12 @@ function addPart(data={}) {
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">P/N</label>
-          <input type="text" data-f="pn" value="${h(data.pn)}" placeholder="PN-XXXX"
+          <input type="text" data-f="pn" value="${h(data.pn)}" placeholder=""
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">S/N</label>
-          <input type="text" data-f="sn" value="${h(data.sn)}" placeholder="SN-XXXXXXXX"
+          <input type="text" data-f="sn" value="${h(data.sn)}" placeholder=""
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
       </div>
@@ -1081,7 +1081,7 @@ function addPart(data={}) {
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">進貨驗證完成日</label>
         <input type="date" data-f="verifyInDate" value="${h(data.verifyInDate)}"
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
-        <p class="text-[10px] text-outline mt-1 leading-snug">提示：買進/退租(一週內)</p>
+        <p class="text-[10px] text-outline mt-1 leading-snug">P.S. : 買進/退租(一週內)</p>
       </div>
 
       <div>
@@ -1121,6 +1121,18 @@ function reindexPartBadges(){
 
 function h(s){ return s ? String(s).replace(/"/g,'&quot;') : ''; }
 function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/** 品項「來源」：以 item.source 為主，空則 fallback 舊版整筆 r.source */
+function itemSourceForDisplay(p, r){
+  const a = p && p.source != null ? String(p.source).trim() : "";
+  if (a) return a;
+  if (r && r.source != null) return String(r.source).trim();
+  return "";
+}
+function itemSourceForDisplayHtml(p, r){
+  const s = itemSourceForDisplay(p, r);
+  return s ? esc(s) : "—";
+}
 
 /** 寫入 textarea 元素內文時跳脫 & <>，避免破壞 HTML */
 function escTextarea(s){
@@ -1189,7 +1201,6 @@ function collect(){
   const g = id => document.getElementById(id)?.value?.trim()||"";
   const basic = {
     date:        g("fDate"),
-    source:      g("fSource"),
     customer:    g("fCustomer"),
     orderNo:     g("fOrderNo"),
     projectNo:   g("fProjectNo"),
@@ -1203,6 +1214,7 @@ function collect(){
     const f = k => (c.querySelector(`[data-f="${k}"]`)?.value||"").trim();
     const pid = c.id;
     parts.push({
+      source:     f("source"),
       itemName: f("itemName"), pn: f("pn"), sn: String(f("sn")),
       qty: (function(){ const q=f("qty"); return (q===""||q==null)?"0":q; })(),
       status: COND_MAP[partStatus[pid]||"unkn"],
@@ -1296,7 +1308,7 @@ function buildShareRecordFromSubmit(basic, parts, recordId){
   return {
     recordId: String(recordId || "").trim(),
     date: basic.date || "",
-    source: basic.source || "",
+    source: "",
     customer: basic.customer || "",
     orderNo: basic.orderNo || "",
     projectNo: basic.projectNo || "",
@@ -1305,6 +1317,7 @@ function buildShareRecordFromSubmit(basic, parts, recordId){
     status: "已登錄",
     parts: (parts || []).map(function (p){
       return {
+        source: p.source != null ? String(p.source) : "",
         itemName: p.itemName || "",
         pn: p.pn || "",
         sn: p.sn != null ? String(p.sn) : "",
@@ -1610,7 +1623,7 @@ async function doSubmit(){
 }
 
 function resetForm(){
-  ["fSource","fCustomer","fOrderNo","fProjectNo"].forEach(id=>{
+  ["fCustomer","fOrderNo","fProjectNo"].forEach(id=>{
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -1820,7 +1833,7 @@ function renderRecs(rs){
           : 0;
     const dt = esc(formatQueryCardSheetDate(r) || "—");
     const cust = esc(r.customer) || "";
-    const src = esc(r.source) || "";
+    const prj = esc(r.projectNo != null ? r.projectNo : "") || "";
     const ord = esc(r.orderNo != null ? r.orderNo : "") || "";
     const purp = esc(r.purpose != null ? r.purpose : "") || "";
     const byHtml = formatQueryCardSubmittedBy(r);
@@ -1841,8 +1854,8 @@ function renderRecs(rs){
             <div class="q-rec-v2-v">${cust || "（未填）"}</div>
           </div>
           <div class="min-w-0">
-            <div class="q-rec-v2-k">來源</div>
-            <div class="q-rec-v2-v">${src || "—"}</div>
+            <div class="q-rec-v2-k">訂單案號</div>
+            <div class="q-rec-v2-v">${prj || "—"}</div>
           </div>
           <div class="min-w-0">
             <div class="q-rec-v2-k">單號</div>
@@ -2116,9 +2129,10 @@ function partConditionSuffix(status){
 }
 
 /** 單一零件可分享欄位是否全為空（用於顯示「無明細資料」） */
-function isPartAllFieldsEmpty(p){
+function isPartAllFieldsEmpty(p, r){
   if (!p) return true;
   return (
+    isEmptyValue(itemSourceForDisplay(p, r)) &&
     isEmptyValue(p.itemName) &&
     isEmptyValue(p.pn) &&
     isEmptyValue(p.sn) &&
@@ -2147,7 +2161,6 @@ function buildLineShareText(r){
   lines.push("");
   var basicRows = [];
   basicRows.push(["日期", shareDateYMD(r.date)]);
-  if (!isEmptyValue(r.source)) basicRows.push(["來源", String(r.source).trim()]);
   if (!isEmptyValue(r.customer)) basicRows.push(["客戶", String(r.customer).trim()]);
   if (!isEmptyValue(r.orderNo)) basicRows.push(["單號", String(r.orderNo).trim()]);
   if (!isEmptyValue(r.projectNo)) basicRows.push(["訂單案號", String(r.projectNo).trim()]);
@@ -2172,9 +2185,12 @@ function buildLineShareText(r){
       lines.push("");
     }
     lines.push(String(idx + 1) + ".");
-    if (isPartAllFieldsEmpty(p)) {
+    if (isPartAllFieldsEmpty(p, r)) {
       lines.push("無明細資料");
       return;
+    }
+    if (!isEmptyValue(itemSourceForDisplay(p, r))) {
+      lines.push("來源 : " + String(itemSourceForDisplay(p, r)).trim());
     }
     if (!isEmptyValue(p.itemName)) {
       var nm = String(p.itemName).replace(/\r\n/g, "\n");
@@ -2532,13 +2548,17 @@ function refreshDetailModal(){
     const binStr = (p.bin!=null && String(p.bin).trim()!=="") ? esc(String(p.bin).trim()) : "";
     const vinStr = (p.verifyInDate!=null && String(p.verifyInDate).trim()!=="") ? esc(String(p.verifyInDate).trim()) : "";
     const spkStr = (p.shipPackDate!=null && String(p.shipPackDate).trim()!=="") ? esc(String(p.shipPackDate).trim()) : "";
+    const srcHtml = itemSourceForDisplayHtml(p, r);
     const seq = idx + 1;
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
+      <div class="mb-3">
+        <p class="det-item-lbl mb-1">來源</p>
+        <p class="text-sm font-semibold text-on-surface break-words min-w-0">${srcHtml}</p>
+      </div>
       <div class="det-readonly-part-hd">
         <div class="det-seq-badge" aria-hidden="true">${seq}</div>
         <p class="det-item-val-title flex-1 min-w-0">${esc(p.itemName)||"—"}</p>
-        <span class="det-stat m-part-status ${statusCls(p.status)} shrink-0">${esc(p.status)||"—"}</span>
       </div>
       <div class="det-pnsn-wrap mb-4">
         <div class="det-pnsn-inner">
@@ -2551,6 +2571,10 @@ function refreshDetailModal(){
             <p class="det-item-val-mono">${esc(p.sn)||"—"}</p>
           </div>
         </div>
+      </div>
+      <div class="mb-4">
+        <p class="det-item-lbl mb-1.5">狀態</p>
+        <span class="det-stat m-part-status inline-flex ${statusCls(p.status)}">${esc(p.status)||"—"}</span>
       </div>
       <div class="det-qty-bin-plain det-qty-bin-wrap mb-4">
         <div class="det-qty-bin-inner">
@@ -2590,7 +2614,6 @@ function refreshDetailModal(){
       <div class="rounded-2xl bg-surface-container-low p-4 shadow-sm border border-outline-variant/10">
         <div class="pt-1 det-basic-kv">
         ${detailKvRow("日期",r.date)}
-        ${detailKvRow("來源",r.source)}
         ${detailKvRow("客戶",r.customer)}
         ${detailKvRow("單號",r.orderNo)}
         ${detailKvRow("訂單案號",r.projectNo)}
@@ -2634,46 +2657,56 @@ function refreshDetailModal(){
     const optHtml = opts.map(o=>`<option value="${esc(o)}"${o===st?" selected":""}>${o==="待驗"?"待驗":esc(o)}</option>`).join("");
     const vin = h(toDateInputVal(p.verifyInDate));
     const spk = h(toDateInputVal(p.shipPackDate));
+    const srcV = h(itemSourceForDisplay(p, r));
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 border border-outline-variant/15">
-      <div class="det-edit-part-hd flex items-center gap-3 mb-3 pb-3 border-b border-outline-variant/15">
+      <div class="flex items-center gap-2 mb-2">
         <div class="det-seq-badge shrink-0" aria-hidden="true">${seq}</div>
-        <div class="flex-1 min-w-0">
+        <span class="text-[10px] font-bold uppercase text-outline">品項</span>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">來源</label>
+          <input type="text" id="det-p-${i}-source" value="${srcV}" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        </div>
+        <div>
           <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">品名</label>
           <input type="text" id="det-p-${i}-name" value="${h(p.itemName)}" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
-      </div>
-      <div class="mb-3">
-        <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">狀態</label>
-        <select id="det-p-${i}-status" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg py-2 px-2 focus:border-primary focus:ring-1 focus:ring-primary/20">${optHtml}</select>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">P/N</label>
-          <input type="text" id="det-p-${i}-pn" value="${h(p.pn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">P/N</label>
+            <input type="text" id="det-p-${i}-pn" value="${h(p.pn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">S/N</label>
+            <input type="text" id="det-p-${i}-sn" value="${h(p.sn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          </div>
         </div>
         <div>
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">S/N</label>
-          <input type="text" id="det-p-${i}-sn" value="${h(p.sn)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">狀態</label>
+          <select id="det-p-${i}-status" class="w-full text-sm font-semibold bg-surface-container-low border border-outline-variant/20 rounded-lg py-2 px-2 focus:border-primary focus:ring-1 focus:ring-primary/20">${optHtml}</select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">數量</label>
+            <input type="number" min="0" id="det-p-${i}-qty" value="${h(String(p.qty!=null&&p.qty!==""?p.qty:0))}" class="w-full text-sm font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">櫃位</label>
+            <input type="text" id="det-p-${i}-bin" value="${h(p.bin)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          </div>
         </div>
         <div>
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">數量</label>
-          <input type="number" min="0" id="det-p-${i}-qty" value="${h(String(p.qty!=null&&p.qty!==""?p.qty:0))}" class="w-full text-sm font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
-        </div>
-        <div>
-          <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">櫃位</label>
-          <input type="text" id="det-p-${i}-bin" value="${h(p.bin)}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
-        </div>
-        <div class="col-span-2">
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">進貨驗證完成日</label>
           <input type="date" id="det-p-${i}-vin" value="${vin}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
-          <p class="text-[10px] text-outline mt-1">提示：買進/退租(一週內)</p>
+          <p class="text-[10px] text-outline mt-1">P.S. : 買進/退租(一週內)</p>
         </div>
-        <div class="col-span-2">
+        <div>
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">出貨包裝完成日</label>
           <input type="date" id="det-p-${i}-spk" value="${spk}" class="w-full font-mono text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
-        <div class="col-span-2">
+        <div>
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">備註</label>
           <textarea id="det-p-${i}-remark" rows="1" placeholder="順豐單號/其他" autocomplete="off"
             class="remark-ta w-full bg-white text-on-surface rounded-xl border border-outline-variant/18 px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/18 focus:border-primary/25 placeholder:text-outline-variant/55"
@@ -2694,10 +2727,6 @@ function refreshDetailModal(){
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">日期</label>
           <input type="date" id="det-date" value="${h(r.date)}" class="w-full text-sm font-semibold bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
-        </div>
-        <div>
-          <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">來源</label>
-          <input type="text" id="det-source" value="${h(r.source)}" placeholder="機拆/庫存/廠商名稱" class="w-full text-sm bg-surface-container-lowest border border-outline-variant/25 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
         </div>
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wide text-outline block mb-1">客戶</label>
@@ -2788,7 +2817,6 @@ async function saveDetailEdit(){
   const gv = id => document.getElementById(id)?.value?.trim() || "";
   const basic = {
     date:        gv("det-date"),
-    source:      gv("det-source"),
     customer:    gv("det-customer"),
     orderNo:     gv("det-order-no"),
     projectNo:   gv("det-project-no"),
@@ -2802,6 +2830,7 @@ async function saveDetailEdit(){
   const parts = [];
   (r.parts||[]).forEach((_,i)=>{
     parts.push({
+      source:   gv("det-p-"+i+"-source"),
       itemName: gv("det-p-"+i+"-name"),
       pn:       gv("det-p-"+i+"-pn"),
       sn:       String(gv("det-p-"+i+"-sn")),
@@ -2861,7 +2890,6 @@ function copyToForm(rid){
   // Fill basic info
   const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||""; };
   set("fDate",    r.date);
-  set("fSource",  r.source);
   set("fCustomer",r.customer);
   set("fOrderNo", r.orderNo || "");
   set("fProjectNo", r.projectNo || "");
@@ -2875,7 +2903,9 @@ function copyToForm(rid){
 
   const REV={"PASS":"pass","FAIL":"fail","待驗":"wait","UNKNOW":"unkn"};
   (r.parts||[]).forEach(p=>{
+    const src = (p.source!=null && String(p.source).trim()) ? String(p.source).trim() : (r.source!=null ? String(r.source).trim() : "");
     addPart({
+      source:   src,
       itemName: p.itemName,
       pn:       p.pn,
       sn:       p.sn!=null?String(p.sn):"",
