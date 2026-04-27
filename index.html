@@ -614,7 +614,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
     </div>
     <div class="flex gap-4 w-full pt-0 shrink-0">
       <button type="button" id="cfmCancel" class="flex-1 px-6 py-3 rounded-xl border border-outline-variant/50 text-on-surface-variant font-bold text-sm bg-transparent hover:bg-surface-container-low/90 transition-colors" onclick="closeCfm()">取消</button>
-      <button type="button" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm shadow-md flex items-center justify-center gap-2" id="cfmOk" onclick="doSubmit()">
+      <button type="button" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm shadow-md flex items-center justify-center gap-2" id="cfmOk" onclick="onCfmOkClick()">
         <span class="ms fi" style="font-size:18px">check</span>確認
       </button>
     </div>
@@ -1378,10 +1378,12 @@ const submitFlow = {
   shareStatus: null,
   saveSuccess: false,
 };
+/** 從詳情「編輯」開啟的確認視窗：{ rid, basic, parts, r }；非 null 時「確認」走 doDetailEditSheetsSave */
+let detailEditConfirmPayload = null;
 
 /** 送出成功後組出與查詢紀錄相同结构的物件，供 buildLineShareText / Flex 沿用 */
 function buildShareRecordFromSubmit(basic, parts, recordId){
-  return {
+  const o = {
     recordId: String(recordId || "").trim(),
     date: basic.date || "",
     source: "",
@@ -1406,6 +1408,10 @@ function buildShareRecordFromSubmit(basic, parts, recordId){
       };
     }),
   };
+  if (basic && basic.createdAt != null && String(basic.createdAt).trim() !== "") {
+    o.createdAt = String(basic.createdAt).trim();
+  }
+  return o;
 }
 
 /** 非阻擋：仍顯示 toast／紅色橫幅，但不中斷確認視窗與送出流程 */
@@ -1460,15 +1466,25 @@ function confirmSubmit(){
   openSubmitConfirmDialog();
 }
 
+function onCfmOkClick() {
+  if (detailEditConfirmPayload) {
+    doDetailEditSheetsSave();
+    return;
+  }
+  doSubmit();
+}
+
 function closeCfm(){
   document.getElementById("cfmModal").classList.remove("op");
   submitFlow.isConfirmDialogOpen = false;
+  detailEditConfirmPayload = null;
 }
 
 function setFormSubmitLocked(locked){
   const sub = document.getElementById("btnSub");
   const cfmOk = document.getElementById("cfmOk");
   const cfmCancel = document.getElementById("cfmCancel");
+  const detSave = document.getElementById("detSaveBtn");
   if (sub) {
     sub.disabled = !!locked;
     sub.classList.toggle("opacity-50", !!locked);
@@ -1477,6 +1493,10 @@ function setFormSubmitLocked(locked){
   }
   if (cfmOk) cfmOk.disabled = !!locked;
   if (cfmCancel) cfmCancel.disabled = !!locked;
+  if (detSave) {
+    detSave.disabled = !!locked;
+    detSave.classList.toggle("opacity-50", !!locked);
+  }
 }
 
 const CFM_OK_BTN_HTML = `<span class="ms fi" style="font-size:18px">check</span>確認`;
@@ -1509,6 +1529,30 @@ async function submitToGoogleSheets(basic, parts){
   }
 }
 
+async function updateRecordInGoogleSheets(recordId, basic, parts){
+  try {
+    const res = await gas({ action: "update", recordId, basic, parts });
+    const rid = String(recordId || "").trim();
+    const ok =
+      res &&
+      res.success === true &&
+      typeof res.recordId === "string" &&
+      res.recordId.trim() === rid;
+    if (!ok) {
+      const msg =
+        res && typeof res.message === "string" && res.message.trim()
+          ? res.message.trim()
+          : "資料尚未成功更新至 Google Sheets";
+      return { ok: false, message: msg };
+    }
+    return { ok: true, recordId: res.recordId.trim(), res: res };
+  } catch (e) {
+    const hint =
+      e && e.message ? String(e.message) : "請稍後再試";
+    return { ok: false, message: "無法完成寫入：" + hint };
+  }
+}
+
 /** Sheets 已成功後才呼叫；回傳 shared | cancelled（詳情選單等非「先 await 再分享」場景可用） */
 async function openLineShareFlow(shareRecord){
   return await shareRecordToLineCore(shareRecord, { suppressToasts: true });
@@ -1525,15 +1569,19 @@ function closePostSubmitShareModal(){
   if (el) el.classList.remove("op");
 }
 
-function openPostSubmitSharePrompt(basic, parts, recordId){
+function openPostSubmitSharePrompt(basic, parts, recordId, options){
+  options = options || {};
+  const isEdit = options.isEdit === true;
+  const isDetailEdit = options.isDetailEdit === true;
   const shareRec = buildShareRecordFromSubmit(basic, parts, recordId);
   const flexMsg = buildLineFlexMessage(shareRec);
-  const textFb = buildLineShareText(shareRec);
+  const textFb = buildLineShareText(shareRec, { isEdit: isEdit });
   postSubmitSharePayload = {
     recordId: String(recordId || "").trim(),
     shareRec: shareRec,
     flexMsg: flexMsg,
     textFb: textFb,
+    isDetailEdit: isDetailEdit,
   };
   const ridEl = document.getElementById("postSubmitShareRecordId");
   if (ridEl) ridEl.textContent = postSubmitSharePayload.recordId || "—";
@@ -1547,8 +1595,15 @@ function openPostSubmitSharePrompt(basic, parts, recordId){
 
 function finalizePostSubmitShareFlow(recordId, outcome){
   closePostSubmitShareModal();
+  const wasDetail = postSubmitSharePayload && postSubmitSharePayload.isDetailEdit;
   postSubmitSharePayload = null;
   const o = outcome === "shared" ? "shared" : "cancelled";
+  if (wasDetail) {
+    closeDetailModal();
+    showFinalStatus(recordId, o);
+    loadRecs();
+    return;
+  }
   showFinalStatus(recordId, o);
   setTimeout(resetForm, 1600);
 }
@@ -1581,7 +1636,7 @@ function onPostSubmitShareLineTap(ev){
     (!liff.isApiAvailable || liff.isApiAvailable("shareTargetPicker"));
 
   if (!canPicker || !flexMsg) {
-    shareRecordToLineCore(p.shareRec, { suppressToasts: true })
+    shareRecordToLineCore(p.shareRec, { suppressToasts: true, lineShareText: p.textFb })
       .then(function (out) {
         finalizePostSubmitShareFlow(recordId, out);
       })
@@ -2054,8 +2109,12 @@ function pushShareItemNameLines(lines, p, L) {
   }
 }
 
-/** 組裝「分享到 LINE / 複製分享文字」純文字（圖 2 緊湊排版、品項逐行） */
-function buildLineShareText(r) {
+/**
+ * 組裝「分享到 LINE / 複製分享文字」純文字（圖 2 緊湊排版、品項逐行）
+ * @param {{isEdit?:boolean}} opts isEdit 時最上方加「‼️紀錄已編輯」僅用於分享字串，不寫入 Sheets
+ */
+function buildLineShareText(r, opts) {
+  opts = opts || {};
   if (!r) return "";
   var parts = r.parts || [];
   var n = parts.length;
@@ -2086,7 +2145,11 @@ function buildLineShareText(r) {
     lines.push("狀態" + L + shareTextOrEmDash(p.status));
     lines.push("數量" + L + shareTextOrEmDash(p.qty));
   });
-  return lines.join("\n");
+  var body = lines.join("\n");
+  if (opts.isEdit === true) {
+    return "‼️紀錄已編輯\n\n" + body;
+  }
+  return body;
 }
 
 /** LIFF 詳情深連結（recordId 深連結用） */
@@ -2256,7 +2319,7 @@ function buildLineFlexMessage(r){
 
 /**
  * LINE 分享核心：優先 Flex → 純文字 → 系統分享 / 剪貼簿
- * @param {{suppressToasts?:boolean}} opts suppressToasts：表單送出流程由外層顯示最終提示時使用
+ * @param {{suppressToasts?:boolean,lineShareText?:string}} opts lineShareText：與 r 併用時可指定純文字（如編輯後含「‼️紀錄已編輯」）
  * @returns {Promise<'shared'|'cancelled'>}
  */
 async function shareRecordToLineCore(r, opts){
@@ -2266,7 +2329,10 @@ async function shareRecordToLineCore(r, opts){
     if (!suppress) showToast("無法取得紀錄", "err");
     return "cancelled";
   }
-  const textFb = buildLineShareText(r);
+  const textFb =
+    opts.lineShareText != null && String(opts.lineShareText) !== ""
+      ? String(opts.lineShareText)
+      : buildLineShareText(r);
   const flexMsg = buildLineFlexMessage(r);
 
   const canPicker =
@@ -2629,7 +2695,7 @@ function refreshDetailModal(){
   document.getElementById("mActions").innerHTML = `
   <div class="flex gap-2 px-3 sm:px-4 pt-3 pb-[max(14px,env(safe-area-inset-bottom))] bg-surface border-t border-outline-variant/15">
     <button type="button" class="flex-1 py-3.5 rounded-xl bg-surface-container-high text-on-surface-variant text-sm font-bold active:scale-[0.98]" onclick="cancelDetailEdit()">取消</button>
-    <button type="button" id="detSaveBtn" class="flex-1 py-3.5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold shadow-md active:scale-[0.98]" onclick="saveDetailEdit()">儲存</button>
+    <button type="button" id="detSaveBtn" class="flex-1 py-3.5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold shadow-md active:scale-[0.98]" onclick="openDetailEditConfirmDialog()">儲存</button>
     <button type="button" class="shrink-0 w-12 h-[46px] flex items-center justify-center rounded-xl bg-error-container text-error active:scale-95" onclick='deleteRecord(${rj})' aria-label="刪除">
       <span class="ms fi text-xl">delete</span>
     </button>
@@ -2676,10 +2742,14 @@ function cancelDetailEdit(){
   refreshDetailModal();
 }
 
-async function saveDetailEdit(){
+/**
+ * 詳情「編輯」：收集表單 → 圖2 確認視窗（不直接打 API；確認後 doDetailEditSheetsSave，成功後圖3 與流程同新增）
+ */
+function openDetailEditConfirmDialog() {
+  if (submitFlow.isSubmitting) return;
   const rid = detailOpenRid;
-  const r = recs.find(x=>x.recordId===rid);
-  if(!r || !detailEditMode) return;
+  const r = recs.find(x => x.recordId === rid);
+  if (!r || !detailEditMode) return;
   const gv = id => document.getElementById(id)?.value?.trim() || "";
   const basic = {
     date:        gv("det-date"),
@@ -2691,51 +2761,72 @@ async function saveDetailEdit(){
     lineUserId:  profile?.userId || "",
     groupId:     new URLSearchParams(window.location.search).get("groupId") || "",
   };
-  /** 編輯儲存：不驗證「必填」，欄位空白以空字串送出（由 GAS 寫入／預設值同既有 submit 邏輯） */
+  if (r.createdAt != null && String(r.createdAt).trim() !== "") {
+    basic.createdAt = String(r.createdAt).trim();
+  }
   const parts = [];
-  (r.parts||[]).forEach((_,i)=>{
-    const q = gv("det-p-"+i+"-qty");
+  (r.parts || []).forEach((_, i) => {
+    const q = gv("det-p-" + i + "-qty");
     parts.push({
-      source:   gv("det-p-"+i+"-source"),
-      itemName: gv("det-p-"+i+"-name"),
-      pn:       gv("det-p-"+i+"-pn"),
-      sn:       String(gv("det-p-"+i+"-sn") || ""),
+      source:   gv("det-p-" + i + "-source"),
+      itemName: gv("det-p-" + i + "-name"),
+      pn:       gv("det-p-" + i + "-pn"),
+      sn:       String(gv("det-p-" + i + "-sn") || ""),
       qty:      q,
-      status:   (gv("det-p-"+i+"-status") || "").trim(),
-      bin:      gv("det-p-"+i+"-bin"),
-      verifyInDate: gv("det-p-"+i+"-vin"),
-      shipPackDate: gv("det-p-"+i+"-spk"),
-      remark:   gv("det-p-"+i+"-remark"),
+      status:   (gv("det-p-" + i + "-status") || "").trim(),
+      bin:      gv("det-p-" + i + "-bin"),
+      verifyInDate: gv("det-p-" + i + "-vin"),
+      shipPackDate: gv("det-p-" + i + "-spk"),
+      remark:   gv("det-p-" + i + "-remark"),
     });
   });
+  document.getElementById("cfmCustomerVal").textContent = basic.customer || "—";
+  const purposeEl = document.getElementById("cfmPurposeVal");
+  if (purposeEl) {
+    const pu = basic.purpose || "";
+    purposeEl.textContent = (typeof purposeDisplayLabel === "function" ? purposeDisplayLabel(pu) : pu) || "—";
+  }
+  const cntEl = document.getElementById("cfmPartsCountVal");
+  if (cntEl) cntEl.textContent = parts.length + " 項";
+  detailEditConfirmPayload = { rid, basic, parts, r };
+  submitFlow.isConfirmDialogOpen = true;
+  document.getElementById("cfmModal").classList.add("op");
+}
 
-  const btn = document.getElementById("detSaveBtn");
-  if(btn){ btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 送出中…`; }
-  try{
-    const res = await gas({ action:"submit", basic, parts });
-    const okSubmit =
-      res &&
-      res.success === true &&
-      typeof res.recordId === "string" &&
-      res.recordId.trim().length > 0;
-    if(!okSubmit){
-      const msg = (res && typeof res.message === "string" && res.message.trim()) ? res.message.trim() : "儲存失敗";
-      showToast(msg,"err");
+async function doDetailEditSheetsSave() {
+  if (submitFlow.isSubmitting) return;
+  const ctx = detailEditConfirmPayload;
+  if (!ctx) return;
+  const { rid, basic, parts } = ctx;
+  const btn = document.getElementById("cfmOk");
+  submitFlow.isSubmitting = true;
+  submitFlow.saveSuccess = false;
+  setFormSubmitLocked(true);
+  if (btn) btn.innerHTML = `<span class="spin"></span> 送出中...`;
+  try {
+    const save = await updateRecordInGoogleSheets(rid, basic, parts);
+    if (!save.ok) {
+      showSubmitSaveFailure(save.message || "");
       return;
     }
-    const newId = res.recordId.trim();
-    const delRes = await gas({ action:"delete", recordId:rid });
-    if(!delRes.success){
-      showToast("新單已建立，但刪除舊單失敗，請手動刪除 "+rid,"err");
-      return;
+    submitFlow.saveSuccess = true;
+    detailEditConfirmPayload = null;
+    closeCfm();
+    const basicForShare = Object.assign({}, basic);
+    if (ctx.r && ctx.r.createdAt != null && String(ctx.r.createdAt).trim() !== "") {
+      basicForShare.createdAt = String(ctx.r.createdAt).trim();
     }
-    closeDetailModal();
-    showBanner(newId, { title: "編輯成功．資料已儲存" });
-    await loadRecs();
-  } catch(e){
-    showToast("網路錯誤："+e.message,"err");
+    openPostSubmitSharePrompt(basicForShare, parts, save.recordId, { isEdit: true, isDetailEdit: true });
+  } catch (e) {
+    const hint = e && e.message ? String(e.message) : "請稍後再試";
+    showSubmitSaveFailure("無法完成寫入：" + hint);
   } finally {
-    if(btn){ btn.disabled = false; btn.textContent = DET_SAVE_BTN_LABEL; }
+    submitFlow.isSubmitting = false;
+    setFormSubmitLocked(false);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = CFM_OK_BTN_HTML;
+    }
   }
 }
 
