@@ -1987,8 +1987,8 @@ function shareField(v){
   return s;
 }
 
-// ── LINE 分享純文字：緊湊「標籤： 值」、不強制欄寬；空值以「—」
-var SHARE_LINE_SEP = "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
+// ── LINE 分享純文字：緊湊「標籤： 值」；短分隔線避免 LINE 氣泡內折行產生殘段
+var SHARE_LINE_SEP = "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
 var SHARE_EMDASH = "\u2014";
 
 function shareTextOrEmDash(v) {
@@ -2691,25 +2691,23 @@ async function saveDetailEdit(){
     lineUserId:  profile?.userId || "",
     groupId:     new URLSearchParams(window.location.search).get("groupId") || "",
   };
-  if(!basic.customer) return showToast("請填寫客戶","err");
-  if(!basic.purpose) return showToast("請選擇目的","err");
+  /** 編輯儲存：不驗證「必填」，欄位空白以空字串送出（由 GAS 寫入／預設值同既有 submit 邏輯） */
   const parts = [];
   (r.parts||[]).forEach((_,i)=>{
+    const q = gv("det-p-"+i+"-qty");
     parts.push({
       source:   gv("det-p-"+i+"-source"),
       itemName: gv("det-p-"+i+"-name"),
       pn:       gv("det-p-"+i+"-pn"),
-      sn:       String(gv("det-p-"+i+"-sn")),
-      qty:      (function(){ const q=gv("det-p-"+i+"-qty"); return (q===""||q==null)?"0":q; })(),
-      status:   gv("det-p-"+i+"-status") || "UNKNOW",
+      sn:       String(gv("det-p-"+i+"-sn") || ""),
+      qty:      q,
+      status:   (gv("det-p-"+i+"-status") || "").trim(),
       bin:      gv("det-p-"+i+"-bin"),
       verifyInDate: gv("det-p-"+i+"-vin"),
       shipPackDate: gv("det-p-"+i+"-spk"),
       remark:   gv("det-p-"+i+"-remark"),
     });
   });
-  if(!parts.length) return showToast("無零件可儲存","err");
-  if(parts.every(p=>!p.itemName)) return showToast("請填寫品名","err");
 
   const btn = document.getElementById("detSaveBtn");
   if(btn){ btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 送出中…`; }
