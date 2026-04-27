@@ -258,8 +258,9 @@ button,input,select,textarea{font:inherit}
 /* SECTION 01 · 目的列 + 右側箭頭（與上方 border-b-2 + py-1.5 輸入列垂直置中對齊） */
 .purpose-sec01-row{display:flex;align-items:center;min-height:2.75rem;gap:2px;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s;box-sizing:border-box}
 .purpose-sec01-row:focus-within{border-bottom-color:rgba(0,66,83,.55)}
-.purpose-sec01-btn{flex:1;min-width:0;margin:0;padding:0.375rem 0;line-height:1.45;letter-spacing:0.01em}
-#pg-form #fPurposeBtn.purpose-sec01-btn{appearance:none;-webkit-appearance:none;text-align:left;font-weight:400}
+/* 左內距 0.75rem = @tailwindcss/forms 之 [type=text] padding-left（spacing[3]），與單號／訂單案號 placeholder 垂直對齊 */
+.purpose-sec01-btn{flex:1;min-width:0;margin:0;padding:0.375rem 0 0.375rem 0.75rem;line-height:1.45;letter-spacing:0.01em}
+#pg-form #fPurposeBtn.purpose-sec01-btn{appearance:none;-webkit-appearance:none;text-align:left;font-weight:400;padding:0.375rem 0 0.375rem 0.75rem}
 /* 新增表單「目的」已選值：與選擇器網格 .purpose-cell-label 一致（僅 #fPurposeBtn） */
 #pg-form #fPurposeBtn.purpose-sec01-purpose-filled--plus{
   font-size:14px;
@@ -461,7 +462,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
         <div class="purpose-sec01-row">
           <input type="hidden" id="fPurpose" value=""/>
-          <button type="button" id="fPurposeBtn" class="purpose-picker-trigger purpose-sec01-btn w-full min-w-0 text-left bg-transparent border-0 p-0 py-1.5 text-sm leading-snug rounded-none text-outline-variant/60 focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
+          <button type="button" id="fPurposeBtn" class="purpose-picker-trigger purpose-sec01-btn w-full min-w-0 text-left bg-transparent border-0 text-sm leading-snug rounded-none text-outline-variant/60 focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
           <button type="button" class="purpose-sec01-chevron" aria-label="選擇目的" onclick="openPurposePicker('fPurpose','fPurposeBtn')"><span class="ms">expand_more</span></button>
         </div>
       </div>
