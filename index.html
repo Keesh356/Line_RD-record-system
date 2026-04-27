@@ -152,6 +152,8 @@ button,input,select,textarea{font:inherit}
 .q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;min-width:0;width:100%;box-sizing:border-box}
 .q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25;text-align:right}
 .q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.5rem;padding:7px 14px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
+/* 表單 / 詳情「品項明細」筆數膠囊（淺藍灰底、深青字，對齊 Section 02） */
+.parts-count-pill,.det-parts-count-pill{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0.28rem 0.65rem;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.2;letter-spacing:0.02em;white-space:nowrap;background:#e2e8f0;color:#004253;box-sizing:border-box}
 .q-rec-v2-sep{height:1px;background:rgba(191,200,204,.35);margin:0 0 10px}
 .q-rec-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .q-rec-v2-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-width:0}
@@ -314,7 +316,24 @@ button,input,select,textarea{font:inherit}
 .del-cfm-btn-cancel{background:#f0f4f4;color:#4a7a74;border:.5px solid #c8dbd8}
 .del-cfm-btn-confirm{background:#1a5f58;color:#fff}
 /* 詳情 Modal 唯讀品項：頂列序號 + 品名（僅 #modal 內） */
-#modal .det-readonly-part-hd{display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(191,200,204,.22)}
+#modal .det-readonly-part-hd{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(191,200,204,.22)}
+/* 詳情唯讀 · 狀態四鍵（小尺寸、與表單 ins-ch 配色一致、唯讀） */
+.det-ins-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;align-self:flex-start;max-width:19rem}
+.det-ins{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border-radius:0.5rem;font-size:12px;line-height:1.15;font-weight:800;border:1px solid transparent;padding:0 7px;min-height:30px;max-height:34px;box-sizing:border-box;pointer-events:none;user-select:none;white-space:nowrap}
+.det-ins-on{box-shadow:0 2px 8px -2px rgba(24,28,32,.16)}
+.det-ins-off{opacity:.52}
+.det-ins-pass.det-ins-on{background:linear-gradient(135deg,#007a6b,#00b89a);color:#fff;border-color:rgba(0,68,68,.45)}
+.det-ins-fail.det-ins-on{background:linear-gradient(135deg,#c62828,#e53935);color:#fff;border-color:rgba(120,0,0,.35)}
+.det-ins-wait.det-ins-on{background:linear-gradient(135deg,#e6b422,#f5d547);color:#3d2e00;border-color:rgba(180,130,0,.4)}
+.det-ins-unkn.det-ins-on{background:linear-gradient(135deg,#37474f,#546e7a);color:#fff;border-color:rgba(38,50,56,.4)}
+.det-ins-pass.det-ins-off{background:rgba(160,240,240,.22);color:rgba(0,66,83,.42);border-color:rgba(0,68,68,.06)}
+.det-ins-fail.det-ins-off{background:rgba(255,218,214,.35);color:rgba(186,26,26,.45);border-color:rgba(186,26,26,.08)}
+.det-ins-wait.det-ins-off{background:rgba(214,229,236,.45);color:rgba(83,97,103,.5);border-color:rgba(83,97,103,.1)}
+.det-ins-unkn.det-ins-off{background:rgba(229,232,238,.55);color:rgba(64,72,76,.4);border-color:rgba(191,200,204,.3)}
+/* 表單零件卡 · 來源單行高度與 placeholder */
+#pg-form .part-src-field input[type=text].src-line-in{min-height:2.5rem;max-height:2.75rem;padding-top:0.35rem;padding-bottom:0.35rem;line-height:1.35}
+#pg-form .part-src-field input[type=text].src-line-in::placeholder{color:#cfd6dc;opacity:1}
+#modal input.det-src-edit-ph::placeholder{color:#cfd6dc;opacity:1}
 #modal .det-seq-badge{width:2rem;height:2rem;border-radius:0.5rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,#004253,#005b71);box-shadow:0 2px 8px -2px rgba(0,66,83,.25)}
 /* 新增頁 SECTION 02：零件卡頂列（序號語彙與詳情對齊，限 #pg-form） */
 #pg-form .part-card-hd{border-bottom:1px solid rgba(191,200,204,.22)}
@@ -455,7 +474,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <h3 class="font-headline font-bold text-primary text-xs uppercase tracking-wide">零件清單</h3>
         <div class="h-px flex-1 bg-outline-variant/20"></div>
       </div>
-      <span class="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full font-mono shrink-0"><span id="pcNum">0</span> 項</span>
+      <span class="parts-count-pill font-mono tabular-nums" id="pcNumWrap"><span id="pcNum">0</span> 項</span>
     </div>
     <div id="partsList" class="space-y-3"></div>
   </section>
@@ -1021,12 +1040,12 @@ function addPart(data={}) {
         <span class="ms caret text-outline-variant text-xl">expand_more</span>
       </div>
     </div>
-    <div class="px-4 pb-5 pt-2 space-y-4 bg-surface-container-low" id="bd_${id}">
+    <div class="px-4 pb-5 pt-2 space-y-3 bg-surface-container-low" id="bd_${id}">
 
-      <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">來源</label>
-        <input type="text" data-f="source" value="${h(data.source)}" placeholder=""
-          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
+      <div class="part-src-field">
+        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-0.5">來源</label>
+        <input type="text" data-f="source" value="${h(data.source)}" placeholder="機拆/庫存/廠商名稱"
+          class="src-line-in w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
       <div>
@@ -1132,6 +1151,29 @@ function itemSourceForDisplay(p, r){
 function itemSourceForDisplayHtml(p, r){
   const s = itemSourceForDisplay(p, r);
   return s ? esc(s) : "—";
+}
+
+/**
+ * 詳情唯讀：四狀態小按鈕列（配色同表單 ins-ch，不可點；標籤為 PASS / FAIL / 待驗 / UNKNOWN）
+ */
+function detailStatusChipsHtml(st) {
+  const raw = st == null ? "" : String(st).trim();
+  const u = raw.toUpperCase();
+  var cur = "unkn";
+  if (u === "PASS") cur = "pass";
+  else if (u === "FAIL") cur = "fail";
+  else if (raw === "待驗") cur = "wait";
+  else if (u === "UNKNOW" || u === "UNKNOWN") cur = "unkn";
+  const items = [
+    { key: "pass", label: "PASS" },
+    { key: "fail", label: "FAIL" },
+    { key: "wait", label: "待驗" },
+    { key: "unkn", label: "UNKNOWN" }
+  ];
+  return items.map(function (it) {
+    const on = it.key === cur;
+    return "<span class=\"det-ins det-ins-" + it.key + (on ? " det-ins-on" : " det-ins-off") + "\">" + esc(it.label) + "</span>";
+  }).join("");
 }
 
 /** 寫入 textarea 元素內文時跳脫 & <>，避免破壞 HTML */
@@ -1875,14 +1917,6 @@ function renderRecs(rs){
 // ──────────────────────────────────────────
 //  DETAIL MODAL
 // ──────────────────────────────────────────
-function statusCls(s){
-  if(!s) return "st-unkn";
-  if(s==="PASS") return "st-pass";
-  if(s==="FAIL") return "st-fail";
-  if(s==="待驗")  return "st-wait";
-  return "st-unkn";
-}
-
 function closeDetailModal(){
   closeDetShareMenu();
   closeDeleteConfirm();
@@ -1918,101 +1952,21 @@ function shareField(v){
   return s;
 }
 
-// ── LINE 分享文字：全形對齊 / 狀態 emoji / 隱藏空欄（僅影響分享文字，不寫入 Sheets）──
-var SHARE_FW_SPACE = "\u3000";
-var SHARE_FW_COLON = "\uFF1A";
-/** 數值欄換行寬度（約半行，依手機閱讀調整） */
-var SHARE_VALUE_WRAP_CHARS = 22;
-/** 用於全區冒號垂直對齊的標籤（以 display width 取 max） */
-var SHARE_ALIGNED_LABELS = [
-  "紀錄編號", "日期", "來源", "客戶", "單號", "訂單案號", "目的", "登記", "登記時間",
-];
-var SHARE_SEP_LINE = "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
+// ── LINE 分享純文字：緊湊「標籤： 值」、不強制欄寬；空值以「—」
+var SHARE_LINE_SEP = "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
+var SHARE_EMDASH = "\u2014";
 
-/**
- * 字串顯示寬度（中英混排）：CJK/全形/日韓/多數 emoji 為 2，英文數字與半形符號為 1
- * @param {string} str
- * @returns {number}
- */
-function getDisplayWidth(str){
-  if (str == null) return 0;
-  var s = String(str);
-  var w = 0;
-  for (var i = 0; i < s.length; ) {
-    var c = s.codePointAt(i);
-    i += c > 0xffff ? 2 : 1;
-    w += getDisplayWidthCodePoint(c);
-  }
-  return w;
+function shareTextOrEmDash(v) {
+  if (v == null) return SHARE_EMDASH;
+  var s = String(v).replace(/\r\n/g, "\n").trim();
+  return s ? s : SHARE_EMDASH;
 }
 
-/** @param {number} cp 單一 Unicode 碼點 */
-function getDisplayWidthCodePoint(cp){
-  if (cp <= 0x007f) return 1; // ASCII
-  if (0xff61 <= cp && cp <= 0xff9f) return 1; // 半形片假名
-  if (0x4e00 <= cp && cp <= 0x9fff) return 2; // CJK
-  if (0x3400 <= cp && cp <= 0x4dbf) return 2; // 擴展 A
-  if (0x20000 <= cp && cp <= 0x2a6df) return 2; // 擴展 B 等
-  if (0x2a700 <= cp && cp <= 0x2b73f) return 2;
-  if (0x2b740 <= cp && cp <= 0x2b81f) return 2;
-  if (0x2b820 <= cp && cp <= 0x2ceaf) return 2;
-  if (0x2ceb0 <= cp && cp <= 0x2ebef) return 2;
-  if (0x30000 <= cp && cp <= 0x3134f) return 2;
-  if (0x3000 <= cp && cp <= 0x303f) return 2; // CJK 符號
-  if (0x3040 <= cp && cp <= 0x30ff) return 2; // 平假名、片假名
-  if (0x31f0 <= cp && cp <= 0x31ff) return 2;
-  if (0xff00 <= cp && cp <= 0xffef) return 2; // 全形
-  if (0xac00 <= cp && cp <= 0xd7a3) return 2; // 韓文音節
-  if (0x1100 <= cp && cp <= 0x11ff) return 2; // 韓文 Jamo
-  if (0x3130 <= cp && cp <= 0x318f) return 2; // 韓文兼容
-  if (0xf900 <= cp && cp <= 0xfaff) return 2; // 兼容
-  if (0xfe10 <= cp && cp <= 0xfe6f) return 2; // 小形
-  if (0x1f200 <= cp && cp <= 0x1faff) return 2; // 圍繞、emoji
-  if (0x1f000 <= cp && cp <= 0x1f2ff) return 2;
-  if (0x2329 <= cp && cp <= 0x232a) return 2;
-  return 1;
-}
-
-/**
- * 以全形空白 U+3000 在右側補寬，使與同欄最寬 label 的 display width 一致
- * @param {string} label
- * @param {number} maxWidth
- */
-function padLabel(label, maxWidth){
-  var s = String(label);
-  while (getDisplayWidth(s) < maxWidth) s += SHARE_FW_SPACE;
-  return s;
-}
-
-/**
- * @param {Array<[string, string]>} rows
- * @param {number} [maxWidth] 已算好的欄寬；省略則由 rows 內 label 自行取 max
- * @returns {string}
- */
-function formatAlignedRows(rows, maxWidth){
-  var list = rows && rows.length ? rows : [];
-  var maxW = maxWidth;
-  if (maxW == null || maxW === undefined || isNaN(maxW)) {
-    maxW = 0;
-    for (var i = 0; i < list.length; i++) {
-      var lw = getDisplayWidth(String(list[i][0]));
-      if (lw > maxW) maxW = lw;
-    }
-  }
-  var out = [];
-  for (var j = 0; j < list.length; j++) {
-    out.push(padLabel(String(list[j][0]), maxW) + SHARE_FW_COLON + String(list[j][1]));
-  }
-  return out.join("\n");
-}
-
-function shareLineAlignedBlockMaxWidth(){
-  var m = 0;
-  for (var k = 0; k < SHARE_ALIGNED_LABELS.length; k++) {
-    var w = getDisplayWidth(SHARE_ALIGNED_LABELS[k]);
-    if (w > m) m = w;
-  }
-  return m;
+/** 基本資訊「來源」：有品項則用 item 顯示邏輯，否則整筆 r.source */
+function shareHeaderSourceLine(r) {
+  if (!r) return "";
+  if (r.parts && r.parts[0]) return itemSourceForDisplay(r.parts[0], r) || "";
+  return (r.source != null && String(r.source).trim()) ? String(r.source).trim() : "";
 }
 
 /** 是否為空欄位（不顯示或不可當內容） */
@@ -2023,84 +1977,6 @@ function isEmptyValue(value){
   if (s === "-") return true;
   if (s === "\uFF0D") return true; // －
   return false;
-}
-
-/**
- * 將長文字切成多行（盡量在空白斷行），不修改原始資料
- * @returns {string[]}
- */
-function shareWrapValueLines(text, maxCp){
-  var s = String(text);
-  if (maxCp <= 0) return s ? [s] : [""];
-  var chars = [...s];
-  if (chars.length <= maxCp) return [s];
-  var lines = [];
-  var i = 0;
-  while (i < chars.length) {
-    var end = Math.min(i + maxCp, chars.length);
-    var chunk = chars.slice(i, end).join("");
-    if (end < chars.length && chunk.indexOf(" ") >= 0) {
-      var rel = chunk.lastIndexOf(" ");
-      if (rel > 0 && rel >= Math.floor(maxCp * 0.35)) {
-        chunk = chars.slice(i, i + rel).join("");
-        end = i + rel;
-      }
-    }
-    lines.push(chunk);
-    i = end;
-    while (i < chars.length && chars[i] === " ") i++;
-  }
-  return lines.length ? lines : [""];
-}
-
-/**
- * items 區：半形 " : "，多行內容續行以半形空白縮排
- * @returns {string[]}
- */
-function shareFormatItemFieldLines(label, text, wrapChars){
-  if (isEmptyValue(text)) return [];
-  var display = String(text).replace(/\r\n/g, "\n");
-  var chunks = shareWrapValueLines(display, wrapChars);
-  if (!chunks || !chunks.length) return [];
-  var out = [];
-  out.push(label + " : " + (chunks[0] != null ? chunks[0] : ""));
-  var indent = "      ";
-  for (var k = 1; k < chunks.length; k++) {
-    out.push(indent + chunks[k]);
-  }
-  return out;
-}
-
-/**
- * 狀態 → emoji 顯示（僅分享文字；不寫回 Sheets；空值搭配 isEmptyValue 不輸出欄位）
- * @param {string} raw
- * @returns {string}
- */
-function formatStatus(raw){
-  if (isEmptyValue(raw)) return "";
-  var t = String(raw).trim();
-  if (t === "") return "";
-  var lower = t.toLowerCase();
-  if (lower === "pass") return "\u2705 pass";
-  if (lower === "fail") return "\u274C fail";
-  if (lower === "unknow" || lower === "unknown") return "\u26A0\uFE0F unknow";
-  if (t === "\u5F85\u9A57") return "\u23F3 \u5F85\u9A57"; // 待驗
-  return "\u{1F50E} " + t;
-}
-
-/** 分享文字：空值顯示「-」，不裁切 S/N 前導 0 */
-function shareDispDash(v){
-  if (v == null) return "-";
-  var s = String(v);
-  if (!s.trim()) return "-";
-  return s;
-}
-
-/** 分享文字：日期維持原字串（多為 YYYY-MM-DD），空則 - */
-function shareDateYMD(v){
-  if (v == null || v === "") return "-";
-  var s = String(v).trim();
-  return s || "-";
 }
 
 /** 登記時間：優先紀錄 createdAt，否則用目前時間（送出當下分享） */
@@ -2120,107 +1996,60 @@ function shareRegDateTimeForShare(r){
   return y + "-" + mo + "-" + da + " " + hh + ":" + mm + ":" + ss;
 }
 
-/** 品名後括號：依檢驗狀態區分 (used) / (new) */
-function partConditionSuffix(status){
-  const u=String(status||"").trim().toUpperCase();
-  if(/NEW/i.test(String(status||""))) return "(new)";
-  if(u==="PASS"||u==="FAIL"||u==="待驗"||u==="UNKNOW"||u==="UNKNOWN"||!u) return "(used)";
-  return "(used)";
-}
-
-/** 單一零件可分享欄位是否全為空（用於顯示「無明細資料」） */
-function isPartAllFieldsEmpty(p, r){
+/** 品項明細五欄（品名／P\/N\/S\/N\/狀態\/數量）是否皆空，用於「無明細資料」 */
+function isPartShareCoreEmpty(p) {
   if (!p) return true;
-  return (
-    isEmptyValue(itemSourceForDisplay(p, r)) &&
-    isEmptyValue(p.itemName) &&
-    isEmptyValue(p.pn) &&
-    isEmptyValue(p.sn) &&
-    isEmptyValue(p.status) &&
-    isEmptyValue(p.qty) &&
-    isEmptyValue(p.bin) &&
-    isEmptyValue(p.verifyInDate) &&
-    isEmptyValue(p.shipPackDate) &&
-    isEmptyValue(p.remark)
-  );
+  if (!isEmptyValue(p.itemName) || !isEmptyValue(p.pn) || !isEmptyValue(p.sn) || !isEmptyValue(p.status)) return false;
+  if (p.qty != null && String(p.qty).trim() !== "") return false;
+  return true;
 }
 
-/** 組裝「分享到 LINE / 複製分享文字」純文字：基本資料全形對齊、隱藏空欄、items 半形、狀態 emoji */
-function buildLineShareText(r){
+/**
+ * 品名多行原樣輸出（不補 (used)）；首行「品名： 值」與基本資訊同用全形冒號
+ * @param {string} L 全形冒號 + 半形空白（"\uFF1A "）
+ */
+function pushShareItemNameLines(lines, p, L) {
+  var raw = p && p.itemName != null ? String(p.itemName) : "";
+  var t = raw.replace(/\r\n/g, "\n");
+  var ar = t.split("\n");
+  var i = 0;
+  lines.push("品名" + L + (ar[0] != null && ar[0].trim() ? ar[0].trim() : SHARE_EMDASH));
+  for (i = 1; i < ar.length; i++) {
+    if (ar[i].trim() !== "") lines.push(ar[i].trim());
+  }
+}
+
+/** 組裝「分享到 LINE / 複製分享文字」純文字（圖 2 緊湊排版、品項逐行） */
+function buildLineShareText(r) {
   if (!r) return "";
   var parts = r.parts || [];
   var n = parts.length;
-  var maxW = shareLineAlignedBlockMaxWidth();
-  var wrap = SHARE_VALUE_WRAP_CHARS;
   var lines = [];
+  var L = "\uFF1A "; // 全形冒號 + 半形空白
   lines.push("【RD Record 共 " + n + " 項】");
+  lines.push("紀錄編號" + L.replace(/ $/, ""));
+  lines.push(shareTextOrEmDash(r.recordId));
+  lines.push(SHARE_LINE_SEP);
+  lines.push("日期" + L + shareTextOrEmDash(shareField(r.date)));
+  lines.push("來源" + L + shareTextOrEmDash(shareHeaderSourceLine(r)));
+  lines.push("目的" + L + shareTextOrEmDash(r.purpose));
+  lines.push("登記" + L + shareTextOrEmDash(r.submittedBy));
+  lines.push("登記時間" + L.replace(/ $/, ""));
+  lines.push(shareTextOrEmDash(shareRegDateTimeForShare(r)));
+  lines.push(SHARE_LINE_SEP);
   lines.push("");
-  lines.push(padLabel("紀錄編號", maxW) + SHARE_FW_COLON + shareDispDash(r.recordId));
-  lines.push("");
-  lines.push(SHARE_SEP_LINE);
-  lines.push("");
-  var basicRows = [];
-  basicRows.push(["日期", shareDateYMD(r.date)]);
-  if (!isEmptyValue(r.customer)) basicRows.push(["客戶", String(r.customer).trim()]);
-  if (!isEmptyValue(r.orderNo)) basicRows.push(["單號", String(r.orderNo).trim()]);
-  if (!isEmptyValue(r.projectNo)) basicRows.push(["訂單案號", String(r.projectNo).trim()]);
-  if (!isEmptyValue(r.purpose)) basicRows.push(["目的", String(r.purpose).trim()]);
-  lines.push(formatAlignedRows(basicRows, maxW));
-  lines.push("");
-  lines.push("");
-  lines.push(
-    formatAlignedRows(
-      [
-        ["登記", shareDispDash(r.submittedBy)],
-        ["登記時間", shareRegDateTimeForShare(r)],
-      ],
-      maxW
-    )
-  );
-  lines.push("");
-  lines.push(SHARE_SEP_LINE);
-  lines.push("");
-  parts.forEach(function (p, idx){
-    if (idx > 0) {
-      lines.push("");
-    }
+  parts.forEach(function (p, idx) {
+    if (idx > 0) lines.push("");
     lines.push(String(idx + 1) + ".");
-    if (isPartAllFieldsEmpty(p, r)) {
+    if (isPartShareCoreEmpty(p)) {
       lines.push("無明細資料");
       return;
     }
-    if (!isEmptyValue(itemSourceForDisplay(p, r))) {
-      lines.push("來源 : " + String(itemSourceForDisplay(p, r)).trim());
-    }
-    if (!isEmptyValue(p.itemName)) {
-      var nm = String(p.itemName).replace(/\r\n/g, "\n");
-      var nmLines = nm.split("\n");
-      var sfx = partConditionSuffix(p.status);
-      var head = (nmLines[0] != null ? nmLines[0].trim() : "");
-      var firstNm = [head, sfx].filter(Boolean).join(" ");
-      var restNm = nmLines.slice(1).map(function (x){ return x.trim(); }).filter(Boolean).join("\n");
-      var nameBlock = restNm ? (firstNm ? firstNm + "\n" + restNm : restNm) : firstNm;
-      shareFormatItemFieldLines("品名", nameBlock, wrap).forEach(function (ln){ lines.push(ln); });
-    }
-    if (!isEmptyValue(p.pn)) lines.push("P/N : " + String(p.pn).trim());
-    var snRaw = p.sn != null ? String(p.sn) : "";
-    if (!isEmptyValue(snRaw)) lines.push("S/N : " + snRaw);
-    if (!isEmptyValue(p.status)) {
-      var st = formatStatus(p.status);
-      if (st) lines.push("狀態 : " + st);
-    }
-    if (!isEmptyValue(p.qty)) lines.push("數量 : " + String(p.qty).trim());
-    if (!isEmptyValue(p.bin)) lines.push("櫃位 : " + String(p.bin).trim());
-    if (!isEmptyValue(p.verifyInDate)) {
-      lines.push("進貨驗證完成日 : " + shareDateYMD(p.verifyInDate));
-    }
-    if (!isEmptyValue(p.shipPackDate)) {
-      lines.push("出貨包裝完成日 : " + shareDateYMD(p.shipPackDate));
-    }
-    var remFull = p.remark == null ? "" : String(p.remark).replace(/\r\n/g, "\n").trim();
-    if (!isEmptyValue(remFull)) {
-      shareFormatItemFieldLines("備註", remFull, wrap).forEach(function (ln){ lines.push(ln); });
-    }
+    pushShareItemNameLines(lines, p, L);
+    lines.push("P/N" + L + shareTextOrEmDash(p.pn));
+    lines.push("S/N" + L + shareTextOrEmDash(p.sn != null ? p.sn : ""));
+    lines.push("狀態" + L + shareTextOrEmDash(p.status));
+    lines.push("數量" + L + shareTextOrEmDash(p.qty));
   });
   return lines.join("\n");
 }
@@ -2548,19 +2377,20 @@ function refreshDetailModal(){
     const binStr = (p.bin!=null && String(p.bin).trim()!=="") ? esc(String(p.bin).trim()) : "";
     const vinStr = (p.verifyInDate!=null && String(p.verifyInDate).trim()!=="") ? esc(String(p.verifyInDate).trim()) : "";
     const spkStr = (p.shipPackDate!=null && String(p.shipPackDate).trim()!=="") ? esc(String(p.shipPackDate).trim()) : "";
-    const srcHtml = itemSourceForDisplayHtml(p, r);
+    const srcSourceOnly = (p && p.source != null && String(p.source).trim()) ? String(p.source).trim() : "";
+    const srcHtml = srcSourceOnly ? esc(srcSourceOnly) : "—";
     const seq = idx + 1;
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
-      <div class="mb-3">
-        <p class="det-item-lbl mb-1">來源</p>
-        <p class="text-sm font-semibold text-on-surface break-words min-w-0">${srcHtml}</p>
-      </div>
       <div class="det-readonly-part-hd">
         <div class="det-seq-badge" aria-hidden="true">${seq}</div>
         <p class="det-item-val-title flex-1 min-w-0">${esc(p.itemName)||"—"}</p>
       </div>
-      <div class="det-pnsn-wrap mb-4">
+      <div class="mb-3">
+        <p class="det-item-lbl mb-1">來源</p>
+        <p class="text-sm font-semibold text-on-surface break-words min-w-0">${srcHtml}</p>
+      </div>
+      <div class="det-pnsn-wrap mb-3">
         <div class="det-pnsn-inner">
           <div class="det-pnsn-col">
             <p class="det-item-lbl mb-1.5">P/N</p>
@@ -2572,9 +2402,9 @@ function refreshDetailModal(){
           </div>
         </div>
       </div>
-      <div class="mb-4">
+      <div class="mb-3">
         <p class="det-item-lbl mb-1.5">狀態</p>
-        <span class="det-stat m-part-status inline-flex ${statusCls(p.status)}">${esc(p.status)||"—"}</span>
+        <div class="det-ins-row" role="group" aria-label="檢驗狀態">${detailStatusChipsHtml(p.status)}</div>
       </div>
       <div class="det-qty-bin-plain det-qty-bin-wrap mb-4">
         <div class="det-qty-bin-inner">
@@ -2627,7 +2457,7 @@ function refreshDetailModal(){
       <div class="flex items-center gap-2 mb-3">
         <span class="ms text-primary text-lg">inventory_2</span>
         <span class="font-headline font-bold text-sm text-on-surface">品項明細</span>
-        <span class="text-[11px] text-outline font-mono ml-auto">${(r.parts||[]).length} 項</span>
+        <span class="det-parts-count-pill font-mono tabular-nums ml-auto">${(r.parts||[]).length} 項</span>
       </div>
       ${partsHtml || `<p class="text-sm text-on-surface-variant py-8 text-center rounded-xl bg-surface-container-low">無零件資料</p>`}
     </div>
@@ -2667,7 +2497,7 @@ function refreshDetailModal(){
       <div class="space-y-3">
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">來源</label>
-          <input type="text" id="det-p-${i}-source" value="${srcV}" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
+          <input type="text" id="det-p-${i}-source" value="${srcV}" placeholder="機拆/庫存/廠商名稱" class="det-src-edit-ph w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-1.5 min-h-0 max-h-9 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
         </div>
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">品名</label>
@@ -2754,7 +2584,7 @@ function refreshDetailModal(){
       <div class="flex items-center gap-2 mb-3">
         <span class="ms text-primary text-lg">inventory_2</span>
         <span class="font-headline font-bold text-sm text-on-surface">品項明細</span>
-        <span class="text-[11px] text-outline font-mono ml-auto">${(r.parts||[]).length} 項</span>
+        <span class="det-parts-count-pill font-mono tabular-nums ml-auto">${(r.parts||[]).length} 項</span>
       </div>
       ${partsEdit || `<p class="text-sm text-on-surface-variant py-6 text-center">無零件資料</p>`}
     </div>
