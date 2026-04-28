@@ -2764,9 +2764,6 @@ function openDetailEditConfirmDialog() {
     lineUserId:  profile?.userId || "",
     groupId:     new URLSearchParams(window.location.search).get("groupId") || "",
   };
-  if (r.createdAt != null && String(r.createdAt).trim() !== "") {
-    basic.createdAt = String(r.createdAt).trim();
-  }
   const parts = [];
   (r.parts || []).forEach((_, i) => {
     const q = gv("det-p-" + i + "-qty");
@@ -2815,9 +2812,39 @@ async function doDetailEditSheetsSave() {
     submitFlow.saveSuccess = true;
     detailEditConfirmPayload = null;
     closeCfm();
+    const registeredAt =
+      save.res &&
+      save.res.registeredAt != null &&
+      String(save.res.registeredAt).trim() !== ""
+        ? String(save.res.registeredAt).trim()
+        : "";
     const basicForShare = Object.assign({}, basic);
-    if (ctx.r && ctx.r.createdAt != null && String(ctx.r.createdAt).trim() !== "") {
-      basicForShare.createdAt = String(ctx.r.createdAt).trim();
+    if (registeredAt) basicForShare.createdAt = registeredAt;
+    const ix = recs.findIndex(function (x) {
+      return x.recordId === rid;
+    });
+    if (ix >= 0) {
+      const row = recs[ix];
+      if (registeredAt) row.createdAt = registeredAt;
+      row.date = basic.date || row.date;
+      row.customer = basic.customer || "";
+      row.orderNo = basic.orderNo || "";
+      row.projectNo = basic.projectNo || "";
+      row.purpose = basic.purpose || "";
+      row.parts = parts.map(function (p) {
+        return {
+          source: p.source != null ? String(p.source) : "",
+          itemName: p.itemName || "",
+          pn: p.pn || "",
+          sn: p.sn != null ? String(p.sn) : "",
+          status: p.status || "",
+          qty: p.qty != null ? String(p.qty) : "",
+          bin: p.bin || "",
+          verifyInDate: p.verifyInDate || "",
+          shipPackDate: p.shipPackDate || "",
+          remark: p.remark || "",
+        };
+      });
     }
     openPostSubmitSharePrompt(basicForShare, parts, save.recordId, { isEdit: true, isDetailEdit: true });
   } catch (e) {
