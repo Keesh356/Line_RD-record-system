@@ -2055,13 +2055,6 @@ function shareTextOrEmDash(v) {
   return s ? s : SHARE_EMDASH;
 }
 
-/** 基本資訊「來源」：有品項則用 item 顯示邏輯，否則整筆 r.source */
-function shareHeaderSourceLine(r) {
-  if (!r) return "";
-  if (r.parts && r.parts[0]) return itemSourceForDisplay(r.parts[0], r) || "";
-  return (r.source != null && String(r.source).trim()) ? String(r.source).trim() : "";
-}
-
 /** 是否為空欄位（不顯示或不可當內容） */
 function isEmptyValue(value){
   if (value == null) return true;
@@ -2070,6 +2063,43 @@ function isEmptyValue(value){
   if (s === "-") return true;
   if (s === "\uFF0D") return true; // －
   return false;
+}
+
+/** LINE 分享：有值才輸出（不含 placeholder「—」單獨當內容；與 isEmptyValue 對齊） */
+function shareHasLineValue(value){
+  if (value == null || value === undefined) return false;
+  var s = String(value).replace(/\r\n/g, "\n").trim();
+  if (!s) return false;
+  if (s === "\u2014") return false;
+  return true;
+}
+
+/** 狀態：不帶 icon／emoji（例：⏳ 待驗 → 待驗） */
+function shareStatusPlain(raw){
+  if (raw == null) return "";
+  var t = String(raw).trim();
+  if (!t) return "";
+  try {
+    t = t.replace(/^\p{Extended_Pictographic}+/gu, "").trim();
+    t = t.replace(/^[\uFE0F\u200D\uFE00-\uFE0F\s]+/g, "").trim();
+  } catch (e1) {
+    t = t.replace(/^\u23F3\s*/, "").replace(/^\u231B\s*/, "").trim();
+  }
+  return t;
+}
+
+/**
+ * 單行「標籤： 值」；無值或僅 placeholder 則不輸出
+ * @param {string} label 不含冒號
+ */
+function pushShareLineIf(lines, label, value, L){
+  if (!shareHasLineValue(value)) return;
+  lines.push(label + L + String(value).replace(/\r\n/g, "\n").trim());
+}
+
+/** 品項「來源」：item.source 優先，空則 record.source（舊資料） */
+function shareItemSourceLine(p, r){
+  return itemSourceForDisplay(p, r) || "";
 }
 
 /** 登記時間：優先紀錄 createdAt，否則用目前時間（送出當下分享） */
@@ -2089,64 +2119,92 @@ function shareRegDateTimeForShare(r){
   return y + "-" + mo + "-" + da + " " + hh + ":" + mm + ":" + ss;
 }
 
-/** 品項明細五欄（品名／P\/N\/S\/N\/狀態\/數量）是否皆空，用於「無明細資料」 */
-function isPartShareCoreEmpty(p) {
-  if (!p) return true;
-  if (!isEmptyValue(p.itemName) || !isEmptyValue(p.pn) || !isEmptyValue(p.sn) || !isEmptyValue(p.status)) return false;
-  if (p.qty != null && String(p.qty).trim() !== "") return false;
-  return true;
+/** 品項是否至少有一欄應出現在 LINE 分享 */
+function partHasAnyShareableContent(p, r) {
+  if (!p) return false;
+  if (shareHasLineValue(shareItemSourceLine(p, r))) return true;
+  if (!isEmptyValue(p.itemName)) return true;
+  if (shareHasLineValue(p.pn)) return true;
+  if (shareHasLineValue(p.sn != null ? p.sn : "")) return true;
+  if (shareHasLineValue(shareStatusPlain(p.status))) return true;
+  if (p.qty != null && String(p.qty).trim() !== "") return true;
+  if (shareHasLineValue(shareField(p.bin))) return true;
+  if (shareHasLineValue(shareField(p.verifyInDate))) return true;
+  if (shareHasLineValue(shareField(p.shipPackDate))) return true;
+  if (shareHasLineValue(p.remark)) return true;
+  return false;
 }
 
-/**
- * 品名多行原樣輸出（不補 (used)）；首行「品名： 值」與基本資訊同用全形冒號
- * @param {string} L 全形冒號 + 半形空白（"\uFF1A "）
- */
-function pushShareItemNameLines(lines, p, L) {
+function pushShareItemNameLinesIf(lines, p, L) {
   var raw = p && p.itemName != null ? String(p.itemName) : "";
   var t = raw.replace(/\r\n/g, "\n");
   var ar = t.split("\n");
+  var first = ar[0] != null ? ar[0].trim() : "";
   var i = 0;
-  lines.push("品名" + L + (ar[0] != null && ar[0].trim() ? ar[0].trim() : SHARE_EMDASH));
+  if (!first && ar.length <= 1) return;
+  if (first) lines.push("品名" + L + first);
   for (i = 1; i < ar.length; i++) {
     if (ar[i].trim() !== "") lines.push(ar[i].trim());
   }
 }
 
-/**
- * 組裝「分享到 LINE / 複製分享文字」純文字（圖 2 緊湊排版、品項逐行）
- * @param {{isEdit?:boolean}} opts isEdit 時最上方加「‼️紀錄已編輯」僅用於分享字串，不寫入 Sheets
- */
+function pushShareRemarkLinesIf(lines, p, L) {
+  var raw = p && p.remark != null ? String(p.remark) : "";
+  var t = raw.replace(/\r\n/g, "\n").trim();
+  if (!t) return;
+  var ar = t.split("\n");
+  lines.push("備註" + L + (ar[0] ? ar[0].trim() : ""));
+  for (var i = 1; i < ar.length; i++) {
+    if (ar[i].trim() !== "") lines.push(ar[i].trim());
+  }
+}
+
 function buildLineShareText(r, opts) {
   opts = opts || {};
   if (!r) return "";
   var parts = r.parts || [];
   var n = parts.length;
   var lines = [];
-  var L = "\uFF1A "; // 全形冒號 + 半形空白
+  var L = "\uFF1A ";
+
   lines.push("【RD Record 共 " + n + " 項】");
-  lines.push("紀錄編號" + L.replace(/ $/, ""));
-  lines.push(shareTextOrEmDash(r.recordId));
+  if (shareHasLineValue(r.recordId)) {
+    lines.push("紀錄編號" + L.replace(/ $/, ""));
+    lines.push(String(r.recordId).trim());
+  }
   lines.push(SHARE_LINE_SEP);
-  lines.push("日期" + L + shareTextOrEmDash(shareField(r.date)));
-  lines.push("來源" + L + shareTextOrEmDash(shareHeaderSourceLine(r)));
-  lines.push("目的" + L + shareTextOrEmDash(r.purpose));
-  lines.push("登記" + L + shareTextOrEmDash(r.submittedBy));
-  lines.push("登記時間" + L.replace(/ $/, ""));
-  lines.push(shareTextOrEmDash(shareRegDateTimeForShare(r)));
+  pushShareLineIf(lines, "日期", shareField(r.date), L);
+  pushShareLineIf(lines, "客戶", shareField(r.customer), L);
+  pushShareLineIf(lines, "單號", shareField(r.orderNo), L);
+  pushShareLineIf(lines, "訂單案號", shareField(r.projectNo), L);
+  if (shareHasLineValue(r.purpose)) {
+    lines.push("目的" + L + String(purposeDisplayLabel(r.purpose)).trim());
+  }
+  pushShareLineIf(lines, "登記", shareField(r.submittedBy), L);
+  var regDt = shareRegDateTimeForShare(r);
+  if (shareHasLineValue(regDt)) {
+    lines.push("登記時間" + L.replace(/ $/, ""));
+    lines.push(regDt);
+  }
   lines.push(SHARE_LINE_SEP);
   lines.push("");
   parts.forEach(function (p, idx) {
     if (idx > 0) lines.push("");
     lines.push(String(idx + 1) + ".");
-    if (isPartShareCoreEmpty(p)) {
+    if (!partHasAnyShareableContent(p, r)) {
       lines.push("無明細資料");
       return;
     }
-    pushShareItemNameLines(lines, p, L);
-    lines.push("P/N" + L + shareTextOrEmDash(p.pn));
-    lines.push("S/N" + L + shareTextOrEmDash(p.sn != null ? p.sn : ""));
-    lines.push("狀態" + L + shareTextOrEmDash(p.status));
-    lines.push("數量" + L + shareTextOrEmDash(p.qty));
+    pushShareLineIf(lines, "來源", shareItemSourceLine(p, r), L);
+    pushShareItemNameLinesIf(lines, p, L);
+    pushShareLineIf(lines, "P/N", shareField(p.pn), L);
+    pushShareLineIf(lines, "S/N", p.sn != null ? String(p.sn) : "", L);
+    pushShareLineIf(lines, "狀態", shareStatusPlain(p.status), L);
+    pushShareLineIf(lines, "數量", p.qty != null ? String(p.qty) : "", L);
+    pushShareLineIf(lines, "櫃位", shareField(p.bin), L);
+    pushShareLineIf(lines, "進貨驗證完成日", shareField(p.verifyInDate), L);
+    pushShareLineIf(lines, "出貨包裝完成日", shareField(p.shipPackDate), L);
+    pushShareRemarkLinesIf(lines, p, L);
   });
   var body = lines.join("\n");
   if (opts.isEdit === true) {
