@@ -4,6 +4,13 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>RD Record · System</title>
+<link rel="manifest" href="manifest.webmanifest"/>
+<meta name="theme-color" content="#f7f9ff"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="RD Record"/>
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
@@ -129,14 +136,54 @@ button,input,select,textarea{font:inherit}
 /* 查詢頁 · 日期篩選 modal（圖 5） */
 .qdate-bd{display:none;position:fixed;inset:0;z-index:550;align-items:center;justify-content:center;padding:20px 16px;background:rgba(24,28,32,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .qdate-bd.op{display:flex!important}
-.qdate-dialog{width:100%;max-width:22rem;background:#fff;border-radius:16px;box-shadow:0 12px 40px -8px rgba(24,28,32,.18);overflow:hidden}
-.qdate-dialog-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid rgba(191,200,204,.35)}
+.qdate-dialog{width:100%;max-width:23rem;background:#fff;border-radius:20px;box-shadow:0 16px 48px -12px rgba(24,28,32,.22);overflow:hidden}
+.qdate-dialog-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px}
 .qdate-dialog-hd h3{margin:0;font-size:1.05rem;font-weight:800;color:#004253;letter-spacing:-.02em}
-.qdate-dialog-bd{padding:18px 18px 8px}
-.qdate-field{margin-bottom:18px}
-.qdate-field-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#70787d;margin-bottom:8px}
-.qdate-field-row{display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(191,200,204,.45);padding-bottom:8px}
-.qdate-ft{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:14px 18px 18px}
+.qdate-dialog-bd{padding:0 14px 4px}
+.qdate-ft{display:flex;align-items:center;gap:10px;padding:10px 18px 16px;border-top:1px solid #eef0f2;margin:0 14px;padding-left:4px;padding-right:4px}
+/* 日期篩選 · 區間摘要 */
+.qd-range{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.qd-range-cell{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:12px;background:#f3f4f6;border:1.5px solid transparent;transition:border-color .15s,background .15s}
+.qd-range-cell.qd-next{border-color:#2b2f33;background:#fff}
+.qd-range-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;color:#8a9398}
+.qd-range-val{font-size:14px;font-weight:800;color:#181c20;font-family:JetBrains Mono,monospace;white-space:nowrap}
+.qd-range-arrow{font-size:18px!important;color:#b0b8c0;flex-shrink:0}
+/* 日期篩選 · 月曆 */
+.qd-cal-hd{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 8px}
+.qd-cal-sel{display:flex;align-items:center;gap:14px}
+.qd-sel-wrap{position:relative;display:inline-flex;align-items:center;gap:2px;cursor:pointer}
+.qd-sel-wrap select{appearance:none;-webkit-appearance:none;border:0;background:transparent;padding:4px 18px 4px 0;margin:0;font-size:17px!important;font-weight:800;color:#181c20;cursor:pointer;font-family:Manrope,Noto Sans TC,sans-serif}
+.qd-sel-wrap select:focus{outline:none;box-shadow:none}
+.qd-sel-wrap .ms{position:absolute;right:0;font-size:18px;color:#70787d;pointer-events:none}
+.qd-cal-nav{display:flex;align-items:center;gap:2px}
+.qd-cal-nav button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:10px;color:#181c20;cursor:pointer}
+.qd-cal-nav button:active{background:#f1f2f4}
+.qd-cal-nav .ms{font-size:22px}
+.qd-wk{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 0 6px}
+.qd-wk span{text-align:center;font-size:13px;font-weight:500;color:#8a9398}
+.qd-grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px}
+.qd-cell{position:relative;height:38px;display:flex;align-items:center;justify-content:center}
+.qd-band{position:absolute;top:2px;bottom:2px;left:0;right:0;background:#eef0f2;z-index:0}
+.qd-band.qd-l-half{left:50%}
+.qd-band.qd-r-half{right:50%}
+.qd-band.qd-round-l{border-top-left-radius:10px;border-bottom-left-radius:10px}
+.qd-band.qd-round-r{border-top-right-radius:10px;border-bottom-right-radius:10px}
+.qd-day{position:relative;z-index:1;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:10px;font-size:15px;font-weight:600;color:#181c20;cursor:pointer;font-variant-numeric:tabular-nums;padding:0;transition:background .12s}
+.qd-day:active{transform:scale(.94)}
+.qd-day.qd-out{color:#c4c9cd}
+.qd-day.qd-today{font-weight:800;box-shadow:inset 0 0 0 1.5px #c4c9cd}
+.qd-day.qd-sel{background:#2b2f33;color:#fff;font-weight:800;box-shadow:none}
+.qd-ft-clear{border:0;background:transparent;font-size:14px;font-weight:600;color:#9aa1a6;padding:8px 4px;cursor:pointer;margin-right:auto}
+.qd-ft-today{border:0;background:transparent;font-size:14px;font-weight:800;color:#181c20;padding:8px 10px;cursor:pointer}
+.qd-ft-apply{border:0;border-radius:12px;background:#004253;color:#fff;font-size:14px;font-weight:700;padding:10px 22px;cursor:pointer}
+.qd-ft-apply:active{transform:scale(.98)}
+.qd-field-trigger{position:relative}
+.qd-field-ico{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:20px!important;color:#70787d;pointer-events:none}
+/* 日期欄未填：與櫃位 placeholder（outline-variant/60）同色 */
+#pg-form .pg-date-field:placeholder-shown{color:rgba(191,200,204,.6)}
+#pg-form .pg-date-field:not(:placeholder-shown){color:#181c20}
+#pg-form input[type="date"][data-f].pg-date-field{color:rgba(191,200,204,.6)}
+#pg-form input[type="date"][data-f].pg-date-field.pg-date-field--filled{color:#181c20}
 /* 查詢頁 · 結果摘要 + 卡片（圖 6） */
 .q-rec-summary{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;padding:0 2px}
 .q-rec-summary-l{font-size:10px;font-weight:800;letter-spacing:.12em;color:#70787d;text-transform:uppercase}
@@ -148,7 +195,7 @@ button,input,select,textarea{font:inherit}
 .q-rec-v2-row1{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:0 10px;margin-bottom:10px;align-items:start}
 .q-rec-v2-dateblk{grid-column:1;grid-row:1/-1;min-width:0;padding-right:6px;display:flex;flex-direction:column}
 .q-rec-v2-dtlbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a9398;margin-bottom:4px}
-.q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em}
+.q-rec-v2-dtval{font-size:11px;font-weight:800;color:#004253;line-height:1.35;letter-spacing:-.01em}
 .q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;min-width:0;width:100%;box-sizing:border-box}
 .q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25;text-align:right}
 .q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.5rem;padding:7px 14px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
@@ -157,7 +204,7 @@ button,input,select,textarea{font:inherit}
 .q-rec-v2-sep{height:1px;background:rgba(191,200,204,.35);margin:0 0 10px}
 .q-rec-v2-row2{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .q-rec-v2-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-width:0}
-.q-rec-v2-k{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a9398}
+.q-rec-v2-k{font-size:11.25px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a9398}
 .q-rec-v2-v{font-size:13px;font-weight:700;color:#181c20;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #recSyncHint{pointer-events:none}
 .sb-row.act{background:rgba(0,66,83,.1);color:#004253;font-weight:600}
@@ -173,8 +220,8 @@ button,input,select,textarea{font:inherit}
 .mbd{position:fixed;inset:0;z-index:500;height:100dvh;max-height:100dvh;overflow:hidden;overscroll-behavior:none;touch-action:none;background:rgba(24,28,32,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:0;align-items:flex-end;justify-content:center}
 .mbd.op{display:flex!important}
 @media(min-width:720px){.mbd.op{align-items:center;padding:24px}}
-.msh{background:#fff;border-radius:20px 20px 0 0;width:100%;min-height:0;max-height:100dvh;overflow:hidden;animation:shUp .28s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;touch-action:auto}
-@media(min-width:720px){.msh{border-radius:16px;max-width:min(540px,100%);max-height:min(100dvh,920px)}}
+.msh{background:#fff;border-radius:0;width:100%;min-height:0;max-height:100dvh;overflow:hidden;animation:shUp .28s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;touch-action:auto}
+@media(min-width:720px){.msh{border-radius:0;max-width:min(540px,100%);max-height:min(100dvh,920px)}}
 @keyframes shUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
 .m-body{padding:0;flex:1;min-height:0;height:100%;max-height:100dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .m-actions{flex-shrink:0;padding:0}
@@ -199,7 +246,7 @@ button,input,select,textarea{font:inherit}
 /* 查詢結果卡：item 筆數膠囊（語彙對齊詳情 PASS · st-pass） */
 .q-rec-pc-badge{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.25;white-space:nowrap;background:#a0f0f0;color:#004444;box-shadow:none}
 /* 詳情 · 品項明細唯讀：label / value 層級 */
-.det-item-lbl{font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:rgba(112,120,125,.78);margin:0;line-height:1.25}
+.det-item-lbl{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:rgba(112,120,125,.78);margin:0;line-height:1.25}
 .det-item-val-title{font-size:1.0625rem;font-weight:800;color:#181c20;line-height:1.35;margin:0;font-family:Manrope,Noto Sans TC,sans-serif;word-break:break-word}
 .det-item-val-mono{font-size:14px;font-weight:700;color:#181c20;line-height:1.4;margin:0;font-family:JetBrains Mono,monospace;word-break:break-all}
 .det-item-val-qty{font-size:1.25rem;font-weight:800;color:#004253;line-height:1.2;margin:0;font-family:Manrope,Noto Sans TC,sans-serif}
@@ -281,9 +328,9 @@ button,input,select,textarea{font:inherit}
 .purpose-sec01-chevron:active{background:rgba(229,232,238,.65)}
 .purpose-sec01-chevron .ms{font-size:22px}
 /* 查詢卡 · 頂列：日期與登記人底線對齊 */
-.q-rec-v2-head{display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;min-width:0}
-.q-rec-v2-head .q-rec-v2-dtval{font-size:1.05rem;font-weight:800;color:#004253;line-height:1.2;letter-spacing:-.02em;flex-shrink:0}
-.q-rec-v2-head .q-rec-v2-head-right{display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-end;gap:10px;min-width:0;flex:1}
+.q-rec-v2-head{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;min-width:0}
+.q-rec-v2-head .q-rec-v2-dtval{display:inline-flex;align-items:center;min-height:calc(14px + 11px * 1.35);font-size:11px;font-weight:800;color:#004253;line-height:1.35;letter-spacing:-.01em;flex-shrink:0;box-sizing:border-box}
+.q-rec-v2-head .q-rec-v2-head-right{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:10px;min-width:0;flex:1}
 .m-part-bd{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
 .m-part-row{display:flex;flex-direction:column;gap:2px}
 .m-part-row.full{grid-column:1/-1}
@@ -373,6 +420,8 @@ header.topbar{box-shadow:none!important}
 .sec01-date-only-row .sec01-field-under{display:flex;align-items:flex-end;min-height:2.75rem;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s}
 .sec01-date-only-row .sec01-field-under:focus-within{border-bottom-color:rgba(0,66,83,.55)}
 .sec01-date-only-row .sec01-under-input{border-bottom-width:0!important;padding-top:0.25rem;padding-bottom:0.35rem;line-height:1.35}
+.sec01-date-pick-wrap{position:relative}
+.sec01-date-pick-native{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;background:transparent;opacity:0;cursor:pointer;font-size:16px}
 /* 圖 7：查詢頁頂區不要浮起陰影（僅查詢頁、僅搜尋列殼層） */
 @media(max-width:1023px){
   body:has(#pg-query.page.act) #qSearchShell{box-shadow:none!important;filter:none!important}
@@ -440,26 +489,27 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
     <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-ambient space-y-4">
       <div class="sec01-date-only-row">
         <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">日期</label>
-          <div class="sec01-field-under">
-            <input type="date" id="fDate" class="sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm text-on-surface rounded-none focus:border-primary focus:ring-0 font-mono"/>
+          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">日期</label>
+          <div class="sec01-field-under sec01-date-pick-wrap">
+            <input type="text" id="fDate" readonly inputmode="none" autocomplete="off" placeholder="yyyy-MM-dd" class="pg-date-field sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 font-mono placeholder:text-outline-variant/60"/>
+            <input type="date" id="fDatePick" class="sec01-date-pick-native" tabindex="-1" aria-hidden="true"/>
           </div>
         </div>
       </div>
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">客戶</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">客戶</label>
         <input type="text" id="fCustomer" placeholder="UMC" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">單號</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">單號</label>
         <input type="text" id="fOrderNo" placeholder="KH-260414D01/PK-26xxx00" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">訂單案號</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">訂單案號</label>
         <input type="text" id="fProjectNo" placeholder="26078-xxx" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
         <div class="purpose-sec01-row">
           <input type="hidden" id="fPurpose" value=""/>
           <button type="button" id="fPurposeBtn" class="purpose-picker-trigger purpose-sec01-btn w-full min-w-0 text-left bg-transparent border-0 text-sm leading-snug rounded-none text-outline-variant/60 focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
@@ -547,6 +597,37 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
   <button type="button" class="bnav" id="bn-query" onclick="goPage('query')"><span class="bnav-chip"><span class="ms">history</span>查詢</span></button>
 </nav>
 
+<div class="qdate-bd" id="sdPickBd" onclick="onSdBackdrop(event)">
+  <div class="qdate-dialog" role="dialog" aria-modal="true" aria-labelledby="sdTitle" onclick="event.stopPropagation()">
+    <div class="qdate-dialog-hd">
+      <h3 id="sdTitle">選擇日期</h3>
+      <button type="button" class="w-9 h-9 flex items-center justify-center rounded-full text-outline hover:bg-surface-container-low active:bg-surface-container-high" aria-label="關閉" onclick="closeSingleDatePicker()">
+        <span class="ms text-xl">close</span>
+      </button>
+    </div>
+    <div class="qdate-dialog-bd">
+      <div class="qd-cal">
+        <div class="qd-cal-hd">
+          <div class="qd-cal-sel">
+            <label class="qd-sel-wrap"><select id="sdYearSel" aria-label="年份" onchange="sdOnYmChange()"></select><span class="ms">expand_more</span></label>
+            <label class="qd-sel-wrap"><select id="sdMonthSel" aria-label="月份" onchange="sdOnYmChange()"></select><span class="ms">expand_more</span></label>
+          </div>
+          <div class="qd-cal-nav">
+            <button type="button" aria-label="上個月" onclick="sdShiftMonth(-1)"><span class="ms">chevron_left</span></button>
+            <button type="button" aria-label="下個月" onclick="sdShiftMonth(1)"><span class="ms">chevron_right</span></button>
+          </div>
+        </div>
+        <div class="qd-wk"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+        <div class="qd-grid" id="sdGrid"></div>
+      </div>
+    </div>
+    <div class="qdate-ft">
+      <button type="button" class="qd-ft-clear" onclick="sdCommit('')">清除</button>
+      <button type="button" class="qd-ft-today" onclick="sdCommit(qdTodayIso())">今天</button>
+    </div>
+  </div>
+</div>
+
 <div class="qdate-bd" id="qDateModalBd" onclick="onQDateModalBackdrop(event)">
   <div class="qdate-dialog" role="dialog" aria-modal="true" aria-labelledby="qDateModalTitle" onclick="event.stopPropagation()">
     <div class="qdate-dialog-hd">
@@ -555,25 +636,33 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         <span class="ms text-xl">close</span>
       </button>
     </div>
+    <input type="hidden" id="qDateFrom" value=""/>
+    <input type="hidden" id="qDateTo" value=""/>
     <div class="qdate-dialog-bd">
-      <div class="qdate-field">
-        <div class="qdate-field-lbl">Start date</div>
-        <div class="qdate-field-row">
-          <span class="ms text-outline shrink-0" style="font-size:22px">calendar_month</span>
-          <input type="date" id="qDateFrom" class="flex-1 min-w-0 bg-transparent border-0 py-1 text-on-surface focus:ring-0 focus:outline-none font-mono"/>
-        </div>
+      <div class="qd-range" id="qdRange">
+        <div class="qd-range-cell" id="qdRangeFrom"><span class="qd-range-lbl">開始</span><span class="qd-range-val">—</span></div>
+        <span class="ms qd-range-arrow">arrow_forward</span>
+        <div class="qd-range-cell" id="qdRangeTo"><span class="qd-range-lbl">結束</span><span class="qd-range-val">—</span></div>
       </div>
-      <div class="qdate-field">
-        <div class="qdate-field-lbl">End date</div>
-        <div class="qdate-field-row">
-          <span class="ms text-outline shrink-0" style="font-size:22px">calendar_month</span>
-          <input type="date" id="qDateTo" class="flex-1 min-w-0 bg-transparent border-0 py-1 text-on-surface focus:ring-0 focus:outline-none font-mono"/>
+      <div class="qd-cal">
+        <div class="qd-cal-hd">
+          <div class="qd-cal-sel">
+            <label class="qd-sel-wrap"><select id="qdYearSel" aria-label="年份" onchange="qdOnYmChange()"></select><span class="ms">expand_more</span></label>
+            <label class="qd-sel-wrap"><select id="qdMonthSel" aria-label="月份" onchange="qdOnYmChange()"></select><span class="ms">expand_more</span></label>
+          </div>
+          <div class="qd-cal-nav">
+            <button type="button" aria-label="上個月" onclick="qdShiftMonth(-1)"><span class="ms">chevron_left</span></button>
+            <button type="button" aria-label="下個月" onclick="qdShiftMonth(1)"><span class="ms">chevron_right</span></button>
+          </div>
         </div>
+        <div class="qd-wk"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+        <div class="qd-grid" id="qdGrid"></div>
       </div>
     </div>
     <div class="qdate-ft">
-      <button type="button" class="text-sm font-bold text-primary py-2 px-2 rounded-lg hover:bg-surface-container-low active:bg-surface-container-high" onclick="clearQDateRangeModal()">清除</button>
-      <button type="button" class="rounded-xl bg-primary text-on-primary text-sm font-bold px-6 py-2.5 shadow-sm active:scale-[0.98]" onclick="applyQDateRangeModal()">套用</button>
+      <button type="button" class="qd-ft-clear" onclick="qdClearSelection()">清除</button>
+      <button type="button" class="qd-ft-today" onclick="qdPickToday()">今天</button>
+      <button type="button" class="qd-ft-apply" onclick="applyQDateRangeModal()">套用</button>
     </div>
   </div>
 </div>
@@ -776,6 +865,37 @@ function purposeModalCardLabel(stored) {
   return s;
 }
 
+/** 群組分享文字：+ 入庫 / 返回 →「入庫 - 選項」，- 出庫 / 借出 →「出庫 - 選項」 */
+function purposeShareLabel(stored) {
+  const raw = stored == null ? "" : String(stored).trim();
+  if (!raw) return "";
+  const c0 = raw.charAt(0);
+  const name = (c0 === "+" || c0 === "-") ? raw.slice(1).trim() : purposeModalCardLabel(raw);
+  if (c0 === "-") return "出庫 - " + name;
+  if (c0 === "+") return "入庫 - " + name;
+  return name;
+}
+
+/** 目的為「- 出庫 / 借出」分類（stored 值以 - 開頭） */
+function isMinusPurpose(purpose) {
+  const s = purpose == null ? "" : String(purpose).trim();
+  return s.charAt(0) === "-";
+}
+
+function syncPartPickFieldsVisibility() {
+  const show = isMinusPurpose(document.getElementById("fPurpose")?.value);
+  document.querySelectorAll("#partsList .part-pick-fields").forEach(function (el) {
+    el.classList.toggle("hidden", !show);
+  });
+}
+
+function syncDetailPickFieldsVisibility() {
+  const show = isMinusPurpose(document.getElementById("det-purpose")?.value);
+  document.querySelectorAll("#mBody .det-pick-fields").forEach(function (el) {
+    el.classList.toggle("hidden", !show);
+  });
+}
+
 /** 詳情編輯：hidden + 觸發鈕（與新增頁同一套卡片選擇器） */
 function buildPurposePickerTrigger(hiddenId, btnId, selectedVal) {
   const v = (selectedVal != null) ? String(selectedVal) : "";
@@ -864,6 +984,7 @@ function syncPurposePickerButton(btnId, val) {
       btn.classList.remove("text-on-surface", "text-outline-variant");
       btn.classList.add("text-outline-variant/60");
     }
+    syncPartPickFieldsVisibility();
     return;
   }
   btn.classList.toggle("text-on-surface", !!v);
@@ -896,6 +1017,8 @@ function pickPurposeValue(val) {
   const btnId = _purposeCtx.btnId;
   if (hid) hid.value = val;
   syncPurposePickerButton(btnId, val);
+  if (btnId === "fPurposeBtn") syncPartPickFieldsVisibility();
+  if (hiddenId === "det-purpose") syncDetailPickFieldsVisibility();
   closePurposePicker();
 }
 
@@ -951,7 +1074,8 @@ const partStatus = {};
 //  INIT
 // ──────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("fDate").value = today();
+  bindFormDatePicker();
+  setFormDate(today());
   ensurePurposePickerBody();
   document.getElementById("purposePickBody").addEventListener("click", function (e) {
     const tab = e.target.closest("[data-purpose-tab]");
@@ -965,6 +1089,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     pickPurposeValue(b.getAttribute("data-value"));
   });
   syncPurposePickerButton("fPurposeBtn", document.getElementById("fPurpose").value);
+  syncPartPickFieldsVisibility();
   (function initQueryDefaultToday(){
     const from=document.getElementById("qDateFrom"), to=document.getElementById("qDateTo");
     if(!from||!to) return;
@@ -1061,10 +1186,40 @@ function insChClass(id, k){
   return "ins-ch ins-ch-" + k + (on ? " ins-ch-on" : " ins-ch-off") + " w-full";
 }
 
+/** 零件卡日期：文字顯示 yyyy-MM-dd，點擊開啟自訂單日月曆 */
+function syncPgDateFieldTone(el) {
+  if (!el) return;
+  el.classList.add("pg-date-field");
+  const filled = String(el.value || "").trim() !== "";
+  el.classList.toggle("pg-date-field--filled", filled);
+}
+function bindPgDateFieldTone(el) {
+  if (!el) return;
+  syncPgDateFieldTone(el);
+  if (el.dataset.pgDateToneBound === "1") return;
+  el.dataset.pgDateToneBound = "1";
+  const onUpd = function () { syncPgDateFieldTone(el); };
+  el.addEventListener("input", onUpd);
+  el.addEventListener("change", onUpd);
+}
+
+function partDateFieldMarkup(fieldKey, rawVal, title) {
+  const iso = toDateInputVal(rawVal);
+  return (
+    '<div class="qd-field-trigger">' +
+    '<input type="text" data-f="' + fieldKey + '" readonly inputmode="none" autocomplete="off" value="' + h(iso) + '" placeholder="年 / 月 / 日" ' +
+    'onclick="openSingleDatePicker(this,\'' + title + '\')" ' +
+    'class="pg-date-field w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 pr-8 text-sm font-mono rounded-none cursor-pointer focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>' +
+    '<span class="ms qd-field-ico" aria-hidden="true">calendar_month</span>' +
+    "</div>"
+  );
+}
+
 function addPart(data={}) {
   pcnt++;
   const id = "p"+pcnt;
   partStatus[id] = data.status || "unkn";
+  const showPickFields = isMinusPurpose(document.getElementById("fPurpose")?.value);
 
   const div = document.createElement("div");
   div.className = "rounded-2xl bg-surface-container-lowest shadow-ambient mb-3 overflow-hidden border-2 border-outline-variant/40";
@@ -1082,14 +1237,27 @@ function addPart(data={}) {
     </div>
     <div class="px-4 pb-5 pt-2 space-y-3 bg-surface-container-low" id="bd_${id}">
 
+      <div class="part-pick-fields space-y-3${showPickFields ? "" : " hidden"}">
+        <div>
+          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">領料通知人</label>
+          <input type="text" data-f="pickNotifyPerson" value="${h(data.pickNotifyPerson)}" placeholder="需求提出者/業務"
+            class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+        </div>
+        <div>
+          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">領料人</label>
+          <input type="text" data-f="pickPerson" value="${h(data.pickPerson)}" placeholder="實際取貨者"
+            class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
+        </div>
+      </div>
+
       <div class="part-src-field">
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-0.5">來源</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-0.5">來源</label>
         <input type="text" data-f="source" value="${h(data.source)}" placeholder="機拆/庫存/廠商名稱"
           class="src-line-in w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">品名</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">品名</label>
         <input type="text" data-f="itemName" value="${h(data.itemName)}" placeholder=""
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"
           oninput="updLbl('${id}',this.value)"/>
@@ -1097,19 +1265,19 @@ function addPart(data={}) {
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">P/N</label>
+          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">P/N</label>
           <input type="text" data-f="pn" value="${h(data.pn)}" placeholder=""
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">S/N</label>
+          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">S/N</label>
           <input type="text" data-f="sn" value="${h(data.sn)}" placeholder=""
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
       </div>
 
       <div>
-        <label class="block text-[11px] font-bold text-secondary uppercase tracking-[0.08em] mb-2">狀態</label>
+        <label class="block text-[13.75px] font-bold text-secondary uppercase tracking-[0.08em] mb-2">狀態</label>
         <div class="grid grid-cols-4 gap-2" id="chips_${id}">
           <button type="button" data-chip="pass" class="${insChClass(id,'pass')}" onclick="selChip('${id}','pass')"><span class="ms fi ins-ch-mark">check</span><span>PASS</span></button>
           <button type="button" data-chip="fail" class="${insChClass(id,'fail')}" onclick="selChip('${id}','fail')"><span class="ms fi ins-ch-mark">check</span><span>FAIL</span></button>
@@ -1119,7 +1287,7 @@ function addPart(data={}) {
       </div>
 
       <div class="w-full">
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量</label>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量</label>
         <div class="w-full">
           <div class="flex w-full items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-2">
             <button type="button" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
@@ -1131,27 +1299,25 @@ function addPart(data={}) {
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">櫃位</label>
-        <input type="text" data-f="bin" value="${h(data.bin)}" placeholder="A090401"
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">櫃位</label>
+        <input type="text" data-f="bin" value="${h(data.bin)}" placeholder="A090401 / 待上架 / NA"
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">進貨驗證完成日</label>
-        <input type="date" data-f="verifyInDate" value="${h(data.verifyInDate)}"
-          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">進貨驗證完成日</label>
+        ${partDateFieldMarkup("verifyInDate", data.verifyInDate, "進貨驗證完成日")}
         <p class="text-[10px] text-outline mt-1 leading-snug">P.S. : 買進/退租(一週內)</p>
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">出貨包裝完成日</label>
-        <input type="date" data-f="shipPackDate" value="${h(data.shipPackDate)}"
-          class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">出貨包裝完成日</label>
+        ${partDateFieldMarkup("shipPackDate", data.shipPackDate, "出貨包裝完成日")}
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1">備註</label>
-        <textarea data-f="remark" rows="1" placeholder="順豐單號/其他" autocomplete="off"
+        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">備註</label>
+        <textarea data-f="remark" rows="1" placeholder="其他補充事項，EX: 退修 / 預計歸還日 / 後續追蹤事項 / 先出候補單 / 無" autocomplete="off"
           class="remark-ta w-full bg-white text-on-surface rounded-xl border border-outline-variant/18 px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/18 focus:border-primary/25 placeholder:text-outline-variant/55"
           oninput="autoResizeTextarea(this)"></textarea>
       </div>
@@ -1159,6 +1325,7 @@ function addPart(data={}) {
     </div>
   `;
   document.getElementById("partsList").appendChild(div);
+  div.querySelectorAll('[data-f="verifyInDate"], [data-f="shipPackDate"]').forEach(bindPgDateFieldTone);
   const rTa = div.querySelector('[data-f="remark"]');
   if (rTa) {
     rTa.value = data.remark != null ? String(data.remark) : "";
@@ -1288,11 +1455,14 @@ function collect(){
     lineUserId:  profile?.userId||"",
     groupId:     new URLSearchParams(window.location.search).get("groupId")||"",
   };
+  const minusPurpose = isMinusPurpose(basic.purpose);
   const parts = [];
   document.querySelectorAll("#partsList > div").forEach(c => {
     const f = k => (c.querySelector(`[data-f="${k}"]`)?.value||"").trim();
     const pid = c.id;
     parts.push({
+      pickNotifyPerson: minusPurpose ? f("pickNotifyPerson") : "",
+      pickPerson:       minusPurpose ? f("pickPerson") : "",
       source:     f("source"),
       itemName: f("itemName"), pn: f("pn"), sn: String(f("sn")),
       qty: (function(){ const q=f("qty"); return (q===""||q==null)?"0":q; })(),
@@ -1398,6 +1568,8 @@ function buildShareRecordFromSubmit(basic, parts, recordId){
     status: "已登錄",
     parts: (parts || []).map(function (p){
       return {
+        pickNotifyPerson: p.pickNotifyPerson != null ? String(p.pickNotifyPerson) : "",
+        pickPerson: p.pickPerson != null ? String(p.pickPerson) : "",
         source: p.source != null ? String(p.source) : "",
         itemName: p.itemName || "",
         pn: p.pn || "",
@@ -1761,7 +1933,7 @@ function resetForm(){
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
-  document.getElementById("fDate").value=today();
+  setFormDate(today());
   const fp = document.getElementById("fPurpose");
   if (fp) fp.value = "";
   syncPurposePickerButton("fPurposeBtn", "");
@@ -1776,12 +1948,209 @@ function resetForm(){
 let _activePill = "today";
 let _qDateModalSnap = { from: "", to: "" };
 
+/** 日期篩選月曆：顯示中的年月；區間存在 #qDateFrom / #qDateTo（yyyy-MM-dd） */
+let _qdView = { y: 0, m: 0 };
+
+function qdFmt(y, m, d){
+  return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+}
+function qdTodayIso(){
+  const n = new Date();
+  return qdFmt(n.getFullYear(), n.getMonth(), n.getDate());
+}
+function qdGetRange(){
+  return {
+    from: document.getElementById("qDateFrom")?.value || "",
+    to: document.getElementById("qDateTo")?.value || ""
+  };
+}
+function qdSetRange(from, to){
+  const f = document.getElementById("qDateFrom");
+  const t = document.getElementById("qDateTo");
+  if (f) f.value = from || "";
+  if (t) t.value = to || "";
+}
+function qdSetViewFromIso(iso){
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(iso || "");
+  if (m) { _qdView = { y: +m[1], m: +m[2] - 1 }; return; }
+  const n = new Date();
+  _qdView = { y: n.getFullYear(), m: n.getMonth() };
+}
+
+function qdFillYm(ysId, msId, view){
+  const ys = document.getElementById(ysId);
+  const ms = document.getElementById(msId);
+  if (!ys || !ms) return;
+  const cy = new Date().getFullYear();
+  const y0 = Math.min(cy - 5, view.y), y1 = Math.max(cy + 1, view.y);
+  let yh = "";
+  for (let y = y0; y <= y1; y++) yh += '<option value="' + y + '">' + y + "年</option>";
+  ys.innerHTML = yh;
+  ys.value = String(view.y);
+  if (!ms.options.length) {
+    let mh = "";
+    for (let m = 0; m < 12; m++) mh += '<option value="' + m + '">' + (m + 1) + "月</option>";
+    ms.innerHTML = mh;
+  }
+  ms.value = String(view.m);
+}
+
+/** 6 週月曆格；from/to 相同或 to 空白時僅標示選取日，不畫區間底色 */
+function qdGridHtml(view, from, to){
+  const todayIso = qdTodayIso();
+  const hasRange = from && to && from !== to;
+  const first = new Date(view.y, view.m, 1);
+  const start = new Date(view.y, view.m, 1 - first.getDay());
+  let html = "";
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const iso = qdFmt(d.getFullYear(), d.getMonth(), d.getDate());
+    const col = i % 7;
+    const out = d.getMonth() !== view.m;
+    const isSel = iso === from || iso === to;
+    let band = "";
+    if (hasRange && iso >= from && iso <= to) {
+      const cls = ["qd-band"];
+      if (iso === from) cls.push("qd-l-half");
+      if (iso === to) cls.push("qd-r-half");
+      if (col === 0 && iso !== from) cls.push("qd-round-l");
+      if (col === 6 && iso !== to) cls.push("qd-round-r");
+      band = '<span class="' + cls.join(" ") + '"></span>';
+    }
+    const dayCls = ["qd-day"];
+    if (out) dayCls.push("qd-out");
+    if (iso === todayIso) dayCls.push("qd-today");
+    if (isSel) dayCls.push("qd-sel");
+    html += '<div class="qd-cell">' + band +
+      '<button type="button" class="' + dayCls.join(" ") + '" data-iso="' + iso + '">' + d.getDate() + "</button></div>";
+  }
+  return html;
+}
+
+function qdRender(){
+  qdFillYm("qdYearSel", "qdMonthSel", _qdView);
+  const { from, to } = qdGetRange();
+
+  const rf = document.getElementById("qdRangeFrom");
+  const rt = document.getElementById("qdRangeTo");
+  if (rf && rt) {
+    rf.querySelector(".qd-range-val").textContent = from || "—";
+    rt.querySelector(".qd-range-val").textContent = to || "—";
+    const pickingEnd = !!from && !to;
+    rf.classList.toggle("qd-next", !pickingEnd);
+    rt.classList.toggle("qd-next", pickingEnd);
+  }
+
+  const grid = document.getElementById("qdGrid");
+  if (grid) grid.innerHTML = qdGridHtml(_qdView, from, to);
+}
+
+// ── 單一日期月曆（零件卡 進貨驗證完成日 / 出貨包裝完成日） ──
+let _sdTarget = null;
+let _sdView = { y: 0, m: 0 };
+
+function openSingleDatePicker(input, title){
+  if (!input) return;
+  _sdTarget = input;
+  const v = toDateInputVal(input.value);
+  const m = /^(\d{4})-(\d{2})/.exec(v || qdTodayIso());
+  _sdView = { y: +m[1], m: +m[2] - 1 };
+  const t = document.getElementById("sdTitle");
+  if (t) t.textContent = title || "選擇日期";
+  const grid = document.getElementById("sdGrid");
+  if (grid && grid.dataset.bound !== "1") {
+    grid.dataset.bound = "1";
+    grid.addEventListener("click", function (e) {
+      const b = e.target.closest(".qd-day");
+      if (b) sdCommit(b.getAttribute("data-iso"));
+    });
+  }
+  sdRender();
+  document.getElementById("sdPickBd")?.classList.add("op");
+}
+function closeSingleDatePicker(){
+  document.getElementById("sdPickBd")?.classList.remove("op");
+  _sdTarget = null;
+}
+function onSdBackdrop(ev){
+  if (ev.target === document.getElementById("sdPickBd")) closeSingleDatePicker();
+}
+function sdRender(){
+  qdFillYm("sdYearSel", "sdMonthSel", _sdView);
+  const v = _sdTarget ? toDateInputVal(_sdTarget.value) : "";
+  const grid = document.getElementById("sdGrid");
+  if (grid) grid.innerHTML = qdGridHtml(_sdView, v, "");
+}
+function sdShiftMonth(delta){
+  const d = new Date(_sdView.y, _sdView.m + delta, 1);
+  _sdView = { y: d.getFullYear(), m: d.getMonth() };
+  sdRender();
+}
+function sdOnYmChange(){
+  const y = parseInt(document.getElementById("sdYearSel")?.value, 10);
+  const m = parseInt(document.getElementById("sdMonthSel")?.value, 10);
+  if (!isNaN(y) && !isNaN(m)) _sdView = { y: y, m: m };
+  sdRender();
+}
+function sdCommit(iso){
+  if (_sdTarget) {
+    _sdTarget.value = iso || "";
+    syncPgDateFieldTone(_sdTarget);
+  }
+  closeSingleDatePicker();
+}
+
+function qdPickDay(iso){
+  const { from, to } = qdGetRange();
+  if (!from || (from && to)) {
+    qdSetRange(iso, "");
+  } else if (iso < from) {
+    qdSetRange(iso, from);
+  } else {
+    qdSetRange(from, iso);
+  }
+  const m = /^(\d{4})-(\d{2})/.exec(iso);
+  if (m && (+m[1] !== _qdView.y || +m[2] - 1 !== _qdView.m)) _qdView = { y: +m[1], m: +m[2] - 1 };
+  qdRender();
+}
+function qdShiftMonth(delta){
+  const d = new Date(_qdView.y, _qdView.m + delta, 1);
+  _qdView = { y: d.getFullYear(), m: d.getMonth() };
+  qdRender();
+}
+function qdOnYmChange(){
+  const y = parseInt(document.getElementById("qdYearSel")?.value, 10);
+  const m = parseInt(document.getElementById("qdMonthSel")?.value, 10);
+  if (!isNaN(y) && !isNaN(m)) _qdView = { y: y, m: m };
+  qdRender();
+}
+function qdPickToday(){
+  const t = qdTodayIso();
+  qdSetRange(t, t);
+  qdSetViewFromIso(t);
+  qdRender();
+}
+function qdClearSelection(){
+  qdSetRange("", "");
+  qdRender();
+}
+
 function openDateRangeModal(){
   const bd = document.getElementById("qDateModalBd");
   const from = document.getElementById("qDateFrom");
   const to = document.getElementById("qDateTo");
   if (!bd || !from || !to) return;
   _qDateModalSnap = { from: from.value || "", to: to.value || "" };
+  qdSetViewFromIso(to.value || from.value);
+  const grid = document.getElementById("qdGrid");
+  if (grid && grid.dataset.bound !== "1") {
+    grid.dataset.bound = "1";
+    grid.addEventListener("click", function (e) {
+      const b = e.target.closest(".qd-day");
+      if (b) qdPickDay(b.getAttribute("data-iso"));
+    });
+  }
+  qdRender();
   bd.classList.add("op");
 }
 function closeQDateModal(revert){
@@ -1799,6 +2168,9 @@ function onQDateModalBackdrop(ev){
   if (ev.target === document.getElementById("qDateModalBd")) closeQDateModal(true);
 }
 function applyQDateRangeModal(){
+  const cur = qdGetRange();
+  if (!cur.from && !cur.to) { clearQDateRangeModal(); return; }
+  if (cur.from && !cur.to) qdSetRange(cur.from, cur.from);
   _qDateModalSnap = {
     from: document.getElementById("qDateFrom")?.value || "",
     to: document.getElementById("qDateTo")?.value || ""
@@ -2122,6 +2494,8 @@ function shareRegDateTimeForShare(r){
 /** 品項是否至少有一欄應出現在 LINE 分享 */
 function partHasAnyShareableContent(p, r) {
   if (!p) return false;
+  if (shareHasLineValue(shareField(p.pickNotifyPerson))) return true;
+  if (shareHasLineValue(shareField(p.pickPerson))) return true;
   if (shareHasLineValue(shareItemSourceLine(p, r))) return true;
   if (!isEmptyValue(p.itemName)) return true;
   if (shareHasLineValue(p.pn)) return true;
@@ -2178,7 +2552,7 @@ function buildLineShareText(r, opts) {
   pushShareLineIf(lines, "單號", shareField(r.orderNo), L);
   pushShareLineIf(lines, "訂單案號", shareField(r.projectNo), L);
   if (shareHasLineValue(r.purpose)) {
-    lines.push("目的" + L + String(purposeDisplayLabel(r.purpose)).trim());
+    lines.push("目的" + L + purposeShareLabel(r.purpose));
   }
   pushShareLineIf(lines, "登記", shareField(r.submittedBy), L);
   var regDt = shareRegDateTimeForShare(r);
@@ -2195,6 +2569,8 @@ function buildLineShareText(r, opts) {
       lines.push("無明細資料");
       return;
     }
+    pushShareLineIf(lines, "領料通知人", shareField(p.pickNotifyPerson), L);
+    pushShareLineIf(lines, "領料人", shareField(p.pickPerson), L);
     pushShareLineIf(lines, "來源", shareItemSourceLine(p, r), L);
     pushShareItemNameLinesIf(lines, p, L);
     pushShareLineIf(lines, "P/N", shareField(p.pn), L);
@@ -2541,6 +2917,9 @@ function refreshDetailModal(){
     const spkStr = (p.shipPackDate!=null && String(p.shipPackDate).trim()!=="") ? esc(String(p.shipPackDate).trim()) : "";
     const srcSourceOnly = (p && p.source != null && String(p.source).trim()) ? String(p.source).trim() : "";
     const srcHtml = srcSourceOnly ? esc(srcSourceOnly) : "—";
+    const pickNotifyStr = (p.pickNotifyPerson != null && String(p.pickNotifyPerson).trim()) ? esc(String(p.pickNotifyPerson).trim()) : "";
+    const pickPersonStr = (p.pickPerson != null && String(p.pickPerson).trim()) ? esc(String(p.pickPerson).trim()) : "";
+    const showPickRead = isMinusPurpose(r.purpose);
     const seq = idx + 1;
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 shadow-ambient border border-outline-variant/10">
@@ -2548,6 +2927,10 @@ function refreshDetailModal(){
         <div class="det-seq-badge" aria-hidden="true">${seq}</div>
         <p class="det-item-val-title flex-1 min-w-0">${esc(p.itemName)||"—"}</p>
       </div>
+      ${showPickRead ? `<div class="mb-3 space-y-2.5">
+        <div><p class="det-item-lbl mb-1">領料通知人</p><p class="text-sm font-semibold text-on-surface break-words min-w-0">${pickNotifyStr || "—"}</p></div>
+        <div><p class="det-item-lbl mb-1">領料人</p><p class="text-sm font-semibold text-on-surface break-words min-w-0">${pickPersonStr || "—"}</p></div>
+      </div>` : ""}
       <div class="mb-3">
         <p class="det-item-lbl mb-1">來源</p>
         <p class="text-sm font-semibold text-on-surface break-words min-w-0">${srcHtml}</p>
@@ -2628,10 +3011,10 @@ function refreshDetailModal(){
     const rj = JSON.stringify(rid);
     document.getElementById("mActions").innerHTML = `
   <div class="flex gap-2 px-3 sm:px-4 pt-3 pb-[max(14px,env(safe-area-inset-bottom))] bg-surface border-t border-outline-variant/15">
-    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold shadow-md active:scale-[0.98] transition-transform" onclick='copyToForm(${rj})'>
+    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary text-[0.9625rem] font-bold shadow-md active:scale-[0.98] transition-transform" onclick='copyToForm(${rj})'>
       <span class="ms fi shrink-0">content_copy</span>複製
     </button>
-    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-secondary-container text-on-secondary-container text-sm font-bold active:scale-[0.98] transition-transform" onclick='editRecord(${rj})'>
+    <button type="button" class="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-3.5 px-2 rounded-xl bg-secondary-container text-on-secondary-container text-[0.9625rem] font-bold active:scale-[0.98] transition-transform" onclick='editRecord(${rj})'>
       <span class="ms fi shrink-0">edit</span>編輯
     </button>
     <button type="button" class="shrink-0 w-12 h-[46px] flex items-center justify-center rounded-xl bg-error-container text-error active:scale-95 transition-transform" onclick='deleteRecord(${rj})' aria-label="刪除">
@@ -2650,6 +3033,7 @@ function refreshDetailModal(){
     const vin = h(toDateInputVal(p.verifyInDate));
     const spk = h(toDateInputVal(p.shipPackDate));
     const srcV = h(itemSourceForDisplay(p, r));
+    const showPickEdit = isMinusPurpose(r.purpose);
     return `
     <div class="rounded-2xl bg-surface-container-lowest p-4 mb-3 border border-outline-variant/15">
       <div class="flex items-center gap-2 mb-2">
@@ -2657,6 +3041,16 @@ function refreshDetailModal(){
         <span class="text-[10px] font-bold uppercase text-outline">品項</span>
       </div>
       <div class="space-y-3">
+        <div class="det-pick-fields space-y-3${showPickEdit ? "" : " hidden"}">
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">領料通知人</label>
+            <input type="text" id="det-p-${i}-pick-notify" value="${h(p.pickNotifyPerson)}" placeholder="需求提出者/業務" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">領料人</label>
+            <input type="text" id="det-p-${i}-pick-person" value="${h(p.pickPerson)}" placeholder="實際取貨者" class="w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-outline-variant/55"/>
+          </div>
+        </div>
         <div>
           <label class="text-[10px] font-bold uppercase tracking-wider text-outline block mb-1">來源</label>
           <input type="text" id="det-p-${i}-source" value="${srcV}" placeholder="機拆/庫存/廠商名稱" class="det-src-edit-ph w-full text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg px-3 py-1.5 min-h-0 max-h-9 focus:border-primary focus:ring-1 focus:ring-primary/20"/>
@@ -2700,7 +3094,7 @@ function refreshDetailModal(){
         </div>
         <div>
           <label class="text-[10px] font-bold text-outline uppercase tracking-wide block mb-1">備註</label>
-          <textarea id="det-p-${i}-remark" rows="1" placeholder="順豐單號/其他" autocomplete="off"
+          <textarea id="det-p-${i}-remark" rows="1" placeholder="其他補充事項，EX: 退修 / 預計歸還日 / 後續追蹤事項 / 先出候補單 / 無" autocomplete="off"
             class="remark-ta w-full bg-white text-on-surface rounded-xl border border-outline-variant/18 px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/18 focus:border-primary/25 placeholder:text-outline-variant/55"
             oninput="autoResizeTextarea(this)">${escTextarea(p.remark)}</textarea>
         </div>
@@ -2822,10 +3216,13 @@ function openDetailEditConfirmDialog() {
     lineUserId:  profile?.userId || "",
     groupId:     new URLSearchParams(window.location.search).get("groupId") || "",
   };
+  const minusPurpose = isMinusPurpose(basic.purpose);
   const parts = [];
   (r.parts || []).forEach((_, i) => {
     const q = gv("det-p-" + i + "-qty");
     parts.push({
+      pickNotifyPerson: minusPurpose ? gv("det-p-" + i + "-pick-notify") : "",
+      pickPerson:       minusPurpose ? gv("det-p-" + i + "-pick-person") : "",
       source:   gv("det-p-" + i + "-source"),
       itemName: gv("det-p-" + i + "-name"),
       pn:       gv("det-p-" + i + "-pn"),
@@ -2891,6 +3288,8 @@ async function doDetailEditSheetsSave() {
       row.purpose = basic.purpose || "";
       row.parts = parts.map(function (p) {
         return {
+          pickNotifyPerson: p.pickNotifyPerson != null ? String(p.pickNotifyPerson) : "",
+          pickPerson: p.pickPerson != null ? String(p.pickPerson) : "",
           source: p.source != null ? String(p.source) : "",
           itemName: p.itemName || "",
           pn: p.pn || "",
@@ -2932,12 +3331,13 @@ function copyToForm(rid){
 
   // Fill basic info
   const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||""; };
-  set("fDate",    r.date);
+  setFormDate(r.date || "");
   set("fCustomer",r.customer);
   set("fOrderNo", r.orderNo || "");
   set("fProjectNo", r.projectNo || "");
   document.getElementById("fPurpose").value = r.purpose || "";
   syncPurposePickerButton("fPurposeBtn", r.purpose || "");
+  syncPartPickFieldsVisibility();
 
   // Rebuild parts
   document.getElementById("partsList").innerHTML="";
@@ -2948,6 +3348,8 @@ function copyToForm(rid){
   (r.parts||[]).forEach(p=>{
     const src = (p.source!=null && String(p.source).trim()) ? String(p.source).trim() : (r.source!=null ? String(r.source).trim() : "");
     addPart({
+      pickNotifyPerson: p.pickNotifyPerson || "",
+      pickPerson:       p.pickPerson || "",
       source:   src,
       itemName: p.itemName,
       pn:       p.pn,
@@ -3043,6 +3445,29 @@ function showToast(msg,type=""){
   m.textContent=msg; t.classList.add("sh"); setTimeout(()=>t.classList.remove("sh"),2800);
 }
 function today(){ return new Date().toISOString().slice(0,10); }
+
+function setFormDate(iso) {
+  const v = (iso != null && String(iso).trim()) ? String(iso).trim().slice(0, 10) : today();
+  const fd = document.getElementById("fDate");
+  const fp = document.getElementById("fDatePick");
+  if (fd) {
+    fd.value = v;
+    syncPgDateFieldTone(fd);
+  }
+  if (fp) fp.value = v;
+}
+
+function bindFormDatePicker() {
+  const fp = document.getElementById("fDatePick");
+  const fd = document.getElementById("fDate");
+  if (!fp || !fd || fp.dataset.bound === "1") return;
+  fp.dataset.bound = "1";
+  const sync = function () {
+    if (fp.value) fd.value = fp.value;
+  };
+  fp.addEventListener("change", sync);
+  fp.addEventListener("input", sync);
+}
 </script>
 </body>
 </html>
