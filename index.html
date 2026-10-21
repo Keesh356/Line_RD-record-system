@@ -66,6 +66,7 @@ body{margin:0;min-height:100svh;touch-action:manipulation;font-family:Inter,Noto
 button,input,select,textarea{font:inherit}
 .page{display:none}.page.act{display:block}
 .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:20px;line-height:1;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}
+#pg-form .form-cta-ico.ms{font-size:24px}
 .ms.fi{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
 .ms.s18{font-size:18px}
 .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
@@ -195,7 +196,7 @@ button,input,select,textarea{font:inherit}
 .q-rec-v2-row1{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:0 10px;margin-bottom:10px;align-items:start}
 .q-rec-v2-dateblk{grid-column:1;grid-row:1/-1;min-width:0;padding-right:6px;display:flex;flex-direction:column}
 .q-rec-v2-dtlbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a9398;margin-bottom:4px}
-.q-rec-v2-dtval{font-size:11px;font-weight:800;color:#004253;line-height:1.35;letter-spacing:-.01em}
+.q-rec-v2-dtval{font-size:14.85px;font-weight:800;color:#004253;line-height:1.35;letter-spacing:-.01em}
 .q-rec-v2-mid{grid-column:2;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;min-width:0;width:100%;box-sizing:border-box}
 .q-rec-v2-by{font-size:13px;font-weight:600;color:#181c20;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25;text-align:right}
 .q-rec-v2-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:3.5rem;padding:7px 14px;border-radius:9999px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.02em;background:#c5f0ef;color:#004253;box-sizing:border-box}
@@ -246,7 +247,7 @@ button,input,select,textarea{font:inherit}
 /* 查詢結果卡：item 筆數膠囊（語彙對齊詳情 PASS · st-pass） */
 .q-rec-pc-badge{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.25;white-space:nowrap;background:#a0f0f0;color:#004444;box-shadow:none}
 /* 詳情 · 品項明細唯讀：label / value 層級 */
-.det-item-lbl{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:rgba(112,120,125,.78);margin:0;line-height:1.25}
+.det-item-lbl{font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:rgba(112,120,125,.78);margin:0;line-height:1.25}
 .det-item-val-title{font-size:1.0625rem;font-weight:800;color:#181c20;line-height:1.35;margin:0;font-family:Manrope,Noto Sans TC,sans-serif;word-break:break-word}
 .det-item-val-mono{font-size:14px;font-weight:700;color:#181c20;line-height:1.4;margin:0;font-family:JetBrains Mono,monospace;word-break:break-all}
 .det-item-val-qty{font-size:1.25rem;font-weight:800;color:#004253;line-height:1.2;margin:0;font-family:Manrope,Noto Sans TC,sans-serif}
@@ -329,7 +330,7 @@ button,input,select,textarea{font:inherit}
 .purpose-sec01-chevron .ms{font-size:22px}
 /* 查詢卡 · 頂列：日期與登記人底線對齊 */
 .q-rec-v2-head{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;min-width:0}
-.q-rec-v2-head .q-rec-v2-dtval{display:inline-flex;align-items:center;min-height:calc(14px + 11px * 1.35);font-size:11px;font-weight:800;color:#004253;line-height:1.35;letter-spacing:-.01em;flex-shrink:0;box-sizing:border-box}
+.q-rec-v2-head .q-rec-v2-dtval{display:inline-flex;align-items:center;min-height:calc(14px + 14.85px * 1.35);font-size:14.85px;font-weight:800;color:#004253;line-height:1.35;letter-spacing:-.01em;flex-shrink:0;box-sizing:border-box}
 .q-rec-v2-head .q-rec-v2-head-right{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:10px;min-width:0;flex:1}
 .m-part-bd{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
 .m-part-row{display:flex;flex-direction:column;gap:2px}
@@ -489,7 +490,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
     <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-ambient space-y-4">
       <div class="sec01-date-only-row">
         <div>
-          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">日期</label>
+          <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1.5">日期</label>
           <div class="sec01-field-under sec01-date-pick-wrap">
             <input type="text" id="fDate" readonly inputmode="none" autocomplete="off" placeholder="yyyy-MM-dd" class="pg-date-field sec01-under-input w-full bg-transparent border-0 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 font-mono placeholder:text-outline-variant/60"/>
             <input type="date" id="fDatePick" class="sec01-date-pick-native" tabindex="-1" aria-hidden="true"/>
@@ -497,19 +498,19 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
         </div>
       </div>
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">客戶</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1.5">客戶</label>
         <input type="text" id="fCustomer" placeholder="UMC" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">單號</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1.5">單號</label>
         <input type="text" id="fOrderNo" placeholder="KH-260414D01/PK-26xxx00" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">訂單案號</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1.5">訂單案號</label>
         <input type="text" id="fProjectNo" placeholder="26078-xxx" class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">目的</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1.5">目的</label>
         <div class="purpose-sec01-row">
           <input type="hidden" id="fPurpose" value=""/>
           <button type="button" id="fPurposeBtn" class="purpose-picker-trigger purpose-sec01-btn w-full min-w-0 text-left bg-transparent border-0 text-sm leading-snug rounded-none text-outline-variant/60 focus:ring-0 focus:outline-none" onclick="openPurposePicker('fPurpose','fPurposeBtn')">請選擇目的</button>
@@ -533,11 +534,11 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
   </section>
 
   <div class="grid grid-cols-2 gap-3 pt-1 pb-4">
-    <button type="button" onclick="addPart()" class="w-full bg-surface-container-high text-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2.5 text-sm active:scale-[0.98] transition-transform shadow-sm tracking-wide">
-      <span class="ms fi text-lg">add_circle</span> ADD PART
+    <button type="button" onclick="addPart()" class="w-full bg-surface-container-high text-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2.5 text-[1.05rem] active:scale-[0.98] transition-transform shadow-sm tracking-wide">
+      <span class="ms fi form-cta-ico">add_circle</span> ADD PART
     </button>
-    <button type="button" id="btnSub" onclick="confirmSubmit()" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2.5 text-sm active:scale-[0.98] transition-transform tracking-wide" style="box-shadow:0 8px 32px -4px rgba(0,66,83,0.22)">
-      <span class="ms fi text-lg">check_circle</span> SUBMIT
+    <button type="button" id="btnSub" onclick="confirmSubmit()" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold py-3.5 rounded-full flex items-center justify-center gap-2.5 text-[1.05rem] active:scale-[0.98] transition-transform tracking-wide" style="box-shadow:0 8px 32px -4px rgba(0,66,83,0.22)">
+      <span class="ms fi form-cta-ico">check_circle</span> SUBMIT
     </button>
   </div>
   <p class="text-center text-[10px] uppercase tracking-[0.08em] text-outline pb-4">送出前請再次確認欄位 · 資料將儲存至 Google Sheets</p>
@@ -1251,13 +1252,13 @@ function addPart(data={}) {
       </div>
 
       <div class="part-src-field">
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-0.5">來源</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-0.5">來源</label>
         <input type="text" data-f="source" value="${h(data.source)}" placeholder="機拆/庫存/廠商名稱"
           class="src-line-in w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm rounded-none focus:border-primary focus:ring-0"/>
       </div>
 
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">品名</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">品名</label>
         <input type="text" data-f="itemName" value="${h(data.itemName)}" placeholder=""
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"
           oninput="updLbl('${id}',this.value)"/>
@@ -1265,19 +1266,19 @@ function addPart(data={}) {
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">P/N</label>
+          <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">P/N</label>
           <input type="text" data-f="pn" value="${h(data.pn)}" placeholder=""
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
         <div>
-          <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">S/N</label>
+          <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">S/N</label>
           <input type="text" data-f="sn" value="${h(data.sn)}" placeholder=""
             class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0"/>
         </div>
       </div>
 
       <div>
-        <label class="block text-[13.75px] font-bold text-secondary uppercase tracking-[0.08em] mb-2">狀態</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-[0.08em] mb-2">狀態</label>
         <div class="grid grid-cols-4 gap-2" id="chips_${id}">
           <button type="button" data-chip="pass" class="${insChClass(id,'pass')}" onclick="selChip('${id}','pass')"><span class="ms fi ins-ch-mark">check</span><span>PASS</span></button>
           <button type="button" data-chip="fail" class="${insChClass(id,'fail')}" onclick="selChip('${id}','fail')"><span class="ms fi ins-ch-mark">check</span><span>FAIL</span></button>
@@ -1287,7 +1288,7 @@ function addPart(data={}) {
       </div>
 
       <div class="w-full">
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1.5">數量</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1.5">數量</label>
         <div class="w-full">
           <div class="flex w-full items-center justify-between bg-surface-container-lowest rounded-xl px-2 py-1.5 gap-2">
             <button type="button" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-surface-container text-secondary active:scale-90 transition-transform text-lg font-medium leading-none" onclick="adjQty('${id}',-1)">−</button>
@@ -1299,24 +1300,24 @@ function addPart(data={}) {
       </div>
 
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">櫃位</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">櫃位</label>
         <input type="text" data-f="bin" value="${h(data.bin)}" placeholder="A090401 / 待上架 / NA"
           class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30 py-1.5 text-sm font-mono rounded-none focus:border-primary focus:ring-0 placeholder:text-outline-variant/60"/>
       </div>
 
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">進貨驗證完成日</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">進貨驗證完成日</label>
         ${partDateFieldMarkup("verifyInDate", data.verifyInDate, "進貨驗證完成日")}
         <p class="text-[10px] text-outline mt-1 leading-snug">P.S. : 買進/退租(一週內)</p>
       </div>
 
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">出貨包裝完成日</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">出貨包裝完成日</label>
         ${partDateFieldMarkup("shipPackDate", data.shipPackDate, "出貨包裝完成日")}
       </div>
 
       <div>
-        <label class="block text-[13.75px] font-semibold text-secondary uppercase tracking-wider mb-1">備註</label>
+        <label class="block text-[13.75px] font-medium text-secondary uppercase tracking-wider mb-1">備註</label>
         <textarea data-f="remark" rows="1" placeholder="其他補充事項，EX: 退修 / 預計歸還日 / 後續追蹤事項 / 先出候補單 / 無" autocomplete="off"
           class="remark-ta w-full bg-white text-on-surface rounded-xl border border-outline-variant/18 px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/18 focus:border-primary/25 placeholder:text-outline-variant/55"
           oninput="autoResizeTextarea(this)"></textarea>
@@ -2899,7 +2900,7 @@ function detailKvRow(lbl,val,opts){
   const raw = (val!=null && String(val).trim()) ? String(val).trim() : "";
   const v = raw ? esc(raw) : (blankEmpty ? "" : "—");
   return `<div class="det-kv-row grid grid-cols-[4.75rem_1fr] gap-x-3 items-baseline py-2.5 first:pt-0 pr-2">
-    <span class="text-xs text-outline font-medium">${lbl}</span>
+    <span class="text-sm text-outline font-medium">${lbl}</span>
     <span class="text-sm font-semibold text-on-surface break-words min-w-0 text-left">${v}</span>
   </div>`;
 }
