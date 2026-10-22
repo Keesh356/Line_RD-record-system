@@ -291,12 +291,12 @@ button,input,select,textarea{font:inherit}
 .purpose-grid-item:hover{background:#fafafa}
 .purpose-grid-item:active{transform:scale(.98)}
 .purpose-grid-item--plus,.purpose-grid-item--minus{background:#fff;border-color:#e6e6e8}
-.purpose-cell-check{position:absolute;top:8px;right:10px;z-index:1;display:none;align-items:center;justify-content:center;color:#1c1c1e;pointer-events:none;line-height:1}
-.purpose-cell-check .ms{font-size:16px;font-weight:700}
-.purpose-grid-item--sel .purpose-cell-check{display:flex}
+.purpose-cell-check{position:absolute;top:7px;right:8px;z-index:1;display:none;width:15px;height:15px;color:#1c1c1e;pointer-events:none}
+.purpose-cell-check svg{display:block;width:15px;height:15px}
+.purpose-grid-item--sel .purpose-cell-check{display:block}
 .purpose-cell-label{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:600;line-height:1.35;word-break:break-word;margin:0;padding:0 8px;letter-spacing:.01em;min-height:0;color:#1c1c1e}
 .purpose-grid-item--plus .purpose-cell-label,.purpose-grid-item--minus .purpose-cell-label{color:#1c1c1e}
-.purpose-grid-item--sel,.purpose-grid-item--plus.purpose-grid-item--sel,.purpose-grid-item--minus.purpose-grid-item--sel{background:#f2f3f5;border-color:#e6e6e8;box-shadow:none}
+.purpose-grid-item--sel,.purpose-grid-item--plus.purpose-grid-item--sel,.purpose-grid-item--minus.purpose-grid-item--sel,.purpose-grid-item--sel:hover{background:#e3e4e8;border-color:#d4d5da;box-shadow:none}
 .purpose-picker-trigger{min-height:2.5rem}
 /* SECTION 01 · 目的列 + 右側箭頭（與上方 border-b-2 + py-1.5 輸入列垂直置中對齊） */
 .purpose-sec01-row{display:flex;align-items:center;min-height:2.75rem;gap:2px;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s;box-sizing:border-box}
@@ -914,7 +914,7 @@ function buildPurposePickerSectionsHtml() {
           kind +
           '" data-value="' +
           h(o) +
-          '"><span class="purpose-cell-check" aria-hidden="true"><span class="ms">check</span></span><span class="purpose-cell-label">' +
+          '"><span class="purpose-cell-check" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.1 8.3 6.3 11.5 12.9 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="purpose-cell-label">' +
           esc(purposeModalCardLabel(o)) +
           "</span></button>"
         );
@@ -958,9 +958,9 @@ function setPurposePickTab(kind) {
 
 function ensurePurposePickerBody() {
   const body = document.getElementById("purposePickBody");
-  if (!body || body.dataset.purposeUi === "grid-v5") return;
+  if (!body || body.dataset.purposeUi === "grid-v6") return;
   body.innerHTML = buildPurposePickerSectionsHtml();
-  body.dataset.purposeUi = "grid-v5";
+  body.dataset.purposeUi = "grid-v6";
 }
 
 function syncPurposePickerButton(btnId, val) {
@@ -1298,9 +1298,9 @@ function addPart(data={}) {
       </div>
 
       <div>
-        <div class="flex items-baseline justify-between gap-2 mb-1">
+        <div class="flex items-baseline gap-2 mb-1">
           <label class="text-[13.75px] font-medium text-secondary uppercase tracking-wider">進貨驗證完成日</label>
-          <p class="text-[10px] text-outline leading-snug shrink-0">P.S. : 買進/退租(一週內)</p>
+          <p class="text-[10px] text-outline leading-snug">P.S. 買進/退租(一週內)</p>
         </div>
         ${partDateFieldMarkup("verifyInDate", data.verifyInDate, "進貨驗證完成日")}
       </div>
