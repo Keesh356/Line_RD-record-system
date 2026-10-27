@@ -1581,6 +1581,9 @@ function buildShareRecordFromSubmit(basic, parts, recordId){
   if (basic && basic.createdAt != null && String(basic.createdAt).trim() !== "") {
     o.createdAt = String(basic.createdAt).trim();
   }
+  if (basic && basic.modifiedAt != null && String(basic.modifiedAt).trim() !== "") {
+    o.modifiedAt = String(basic.modifiedAt).trim();
+  }
   return o;
 }
 
@@ -2555,6 +2558,11 @@ function buildLineShareText(r, opts) {
     lines.push("登記時間" + L.replace(/ $/, ""));
     lines.push(regDt);
   }
+  var modDt = r && r.modifiedAt ? formatRegDateTimeFull(r.modifiedAt, r.date) : "";
+  if (shareHasLineValue(modDt)) {
+    lines.push("更動時間" + L.replace(/ $/, ""));
+    lines.push(modDt);
+  }
   lines.push(SHARE_LINE_SEP);
   lines.push("");
   parts.forEach(function (p, idx) {
@@ -2993,6 +3001,7 @@ function refreshDetailModal(){
         ${detailKvRow("目的",r.purpose)}
         ${detailKvRow("登記人",r.submittedBy)}
         ${detailKvRow("登記時間",formatRegDateTimeFull(r.createdAt,r.date),{blankEmpty:true})}
+        ${detailKvRow("更動時間",formatRegDateTimeFull(r.modifiedAt,r.date),{blankEmpty:true})}
         </div>
       </div>
     </div>
@@ -3271,14 +3280,26 @@ async function doDetailEditSheetsSave() {
       String(save.res.registeredAt).trim() !== ""
         ? String(save.res.registeredAt).trim()
         : "";
+    const modifiedAt =
+      save.res &&
+      save.res.modifiedAt != null &&
+      String(save.res.modifiedAt).trim() !== ""
+        ? String(save.res.modifiedAt).trim()
+        : "";
+    const keptCreated =
+      ctx.r && ctx.r.createdAt != null && String(ctx.r.createdAt).trim() !== ""
+        ? String(ctx.r.createdAt).trim()
+        : "";
     const basicForShare = Object.assign({}, basic);
-    if (registeredAt) basicForShare.createdAt = registeredAt;
+    basicForShare.createdAt = registeredAt || keptCreated;
+    if (modifiedAt) basicForShare.modifiedAt = modifiedAt;
     const ix = recs.findIndex(function (x) {
       return x.recordId === rid;
     });
     if (ix >= 0) {
       const row = recs[ix];
-      if (registeredAt) row.createdAt = registeredAt;
+      if (basicForShare.createdAt) row.createdAt = basicForShare.createdAt;
+      if (modifiedAt) row.modifiedAt = modifiedAt;
       row.date = basic.date || row.date;
       row.customer = basic.customer || "";
       row.orderNo = basic.orderNo || "";
