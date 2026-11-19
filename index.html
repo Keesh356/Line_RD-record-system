@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
-<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>
 tailwind.config = {
@@ -718,7 +718,7 @@ body:has(#pg-form.page.act) #pg-form,body:has(#pg-query.page.act) #pg-query{padd
       <h2 id="postSubmitShareTitle" class="font-headline text-xl font-bold text-on-surface tracking-tight">資料已儲存至 Google Sheets</h2>
       <div class="flex flex-col items-center text-center gap-2 px-1 w-full">
         <p class="text-sm text-on-surface-variant leading-relaxed m-0">請點下方<strong class="text-on-surface font-semibold">「分享到 LINE」</strong></p>
-        <p class="text-sm text-on-surface-variant leading-relaxed m-0">以開啟選擇好友或群組畫面並傳送 Flex 卡片。</p>
+        <p class="text-sm text-on-surface-variant leading-relaxed m-0" id="postSubmitShareHint">以開啟選擇好友或群組畫面並傳送 Flex 卡片。</p>
       </div>
       <div class="cfm-sum-card w-full text-left py-3 px-4">
         <span class="text-[11px] font-bold tracking-widest uppercase text-secondary">紀錄編號 Record ID</span>
@@ -1758,6 +1758,12 @@ function openPostSubmitSharePrompt(basic, parts, recordId, options){
   };
   const ridEl = document.getElementById("postSubmitShareRecordId");
   if (ridEl) ridEl.textContent = postSubmitSharePayload.recordId || "—";
+  const hintEl = document.getElementById("postSubmitShareHint");
+  if (hintEl) {
+    hintEl.textContent = isDesktopShareEnv()
+      ? "電腦版會開啟可選擇其他聯絡人與群組的分享畫面，並傳送文字紀錄。"
+      : "以開啟選擇好友或群組畫面並傳送 Flex 卡片。";
+  }
   const lineBtn = document.getElementById("postSubmitShareLineBtn");
   const skipBtn = document.getElementById("postSubmitShareSkipBtn");
   if (lineBtn) lineBtn.disabled = false;
@@ -1770,7 +1776,7 @@ function finalizePostSubmitShareFlow(recordId, outcome){
   closePostSubmitShareModal();
   const wasDetail = postSubmitSharePayload && postSubmitSharePayload.isDetailEdit;
   postSubmitSharePayload = null;
-  const o = outcome === "shared" ? "shared" : "cancelled";
+  const o = outcome === "shared" || outcome === "opened" || outcome === "copied" ? outcome : "cancelled";
   if (wasDetail) {
     closeDetailModal();
     showFinalStatus(recordId, o);
@@ -1792,68 +1798,162 @@ function onPostSubmitShareSkipTap(){
   finalizePostSubmitShareFlow(rid, "cancelled");
 }
 
+/** 電腦版 LINE（含 Windows / macOS）的 getOS() 為 web。 */
+function isDesktopShareEnv(){
+  try {
+    if (typeof liff !== "undefined" && typeof liff.getOS === "function") {
+      return liff.getOS() === "web";
+    }
+  } catch (_) {}
+  return !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+}
+
+/** 以能力判斷，不要求 isInClient。外部瀏覽器登入後也可能可用。 */
+function canUseLineSharePicker(){
+  try {
+    return typeof liff !== "undefined" &&
+      typeof liff.shareTargetPicker === "function" &&
+      typeof liff.isApiAvailable === "function" &&
+      liff.isApiAvailable("shareTargetPicker") === true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/** 讓 line.me 分享網址維持在瀏覽器可開啟的長度內。 */
+function fitShareTextForUrl(text){
+  var prefix = "https://line.me/R/share?text=";
+  var limit = 7500;
+  var body = String(text || "");
+  if (prefix.length + encodeURIComponent(body).length <= limit) return body;
+  var lo = 0;
+  var hi = body.length;
+  while (lo < hi) {
+    var mid = Math.ceil((lo + hi) / 2);
+    var slice = body.slice(0, mid) + "\n…";
+    if (prefix.length + encodeURIComponent(slice).length <= limit) lo = mid;
+    else hi = mid - 1;
+  }
+  return body.slice(0, lo) + "\n…";
+}
+
+/** 必須在使用者點擊的同步流程內呼叫，才能開啟分享視窗。 */
+function openDesktopLineShareUrl(text){
+  var url = "https://line.me/R/share?text=" + encodeURIComponent(fitShareTextForUrl(text));
+  var win = null;
+  try { win = window.open(url, "_blank", "noopener,noreferrer"); } catch (_) {}
+  if (win) return true;
+  try {
+    var a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * 在點擊當下啟動分享。
+ * 手機：Flex（可選群組／好友／聊天）失敗再改文字。
+ * 電腦版：不用 Flex（桌面選人視窗常因此空白），改文字並允許多選；
+ * 選人 API 不可用時改開 LINE「分享給」畫面，避免掉進系統分享而選不到 LINE 聯絡人。
+ * @returns {Promise<"shared"|"cancelled"|"opened"|"copied">}
+ */
+function beginLineShare(textFb, flexMsg){
+  var opts = { isMultiple: true };
+  var desktop = isDesktopShareEnv();
+  var canPicker = canUseLineSharePicker();
+
+  function fromPicker(ok){
+    return ok ? "shared" : "cancelled";
+  }
+
+  if (canPicker && desktop) {
+    try {
+      return liff.shareTargetPicker([{ type: "text", text: textFb }], opts)
+        .then(fromPicker)
+        .catch(function (e) {
+          console.warn("desktop shareTargetPicker:", e);
+          return copyShareTextToClipboard(textFb).then(function (copied) {
+            return copied ? "copied" : "cancelled";
+          });
+        });
+    } catch (e) {
+      console.warn("desktop shareTargetPicker:", e);
+      var openedSync = openDesktopLineShareUrl(textFb);
+      return copyShareTextToClipboard(textFb).then(function (copied) {
+        if (openedSync) return "opened";
+        return copied ? "copied" : "cancelled";
+      });
+    }
+  }
+
+  if (canPicker && flexMsg) {
+    try {
+      return liff.shareTargetPicker([flexMsg], opts)
+        .then(fromPicker)
+        .catch(function (e1) {
+          console.warn("shareTargetPicker flex:", e1);
+          return liff.shareTargetPicker([{ type: "text", text: textFb }], opts)
+            .then(fromPicker)
+            .catch(function (e2) {
+              console.warn("shareTargetPicker text:", e2);
+              return "cancelled";
+            });
+        });
+    } catch (e0) {
+      console.warn("shareTargetPicker:", e0);
+      return Promise.resolve("cancelled");
+    }
+  }
+
+  if (desktop) {
+    var openedNow = openDesktopLineShareUrl(textFb);
+    return copyShareTextToClipboard(textFb).then(function (copied) {
+      if (openedNow) return "opened";
+      return copied ? "copied" : "cancelled";
+    });
+  }
+
+  return shareViaSystemOrClipboard(textFb);
+}
+
+function shareViaSystemOrClipboard(textFb){
+  var shareTitle = "RD Record";
+  if (navigator.share) {
+    return navigator.share({ text: textFb, title: shareTitle })
+      .then(function () { return "shared"; })
+      .catch(function (e) {
+        console.warn("navigator.share:", e);
+        if (e && e.name === "AbortError") return "cancelled";
+        return copyShareTextToClipboard(textFb).then(function (ok) {
+          return ok ? "copied" : "cancelled";
+        });
+      });
+  }
+  return copyShareTextToClipboard(textFb).then(function (ok) {
+    return ok ? "copied" : "cancelled";
+  });
+}
+
 function onPostSubmitShareLineTap(ev){
   if (ev && ev.preventDefault) ev.preventDefault();
   const p = postSubmitSharePayload;
   if (!p) return;
-
   const recordId = p.recordId;
-  const textFb = p.textFb;
-  const flexMsg = p.flexMsg;
-
-  const canPicker =
-    typeof liff !== "undefined" &&
-    liff.isInClient &&
-    liff.isInClient() &&
-    typeof liff.shareTargetPicker === "function" &&
-    (!liff.isApiAvailable || liff.isApiAvailable("shareTargetPicker"));
-
-  if (!canPicker || !flexMsg) {
-    shareRecordToLineCore(p.shareRec, { suppressToasts: true, lineShareText: p.textFb })
-      .then(function (out) {
-        finalizePostSubmitShareFlow(recordId, out);
-      })
-      .catch(function () {
-        finalizePostSubmitShareFlow(recordId, "cancelled");
-      });
-    return;
-  }
-
   closePostSubmitShareModal();
-
-  var handled = false;
-  function done(outcome){
-    if (handled) return;
-    handled = true;
-    finalizePostSubmitShareFlow(recordId, outcome);
-  }
-
-  try {
-    var prom = liff.shareTargetPicker([flexMsg]);
-    prom
-      .then(function (ok) {
-        done(ok ? "shared" : "cancelled");
-      })
-      .catch(function (e1) {
-        console.warn("shareTargetPicker flex:", e1);
-        try {
-          var prom2 = liff.shareTargetPicker([{ type: "text", text: textFb }]);
-          prom2
-            .then(function (ok2) {
-              done(ok2 ? "shared" : "cancelled");
-            })
-            .catch(function (e2) {
-              console.warn("shareTargetPicker text:", e2);
-              done("cancelled");
-            });
-        } catch (e3) {
-          done("cancelled");
-        }
-      });
-  } catch (syncErr) {
-    console.warn("shareTargetPicker:", syncErr);
-    done("cancelled");
-  }
+  beginLineShare(p.textFb, p.flexMsg)
+    .then(function (out) {
+      finalizePostSubmitShareFlow(recordId, out);
+    })
+    .catch(function () {
+      finalizePostSubmitShareFlow(recordId, "cancelled");
+    });
 }
 
 function handleShareSuccess(recordId){
@@ -1871,6 +1971,16 @@ function showFinalStatus(recordId, shareOutcome){
     submitFlow.shareStatus = "shared";
     submitFlow.submitResult = "saved_shared";
     handleShareSuccess(recordId);
+  } else if (shareOutcome === "opened") {
+    submitFlow.shareStatus = "shared";
+    submitFlow.submitResult = "saved_shared";
+    showBanner(recordId, { title: "資料已儲存，請在 LINE 選擇聯絡人或群組" });
+    showToast("請在開啟的視窗選擇 LINE 聯絡人或群組", "");
+  } else if (shareOutcome === "copied") {
+    submitFlow.shareStatus = "cancelled";
+    submitFlow.submitResult = "saved_no_share";
+    showBanner(recordId, { title: "資料已儲存，分享內容已複製", variant: "warning" });
+    showToast("請貼到要傳送的 LINE 聊天室", "");
   } else {
     submitFlow.shareStatus = "cancelled";
     submitFlow.submitResult = "saved_no_share";
@@ -2777,57 +2887,14 @@ async function shareRecordToLineCore(r, opts){
       ? String(opts.lineShareText)
       : buildLineShareText(r);
   const flexMsg = buildLineFlexMessage(r);
-
-  const canPicker =
-    typeof liff !== "undefined" &&
-    liff.isInClient &&
-    liff.isInClient() &&
-    typeof liff.shareTargetPicker === "function" &&
-    (!liff.isApiAvailable || liff.isApiAvailable("shareTargetPicker"));
-
-  if (canPicker && flexMsg) {
-    try {
-      const ok = await liff.shareTargetPicker([flexMsg]);
-      if (!suppress) {
-        if (ok) showToast("已開啟 LINE 分享", "");
-        else showToast("已取消分享", "");
-      }
-      return ok ? "shared" : "cancelled";
-    } catch (e1) {
-      console.warn("shareTargetPicker flex:", e1);
-      try {
-        const ok2 = await liff.shareTargetPicker([{ type: "text", text: textFb }]);
-        if (!suppress) {
-          if (ok2) showToast("Flex 卡片分享失敗，已改用文字分享", "");
-          else showToast("已取消分享", "");
-        }
-        return ok2 ? "shared" : "cancelled";
-      } catch (e2) {
-        console.warn("shareTargetPicker text:", e2);
-      }
-    }
-  }
-
-  try {
-    if (navigator.share) {
-      await navigator.share({
-        text: textFb,
-        title: "【RD Record 共 " + (r.parts || []).length + " 項】",
-      });
-      if (!suppress) showToast("已開啟系統分享", "");
-      return "shared";
-    }
-  } catch (e) {
-    console.warn("navigator.share:", e);
-    if (!suppress) showToast("已取消分享", "");
-    return "cancelled";
-  }
-
-  const ok = await copyShareTextToClipboard(textFb);
+  const outcome = await beginLineShare(textFb, flexMsg);
   if (!suppress) {
-    showToast(ok ? "無法直接分享，已為你複製分享內容" : "分享失敗，請稍後再試", ok ? "" : "err");
+    if (outcome === "shared") showToast("已開啟 LINE 分享", "");
+    else if (outcome === "opened") showToast("請在開啟的視窗選擇 LINE 聯絡人或群組", "");
+    else if (outcome === "copied") showToast("已複製分享內容，請貼到要傳送的聊天室", "");
+    else showToast("已取消分享", "");
   }
-  return ok ? "shared" : "cancelled";
+  return outcome;
 }
 
 /** 詳情選單：分享到 LINE（維持既有 toast；關閉選單） */
