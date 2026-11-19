@@ -291,12 +291,13 @@ button,input,select,textarea{font:inherit}
 .purpose-grid-item:hover{background:#fafafa}
 .purpose-grid-item:active{transform:scale(.98)}
 .purpose-grid-item--plus,.purpose-grid-item--minus{background:#fff;border-color:#e6e6e8}
-.purpose-cell-check{position:absolute;top:7px;right:8px;z-index:1;display:none;width:15px;height:15px;color:#1c1c1e;pointer-events:none}
+.purpose-cell-check{position:absolute;top:7px;right:8px;z-index:1;display:none;width:15px;height:15px;color:#1a56c4;pointer-events:none}
 .purpose-cell-check svg{display:block;width:15px;height:15px}
 .purpose-grid-item--sel .purpose-cell-check{display:block}
 .purpose-cell-label{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:600;line-height:1.35;word-break:break-word;margin:0;padding:0 8px;letter-spacing:.01em;min-height:0;color:#1c1c1e}
 .purpose-grid-item--plus .purpose-cell-label,.purpose-grid-item--minus .purpose-cell-label{color:#1c1c1e}
-.purpose-grid-item--sel,.purpose-grid-item--plus.purpose-grid-item--sel,.purpose-grid-item--minus.purpose-grid-item--sel,.purpose-grid-item--sel:hover{background:#e3e4e8;border-color:#d4d5da;box-shadow:none}
+.purpose-grid-item--sel,.purpose-grid-item--plus.purpose-grid-item--sel,.purpose-grid-item--minus.purpose-grid-item--sel,.purpose-grid-item--sel:hover{background:#d6e6ff;border-color:#8eb6ef;box-shadow:none}
+.purpose-grid-item--sel .purpose-cell-label{color:#0e3f86}
 .purpose-picker-trigger{min-height:2.5rem}
 /* SECTION 01 · 目的列 + 右側箭頭（與上方 border-b-2 + py-1.5 輸入列垂直置中對齊） */
 .purpose-sec01-row{display:flex;align-items:center;min-height:2.75rem;gap:2px;border-bottom:2px solid rgba(191,200,204,.3);transition:border-color .15s;box-sizing:border-box}
@@ -833,7 +834,8 @@ const PURPOSE_OPTIONS = [
   "+客戶資產",
   "+壞品換回",
   "+退租歸還",
-  "+維修返回/退修",
+  "+維修返回",
+  "+退修",
   "+借出歸還",
   "+借入",
   "-訂單出庫",
@@ -1011,7 +1013,7 @@ function pickPurposeValue(val) {
   if (hid) hid.value = val;
   syncPurposePickerButton(btnId, val);
   if (btnId === "fPurposeBtn") syncPartPickFieldsVisibility();
-  if (hiddenId === "det-purpose") syncDetailPickFieldsVisibility();
+  if (_purposeCtx.hiddenId === "det-purpose") syncDetailPickFieldsVisibility();
   closePurposePicker();
 }
 
@@ -1759,12 +1761,20 @@ function openPostSubmitSharePrompt(basic, parts, recordId, options){
   const ridEl = document.getElementById("postSubmitShareRecordId");
   if (ridEl) ridEl.textContent = postSubmitSharePayload.recordId || "—";
   const hintEl = document.getElementById("postSubmitShareHint");
-  if (hintEl) {
-    hintEl.textContent = isDesktopShareEnv()
-      ? "電腦版會開啟可選擇其他聯絡人與群組的分享畫面，並傳送文字紀錄。"
-      : "以開啟選擇好友或群組畫面並傳送 Flex 卡片。";
-  }
   const lineBtn = document.getElementById("postSubmitShareLineBtn");
+  const desktopShare = isDesktopShareEnv();
+  const desktopPicker = desktopShare && canUseLineSharePicker();
+  if (hintEl) {
+    hintEl.textContent = desktopPicker
+      ? "電腦版會開啟 LINE 選人畫面，可選擇聯絡人與群組，並以文字傳送。"
+      : desktopShare
+        ? "電腦版 LINE 不能用網址打開選人畫面（會跳到 LINE 官網）。按下後會複製內容，請貼到要傳送的聊天室。"
+        : "以開啟選擇好友或群組畫面並傳送 Flex 卡片。";
+  }
+  if (lineBtn) {
+    lineBtn.innerHTML = '<span class="ms fi" style="font-size:18px">' + (desktopShare && !desktopPicker ? "content_copy" : "send") + "</span>" +
+      (desktopShare && !desktopPicker ? "複製內容，貼到聊天室" : "分享到 LINE");
+  }
   const skipBtn = document.getElementById("postSubmitShareSkipBtn");
   if (lineBtn) lineBtn.disabled = false;
   if (skipBtn) skipBtn.disabled = false;
@@ -1820,49 +1830,18 @@ function canUseLineSharePicker(){
   }
 }
 
-/** 讓 line.me 分享網址維持在瀏覽器可開啟的長度內。 */
-function fitShareTextForUrl(text){
-  var prefix = "https://line.me/R/share?text=";
-  var limit = 7500;
-  var body = String(text || "");
-  if (prefix.length + encodeURIComponent(body).length <= limit) return body;
-  var lo = 0;
-  var hi = body.length;
-  while (lo < hi) {
-    var mid = Math.ceil((lo + hi) / 2);
-    var slice = body.slice(0, mid) + "\n…";
-    if (prefix.length + encodeURIComponent(slice).length <= limit) lo = mid;
-    else hi = mid - 1;
-  }
-  return body.slice(0, lo) + "\n…";
-}
-
-/** 必須在使用者點擊的同步流程內呼叫，才能開啟分享視窗。 */
-function openDesktopLineShareUrl(text){
-  var url = "https://line.me/R/share?text=" + encodeURIComponent(fitShareTextForUrl(text));
-  var win = null;
-  try { win = window.open(url, "_blank", "noopener,noreferrer"); } catch (_) {}
-  if (win) return true;
-  try {
-    var a = document.createElement("a");
-    a.href = url;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    return true;
-  } catch (_) {
-    return false;
-  }
+function copyShareThen(textFb, whenCopied, whenFailed){
+  return copyShareTextToClipboard(textFb).then(function (copied) {
+    return copied ? whenCopied : whenFailed;
+  });
 }
 
 /**
  * 在點擊當下啟動分享。
  * 手機：Flex（可選群組／好友／聊天）失敗再改文字。
- * 電腦版：不用 Flex（桌面選人視窗常因此空白），改文字並允許多選；
- * 選人 API 不可用時改開 LINE「分享給」畫面，避免掉進系統分享而選不到 LINE 聯絡人。
- * @returns {Promise<"shared"|"cancelled"|"opened"|"copied">}
+ * 電腦版：選人 API 可用時以文字開啟，並允許多選。
+ * 不可用時只複製文字。LINE 官方不支援電腦版開啟 line.me/R/share，該網址會被導到官網首頁。
+ * @returns {Promise<"shared"|"cancelled"|"copied">}
  */
 function beginLineShare(textFb, flexMsg){
   var opts = { isMultiple: true };
@@ -1879,17 +1858,11 @@ function beginLineShare(textFb, flexMsg){
         .then(fromPicker)
         .catch(function (e) {
           console.warn("desktop shareTargetPicker:", e);
-          return copyShareTextToClipboard(textFb).then(function (copied) {
-            return copied ? "copied" : "cancelled";
-          });
+          return copyShareThen(textFb, "copied", "cancelled");
         });
     } catch (e) {
       console.warn("desktop shareTargetPicker:", e);
-      var openedSync = openDesktopLineShareUrl(textFb);
-      return copyShareTextToClipboard(textFb).then(function (copied) {
-        if (openedSync) return "opened";
-        return copied ? "copied" : "cancelled";
-      });
+      return copyShareThen(textFb, "copied", "cancelled");
     }
   }
 
@@ -1913,11 +1886,7 @@ function beginLineShare(textFb, flexMsg){
   }
 
   if (desktop) {
-    var openedNow = openDesktopLineShareUrl(textFb);
-    return copyShareTextToClipboard(textFb).then(function (copied) {
-      if (openedNow) return "opened";
-      return copied ? "copied" : "cancelled";
-    });
+    return copyShareThen(textFb, "copied", "cancelled");
   }
 
   return shareViaSystemOrClipboard(textFb);
